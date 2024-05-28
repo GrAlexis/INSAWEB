@@ -24,7 +24,8 @@ const getProduct = async (req,res)=>{
 
 const createProduct = async (req, res) => {
     try {
-        const { name } = req.body; 
+        const { name } = req.body;
+        console.log(desc);
         const productExist = await Product.findOne({ name });
         if (!productExist) {
             const product = await Product.create(req.body);
@@ -64,6 +65,7 @@ const deleteProduct = async (req,res)=>{
         res.status(500).json({message : error.message});
     }
 }
+
 
 module.exports={
     getProducts,
