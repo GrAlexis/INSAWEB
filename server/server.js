@@ -31,5 +31,5 @@ app.use("/api/products",productRoutes);
 
 
 app.get("/", (req,res) =>{
-    res.send("Hello from Backend Server !");
+    res.send("Hello from Backend Server !!");
 });
