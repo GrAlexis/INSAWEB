@@ -60,14 +60,29 @@
     margin-top: 10px;
 }
 
-.points {
+.post-likes {
     display: flex;
     align-items: center;
-}
+    margin-left: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    color : gray;
+  }
+
+.likes-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+.likes-icon {
+    width: 24px;
+    height: auto;
+    margin-right: 5px;
+  }
 
 .points-icon {
     width: 24px;
-    /* Adjust size as needed */
     height: auto;
 }
 
@@ -80,8 +95,21 @@
 }
 
 .reward {
-    text-align: right;
-}
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .reward-icon {
+    width: 24px; /* Adjust size as needed */
+    height: auto;
+  }
+  
+  .reward-text {
+    font-size: 0.8em; /* Small text */
+    color: gray;
+    margin-top: 2px; /* Space between icon and text */
+  }
 
 .post-user-info {
     bottom: 10px;

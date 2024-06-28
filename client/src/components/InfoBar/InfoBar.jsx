@@ -15,8 +15,8 @@ const InfoBar = () => {
       <div className="section placeholder">
         <p>User Annex Info</p>
       </div>
-      <div className="section logo-container">
-        <img src={logo} alt="Association Logo" className="logo" />
+      <div className="section astus-logo-container">
+        <img src={logo} alt="Association Logo" className="astuce-logo" />
       </div>
       <div className="section user-info">
         <h2>{user.name}</h2>
