@@ -1,0 +1,154 @@
+/* Post.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Lemon&family=Mclaren&display=swap');
+
+
+.post {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+    font-family: Arial, sans-serif;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.logo {
+    width: 30px;
+    height: auto;
+}
+
+.post-info {
+    flex-grow: 1;
+    text-align: center;
+}
+
+.date {
+    display: block;
+    color: gray;
+}
+.user {
+    display: block;
+    color: gray;
+    margin-top: 2px; /* Add some spacing */
+  }
+
+.status {
+    text-align: right;
+}
+
+.status-text {
+    color: green;
+}
+
+.post-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.post-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.post-likes {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    color : gray;
+  }
+
+.likes-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+.likes-icon {
+    width: 24px;
+    height: auto;
+    margin-right: 5px;
+  }
+
+.points-icon {
+    width: 24px;
+    height: auto;
+}
+
+.post-title {
+    flex-grow: 1;
+    text-align: left;
+    font-size: 0.9em;
+    padding-left: 10px;
+    font-family: 'Mclaren', sans-serif;
+}
+
+.reward {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .reward-icon {
+    width: 24px; /* Adjust size as needed */
+    height: auto;
+  }
+  
+  .reward-text {
+    font-size: 0.8em; /* Small text */
+    color: gray;
+    margin-top: 2px; /* Space between icon and text */
+  }
+
+.post-user-info {
+    bottom: 10px;
+    right: 10px;
+    font-size: 0.5em;
+    color: gray;
+}
+
+.post-footer {
+    text-align: center;
+    margin-top: 10px;
+}
+
+@media (max-width: 1200px) {
+    .post-title {
+        font-size: 0.8em;
+    }
+}
+
+@media (max-width: 992px) {
+    .post-title {
+        font-size: 0.7em;
+    }
+}
+
+
+.sheesh-button {
+    background-color: rgba(255, 247, 223);
+    border: 1px solid rgba(130, 130, 130);
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    font-family: 'Lemon', sans-serif; /* Lemon font */
+    color: rgba(130, 130, 130);
+    font-weight: bold;
+    font-style: italic;
+}
+
+.sheesh-button:hover {
+    background-color: rgba(255, 247, 223);
+}
