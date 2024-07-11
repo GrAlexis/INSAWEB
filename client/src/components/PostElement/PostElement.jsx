@@ -8,17 +8,17 @@ import default_reward_icon from '../../assets/icons/rewards/default.png'
 import beer_reward_icon from '../../assets/icons/rewards/beer.png'
 
 const PostElement = ({ post }) => {
-    const getRewardIcon = (reward) => {
-        const normalizedReward = reward.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    // const getRewardIcon = (reward) => {
+    //     const normalizedReward = reward.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     
-        if (normalizedReward.includes('frite') || normalizedReward.includes('frites')) {
-          return fries_reward_icon;
-        }
-        if (normalizedReward.includes('biere') || normalizedReward.includes('bieres')) {
-          return beer_reward_icon;
-        }
-        return default_reward_icon;
-      };
+    //     if (normalizedReward.includes('frite') || normalizedReward.includes('frites')) {
+    //       return fries_reward_icon;
+    //     }
+    //     if (normalizedReward.includes('biere') || normalizedReward.includes('bieres')) {
+    //       return beer_reward_icon;
+    //     }
+    //     return default_reward_icon;
+    //   };
 
   return (
     <div className="post">
@@ -33,12 +33,13 @@ const PostElement = ({ post }) => {
         </div>
       </div>
       <div className="post-image">
-        <img src={post.image} alt={post.title} />
+        <img src={`http://localhost:5001/file/${post.picture}`} alt={post.title} />
+        {/* <img src={post.image} alt={post.title} /> */}
       </div>
       <div className="post-body">
         <div className="reward">
-          <img src={getRewardIcon(post.reward)} alt="Reward Icon" className="reward-icon" />
-          <span className="reward-text">{post.reward}</span>
+          {/* <img src={getRewardIcon(post.reward)} alt="Reward Icon" className="reward-icon" />
+          <span className="reward-text">{post.reward}</span> */}
         </div>
         <img src={gold_ingot} alt="Points Icon" className="points-icon" />
         <div className="post-title">

@@ -26,3 +26,11 @@
 .participation-sheesh-button:hover{
     background-color: #ff9800;
 }
+
+.upload-form {
+    margin-top: 8px;
+}
+  
+.upload-form input[type="file"] {
+    margin-bottom: 8px;
+}
