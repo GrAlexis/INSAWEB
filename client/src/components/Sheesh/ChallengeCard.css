@@ -1,0 +1,28 @@
+.challenge-card {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 8px;
+    margin: 8px 0;
+    background-color: white;
+}
+  
+.challenge-icon {
+    width: 50px;
+    height: auto;
+    margin-right: 8px;
+}
+  
+.challenge-details {
+    flex: 1;
+}
+
+.participation-sheesh-button{
+    border: 2px solid #ddd;
+    border-radius: 20px;
+}
+
+.participation-sheesh-button:hover{
+    background-color: #ff9800;
+}

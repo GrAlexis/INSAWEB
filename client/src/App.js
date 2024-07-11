@@ -1,10 +1,10 @@
 import React from 'react'
 import Home from "./components/Home/Home"
+import Sheesh from "./components/Sheesh/Sheesh"
 import { BrowserRouter, Routes, Route} from "react-router-dom"
 import Navbar from './components/Common/Navbar/Navbar'
 import { UserProvider } from './hooks/commonHooks/UserContext';
 import './App.css';
-
 
 function App() {
   return (
@@ -14,6 +14,7 @@ function App() {
               <Routes>
                 <Route index element={<Home />} />
                 <Route path="/home" element={<Home />} />
+                <Route path="/sheesh" element={<Sheesh />} />
               </Routes>
               <Navbar />
           </BrowserRouter>
