@@ -6,13 +6,16 @@ const crypto = require('crypto');
 const cors = require('cors');
 const { GridFSBucket } = require('mongodb');
 
-const Product = require("./models/product")
 const Post = require('./models/post');
+const Challenge = require('./models/challenge');
+const Event = require('./models/event');
+
+
 const productRoutes = require("./routes/products.routes");
 
 const app = express();
 
-//listen on port 50000
+//listen on port 5001
 app.listen(5001, () => {
     console.log("Backend is running on port 5001...");
 });
@@ -48,6 +51,7 @@ const upload = multer({ storage });
 //routes
 app.use("/api/products",productRoutes);
 
+//upload image route
 app.post('/upload', upload.single('file'), async (req, res) => {
     if (!req.file) {
         return res.status(400).send('No file uploaded.');
@@ -76,6 +80,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     });
 });
 
+//get posts/publications route
+
 app.get('/posts', async (req, res) => {
     try {
         const posts = await Post.find().sort({ date: -1 });
@@ -84,6 +90,8 @@ app.get('/posts', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+
+//get specfic image
 
 app.get('/file/:filename', async (req, res) => {
     try {
@@ -100,10 +108,28 @@ app.get('/file/:filename', async (req, res) => {
     }
 });
 
+// Event routes
+app.get('/events', async (req, res) => {
+    try {
+        const events = await Event.find();
+        res.status(200).json(events);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+// Challenge routes
+
+app.get('/challenges', async (req, res) => {
+    try {
+        const challenges = await Challenge.find();
+        res.status(200).json(challenges);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
 app.get("/", (req,res) =>{
     res.send("Hello from Backend Server !");
 });
 
-app.post('/upload',(req,res) => {
-
-})
