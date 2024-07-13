@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
+
 
 import './Sheesh.css';
 import EventCard from '../Events/EventCard';
@@ -40,8 +42,10 @@ import { getImageByKey } from '../../utils/imageMapper';
 // ];
 
 const Sheesh = () => {
+  const { challengeId } = useParams();
   const [events, setEvents] = useState([]);
   const [challenges, setChallenges] = useState([]);
+  const challengeRefs = useRef({});
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -60,7 +64,6 @@ const Sheesh = () => {
     const fetchChallenges = async () => {
       try {
         const challengeResponse = await axios.get('http://localhost:5001/challenges');
-        console.log(challengeResponse.data)
         const challengesWithIcons = challengeResponse.data.map(challenge => ({
           ...challenge,
           icon: getImageByKey(challenge.icon)
@@ -74,6 +77,12 @@ const Sheesh = () => {
     fetchEvents();
     fetchChallenges();
   }, []);
+
+  useEffect(() => {
+    if (challengeId && challengeRefs.current[challengeId]) {
+      challengeRefs.current[challengeId].scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [challengeId, challenges]);
 
   const getEventChallenges = (eventChallenges) => {
     const challengeIds = eventChallenges.split(',').map(id => id.trim());
@@ -99,8 +108,13 @@ const Sheesh = () => {
       {events.map(event => (
         <div key={event.id} className="event-section">
           <EventCard event={event} />
-          {getEventChallenges(event.challenges).map(challenge => (
-            <ChallengeCard key={challenge.id} challenge={challenge} />
+            {getEventChallenges(event.challenges).map(challenge => (
+              <div
+                key={challenge.id}
+                ref={el => (challengeRefs.current[challenge.id] = el)}
+              >
+                <ChallengeCard challenge={challenge} />
+            </div>
           ))}
         </div>
       ))}

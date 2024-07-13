@@ -1,31 +1,49 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './PostElement.css';
+import axios from 'axios';
+
+import { getRewardIcon, getPrestigeIcon } from '../../utils/imageMapper';
+import { formatDate } from '../../utils/dateFormatter';
+import { useNavigate } from 'react-router-dom';
+
+
 import logo from '../../assets/logos/astus.png';
-import gold_ingot from '../../assets/icons/rarity/gold_ingot.png'
 import smiley_face from '../../assets/buttons/likes/thumbs-up.png'
-import fries_reward_icon from '../../assets/icons/rewards/fries.png'
-import default_reward_icon from '../../assets/icons/rewards/default.png'
-import beer_reward_icon from '../../assets/icons/rewards/beer.png'
+
 
 const PostElement = ({ post }) => {
-    // const getRewardIcon = (reward) => {
-    //     const normalizedReward = reward.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    
-    //     if (normalizedReward.includes('frite') || normalizedReward.includes('frites')) {
-    //       return fries_reward_icon;
-    //     }
-    //     if (normalizedReward.includes('biere') || normalizedReward.includes('bieres')) {
-    //       return beer_reward_icon;
-    //     }
-    //     return default_reward_icon;
-    //   };
+
+    const [challenge, setChallenge] = useState(null);
+    const navigate = useNavigate();
+
+
+    useEffect(() => {
+      const fetchChallenge = async () => {
+        try {
+          const response = await axios.get(`http://localhost:5001/challenges/${post.challengeId}`);
+          setChallenge(response.data);
+        } catch (error) {
+          console.error('Error fetching challenge', error);
+        }
+      };
+  
+      fetchChallenge();
+    }, [post.challengeId]);
+
+    const handleSheeshClick = () => {
+      navigate(`/sheesh/${post.challengeId}`);
+    };
+  
+    if (!challenge) {
+      return <div>Loading...</div>;
+    }
 
   return (
     <div className="post">
       <div className="post-header">
         <img src={logo} alt="Logo" className="logo" />
         <div className="post-info">
-          <span className="date">{post.event} - {post.date}</span>
+          <span className="date">{challenge.event} - {formatDate(post.date)}</span>
           <span className="user">{post.user}</span>
         </div>
         <div className="status">
@@ -33,17 +51,16 @@ const PostElement = ({ post }) => {
         </div>
       </div>
       <div className="post-image">
-        <img src={`http://localhost:5001/file/${post.picture}`} alt={post.title} />
-        {/* <img src={post.image} alt={post.title} /> */}
+        <img src={`http://localhost:5001/file/${post.picture}`} alt={challenge.title} />
       </div>
       <div className="post-body">
         <div className="reward">
-          {/* <img src={getRewardIcon(post.reward)} alt="Reward Icon" className="reward-icon" />
-          <span className="reward-text">{post.reward}</span> */}
+          <img src={getRewardIcon(challenge.reward)} alt="Reward Icon" className="reward-icon" />
+          <span className="reward-text">{challenge.reward}</span>
         </div>
-        <img src={gold_ingot} alt="Points Icon" className="points-icon" />
+        <img src={getPrestigeIcon(challenge.prestige)} alt="Prestige Icon" className="points-icon" />
         <div className="post-title">
-          <span>{post.title}</span>
+          <span>{challenge.title}</span>
         </div>
         <div className="post-likes">
           <button className="likes-button">
@@ -52,8 +69,11 @@ const PostElement = ({ post }) => {
           {post.likes > 0 && <span>{post.likes}</span>}
         </div>
       </div>
+      <div className="post-description">
+        <p>{post.description}</p>
+      </div>
       <div className="post-footer">
-        <button className="sheesh-button">Je Sheesh!</button>
+        <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>
       </div>
     </div>
   );

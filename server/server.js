@@ -64,11 +64,12 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     writeStream.on('finish', async () => {
         const newPost = new Post({
-            challengeName: req.body.challengeName,
+            challengeId: req.body.challengeId,
             date: new Date(),
             user: req.body.user,
             likes: 0,
-            picture: fileName
+            picture: fileName,
+            description: req.body.description
         });
 
         try {
@@ -124,6 +125,19 @@ app.get('/challenges', async (req, res) => {
     try {
         const challenges = await Challenge.find();
         res.status(200).json(challenges);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+//route to fetch a challenge by id
+app.get('/challenges/:id', async (req, res) => {
+    try {
+        const challenge = await Challenge.findOne({ id: req.params.id });
+        if (!challenge) {
+            return res.status(404).send('Challenge not found');
+        }
+        res.status(200).json(challenge);
     } catch (error) {
         res.status(500).send(error.message);
     }
