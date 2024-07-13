@@ -9,7 +9,7 @@ import ChallengeCard from './ChallengeCard';
 import { getImageByKey } from '../../utils/imageMapper';
 
 
-
+// TODO : remove static events and challenges declaration, as it is now fetched from mongoDB
 // const events = [
 //   {
 //     id: 1,

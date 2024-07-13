@@ -1,48 +1,45 @@
 import PostFeed from '../PostFeed/PostFeed'
 import InfoBar from '../InfoBar/InfoBar';
 import './Home.css';
-import Post1 from '../../assets/pictures/post/kayak1.jpeg'
-import Post2 from '../../assets/pictures/post/kayak2.jpeg'
-import { useState, useEffect } from 'react';
+// import { useState, useEffect } from 'react';
 
 const Home = () => {
-    const [posts, setPosts] = useState([]);
 
-    useEffect(() => {
-        // Simulate fetching data
-        const fetchPosts = async () => {
-        // Replace this with actual API call if needed
-        const postsData = [
-            {
-            id: 1,
-            image: Post1,
-            title: 'Gagner la course de canoë',
-            points: 100,
-            likes: 1000,
-            user: 'Marie Friot',
-            date: '25/05',
-            event: 'WEK',
-            idDefi:'10',
-            reward: '1 frite'
-            },
-            {
-            id: 2,
-            image: Post2,
-            title: 'Retourner un canoë',
-            points: 100,
-            likes: 9,
-            user: 'Marie Friot',
-            date: '25/05',
-            event: 'WEK',
-            idDefi:'20',
-            reward: '1 biere'
-            },
-        ];
-        setPosts(postsData);
-        };
+    // useEffect(() => {
+    //     // Simulate fetching data
+    //     const fetchPosts = async () => {
+    //     // Replace this with actual API call if needed
+    //     const postsData = [
+    //         {
+    //         id: 1,
+    //         image: Post1,
+    //         title: 'Gagner la course de canoë',
+    //         points: 100,
+    //         likes: 1000,
+    //         user: 'Marie Friot',
+    //         date: '25/05',
+    //         event: 'WEK',
+    //         idDefi:'10',
+    //         reward: '1 frite'
+    //         },
+    //         {
+    //         id: 2,
+    //         image: Post2,
+    //         title: 'Retourner un canoë',
+    //         points: 100,
+    //         likes: 9,
+    //         user: 'Marie Friot',
+    //         date: '25/05',
+    //         event: 'WEK',
+    //         idDefi:'20',
+    //         reward: '1 biere'
+    //         },
+    //     ];
+    //     setPosts(postsData);
+    //     };
 
-        fetchPosts();
-    }, []);
+    //     fetchPosts();
+    // }, []);
 
 
 
@@ -52,7 +49,7 @@ const Home = () => {
                 <InfoBar />
             </div>
             <div className="postfeed-container">
-                <PostFeed posts={posts} />
+                <PostFeed/>
             </div>
         </div>
     );
