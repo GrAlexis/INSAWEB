@@ -5,14 +5,17 @@ import axios from 'axios';
 import { getRewardIcon, getPrestigeIcon } from '../../utils/imageMapper';
 import { formatDate } from '../../utils/dateFormatter';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../../hooks/commonHooks/UserContext';
+
 
 
 import logo from '../../assets/logos/astus.png';
 import smiley_face from '../../assets/buttons/likes/thumbs-up.png'
 
 
-const PostElement = ({ post }) => {
+const PostElement = ({ post, onDelete }) => {
 
+    const { user } = useUser();
     const [challenge, setChallenge] = useState(null);
     const navigate = useNavigate();
 
@@ -32,6 +35,17 @@ const PostElement = ({ post }) => {
 
     const handleSheeshClick = () => {
       navigate(`/sheesh/${post.challengeId}`);
+    };
+
+    const handleDeleteClick = async () => {
+      try {
+        await axios.delete(`http://localhost:5001/posts/${post._id}`);
+        if (onDelete) {
+          onDelete(post._id);
+        }
+      } catch (error) {
+        console.error('Error deleting post', error);
+      }
     };
   
     if (!challenge) {
@@ -74,6 +88,9 @@ const PostElement = ({ post }) => {
       </div>
       <div className="post-footer">
         <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>
+        {user.name === post.user && (
+          <button className="delete-button" onClick={handleDeleteClick}>Delete</button>
+        )}
       </div>
     </div>
   );

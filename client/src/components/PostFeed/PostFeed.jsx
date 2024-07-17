@@ -19,12 +19,14 @@ const PostFeed = ({ }) => {
     fetchPosts();
   }, []);
 
-  
+  const handleDelete = (postId) => {
+    setPosts(posts.filter(post => post._id !== postId));
+  };
   
   return (
     <div className="postfeed">
       {posts.map((post) => (
-        <PostElement key={post._id} post={post} />
+        <PostElement key={post._id} post={post} onDelete={handleDelete} />
       ))}
     </div>
   );

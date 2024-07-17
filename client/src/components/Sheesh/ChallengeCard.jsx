@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import './ChallengeCard.css';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import { useUser } from '../../hooks/commonHooks/UserContext';
 
 
 const ChallengeCard = ({ challenge }) => {
+
+  const { user } = useUser();
 
   const { challengeId } = useParams();
   const [isUploading, setIsUploading] = useState(false);
@@ -35,7 +38,7 @@ const ChallengeCard = ({ challenge }) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('challengeId', challenge.id);
-    formData.append('user', 'currentUser'); // Replace with actual user information
+    formData.append('user', user.name);
     formData.append('description', description);
 
 

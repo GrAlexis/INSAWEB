@@ -9,6 +9,7 @@ const { GridFSBucket } = require('mongodb');
 const Post = require('./models/post');
 const Challenge = require('./models/challenge');
 const Event = require('./models/event');
+const User = require('./models/user');
 
 
 const productRoutes = require("./routes/products.routes");
@@ -142,6 +143,30 @@ app.get('/challenges/:id', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+
+//route to fetch all users
+app.get('/users', async (req, res) => {
+    try {
+        const users = await User.find();
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+//route to delete a post
+app.delete('/posts/:id', async (req, res) => {
+    try {
+        const post = await Post.findByIdAndDelete(req.params.id);
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+        res.status(200).send('Post deleted');
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
 
 app.get("/", (req,res) =>{
     res.send("Hello from Backend Server !");
