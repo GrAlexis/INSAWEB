@@ -1,10 +1,10 @@
-import axios from 'axios'
-import xml2js from 'xml2js'
+const axios = require('axios')
+const xml2js = require('xml2js')
 
 const localhost = "tc405-10-11.insa-lyon.fr"
 const CAS_SERVER_URL = 'https://login.insa-lyon.fr';
 const SERVICE_URL = `http://${localhost}:5000/api/connexion/validate`;
-const FRONTEND_HOME_URL = 'http://localhost:3000/home';
+const FRONTEND_HOME_URL = `http://${localhost}:3000/home`;
 
 const login = async(req, res)=>{
     if (req.session.user && req.session.user.loggerIn) {

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const Product = require("./models/product")
 const productRoutes = require("./routes/products.routes");
 const connexionRoutes = require("./routes/connexion.routes")
+const session = require('express-session')
 
 const app = express();
 
@@ -10,6 +11,13 @@ const app = express();
 app.listen(5000, () => {
     console.log("Backend is running on port 5000...");
 });
+
+// Setting up session management
+app.use(session({
+    secret: 'your_secret_key',
+    resave: false,
+    saveUninitialized: true
+  }))
 
 
 //connection to mongoDB 

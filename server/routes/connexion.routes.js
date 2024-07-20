@@ -3,9 +3,9 @@ const router_connexion = express.Router();
 const {login, validate} = require("../controllers/connexion.controllers")
 
 
-router.get("/", login);
+router_connexion.get("/", login);
 
-router.get("/validate", validate);
+router_connexion.get("/validate", validate);
 
 
 
