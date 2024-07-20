@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require('mongoose');
 const Product = require("./models/product")
 const productRoutes = require("./routes/products.routes");
+const connexionRoutes = require("./routes/connexion.routes")
 
 const app = express();
 
@@ -12,13 +13,13 @@ app.listen(5000, () => {
 
 
 //connection to mongoDB 
-mongoose.connect("mongodb://172.16.52.69:27017/test")
-    .then(()=>{
-        console.log("Connected to Database...");
-    })
-    .catch(()=>{
-        console.log("Connection failed :/");
-    });
+//mongoose.connect("mongodb://172.16.52.69:27017/test")
+//    .then(()=>{
+//        console.log("Connected to Database...");
+//    })
+//    .catch(()=>{
+//        console.log("Connection failed :/");
+//    });
 
 
 //middleware
@@ -28,6 +29,7 @@ app.use(express.urlencoded({extended : false}));
 
 //routes
 app.use("/api/products",productRoutes);
+app.use('/api/connexion/', connexionRoutes)
 
 
 app.get("/", (req,res) =>{
