@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route} from "react-router-dom"
 import Navbar from './components/Common/Navbar/Navbar'
 import { UserProvider } from './hooks/commonHooks/UserContext';
 import './App.css';
-import Login from './components/Login/Login'
+
 
 function App() {
   return (
