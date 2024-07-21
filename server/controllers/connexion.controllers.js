@@ -1,7 +1,7 @@
 const axios = require('axios')
 const xml2js = require('xml2js')
 
-const localhost = "tc405-10-11.insa-lyon.fr"
+const localhost = "3d-linux-02.insa-lyon.fr"
 const CAS_SERVER_URL = 'https://login.insa-lyon.fr';
 const SERVICE_URL = `http://${localhost}:5000/api/connexion/validate`;
 const FRONTEND_HOME_URL = `http://${localhost}:3000/home`;
@@ -38,9 +38,9 @@ const validate = async(req,res)=>{
           return res.status(500).send('Failed to parse CAS response');
         }
   
-        if (result['cas:serviceResponse']['cas:authenticationSuccess']) {
+        if (result['cas:serviceResponse'].hasOwnProperty('cas:authenticationSuccess')) {
           req.session.user = { loggedIn: true };  // Set session
-          res.redirect(FRONTEND_DASHBOARD_URL);  // Redirect to frontend dashboard
+          res.redirect(FRONTEND_HOME_URL);  // Redirect to frontend dashboard
         } else {
           const failure = result['cas:serviceResponse']['cas:authenticationFailure'];
           const errorMessage = failure && failure[0]._ || 'Authentication failed';
