@@ -21,13 +21,13 @@ app.use(session({
 
 
 //connection to mongoDB 
-//mongoose.connect("mongodb://172.16.52.69:27017/test")
-//    .then(()=>{
-//        console.log("Connected to Database...");
-//    })
-//    .catch(()=>{
-//        console.log("Connection failed :/");
-//    });
+mongoose.connect("mongodb://172.16.52.69:27017/test")
+    .then(()=>{
+        console.log("Connected to Database...");
+    })
+    .catch(()=>{
+        console.log("Connection failed :/");
+    });
 
 
 //middleware
