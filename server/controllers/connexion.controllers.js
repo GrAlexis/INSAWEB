@@ -10,7 +10,7 @@ const login = async(req, res)=>{
     if (req.session.user && req.session.user.loggerIn) {
         return res.redirect(FRONTEND_HOME_URL)
     }
-    const redirectUrl = `${CAS_SERVER_URL}/cas/login?service=${encodeURIComponent(SERVICE_URL)}`
+    const redirectUrl = `${CAS_SERVER_URL}/login?service=${encodeURIComponent(SERVICE_URL)}`
     res.redirect(redirectUrl)
 }
 
