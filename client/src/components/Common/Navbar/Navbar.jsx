@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
 import profilIcon from '../../../assets/buttons/navbar/profil/profil_v1.png'; 
 import feedIcon from '../../../assets/buttons/navbar/feed/feed_v1.png'; 
@@ -13,7 +13,10 @@ import rankingIcon from '../../../assets/buttons/navbar/ranking/ranking_v1.png';
 
 
 const Navbar = () => {
-  return (
+    const location = useLocation()
+    console.log(location.pathname)
+    if (location.pathname !== '/login'){
+    return (
     <nav className="navbar">
 
         <Link to="/events" className="nav-item">
@@ -37,8 +40,12 @@ const Navbar = () => {
             <img src={rankingIcon} alt="Ranking Icon" className="nav-icon" />
             <span>Ranking</span>
         </Link>
-    </nav>
-  );
+    </nav> 
+  )}
+  else {
+    return <nav/>
+  }
+
 }
 
 export default Navbar;
