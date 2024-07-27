@@ -23,7 +23,6 @@ const ChallengeCard = ({ challenge }) => {
   useEffect(() => {
     const checkUserPost = async () => {
       try {
-        console.log("user.id","challenge.id",user._id,challenge.id)
         const response = await axios.get(`http://localhost:5001/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
         if (response.data.length > 0) {
           setHasPosted(true);

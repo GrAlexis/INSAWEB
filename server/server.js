@@ -247,14 +247,6 @@ app.post('/assignTeam', async (req, res) => {
             return res.status(404).send('Team not found');
         }
 
-        // Check if the user is already part of another team for the same event
-        if (user.teamId) {
-            const currentTeam = await Team.findOne({ id: user.teamId });
-            if (currentTeam && currentTeam.eventId === eventId) {
-                return res.status(400).send('User is already part of a team for this event');
-            }
-        }
-
         // Assign user to team
         user.teamId = teamId;
         if (!user.eventPoints.has(eventId)) {

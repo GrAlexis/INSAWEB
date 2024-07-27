@@ -39,6 +39,15 @@ const EventCard = ({ event }) => {
   if (!user) {
     return ("loading")
   }
+  //this to transform a DD/MM/YYYY string into an date object
+  const parseDate = (dateStr) => {
+    const [day, month, year] = dateStr.split('/');
+    return new Date(`${year}-${month}-${day}`);
+  };
+
+  const eventDate = parseDate(event.date);
+  const currentDate = new Date();
+  const canChangeTeam = currentDate < eventDate;
 
   return (
     <div className="event-card">
@@ -50,9 +59,9 @@ const EventCard = ({ event }) => {
         <p>{event.sheeshes} Sheeshers</p>
         <button className="inscription-button">s'inscrire</button>
         <button className="quest-button">Voir les quêtes</button>
-        {!user.teamId && (
+        {canChangeTeam && (
           <button className="join-team-button" onClick={() => setIsPopupOpen(true)}>
-            Join a team!
+            {user.teamId ? 'Change team' : 'Join a team!'}
           </button>
         )}
       </div>

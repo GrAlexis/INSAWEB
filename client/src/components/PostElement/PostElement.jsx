@@ -16,6 +16,7 @@ const PostElement = ({ post, onDelete }) => {
   const [event, setEvent] = useState(null);
   const [team, setTeam] = useState(null);
   const [postUser, setPostUser] = useState(null);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -61,18 +62,27 @@ const PostElement = ({ post, onDelete }) => {
     navigate(`/sheesh/${post.challengeId}`);
   };
 
-  const handleDeleteClick = async () => {
+  const handleDeleteClick = () => {
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDelete = async () => {
     try {
       await axios.delete(`http://localhost:5001/posts/${post._id}`);
       if (onDelete) {
         onDelete(post._id);
       }
+      setShowConfirmDelete(false);
     } catch (error) {
       console.error('Error deleting post', error);
     }
   };
 
-  if (!challenge || !event || !postUser || !user ) {
+  const cancelDelete = () => {
+    setShowConfirmDelete(false);
+  };
+
+  if (!challenge || !event || !postUser || !user) {
     return <div>Loading...</div>;
   }
 
@@ -117,6 +127,16 @@ const PostElement = ({ post, onDelete }) => {
           <button className="delete-button" onClick={handleDeleteClick}>Delete</button>
         )}
       </div>
+
+      {showConfirmDelete && (
+        <div className="confirm-delete-popup">
+          <div className="confirm-delete-content">
+            <p>Are you sure you want to delete this post?</p>
+            <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>
+            <button className="cancel-delete-button" onClick={cancelDelete}>No</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
