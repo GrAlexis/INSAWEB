@@ -1,48 +1,115 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './PostElement.css';
-import logo from '../../assets/logos/astus.png';
-import gold_ingot from '../../assets/icons/rarity/gold_ingot.png'
-import smiley_face from '../../assets/buttons/likes/thumbs-up.png'
-import fries_reward_icon from '../../assets/icons/rewards/fries.png'
-import default_reward_icon from '../../assets/icons/rewards/default.png'
-import beer_reward_icon from '../../assets/icons/rewards/beer.png'
+import axios from 'axios';
 
-const PostElement = ({ post }) => {
-    const getRewardIcon = (reward) => {
-        const normalizedReward = reward.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    
-        if (normalizedReward.includes('frite') || normalizedReward.includes('frites')) {
-          return fries_reward_icon;
+import { getRewardIcon, getPrestigeIcon } from '../../utils/imageMapper';
+import { formatDate } from '../../utils/dateFormatter';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../../hooks/commonHooks/UserContext';
+
+import logo from '../../assets/logos/astus.png';
+import smiley_face from '../../assets/buttons/likes/thumbs-up.png';
+
+const PostElement = ({ post, onDelete }) => {
+  const { user } = useUser();
+  const [challenge, setChallenge] = useState(null);
+  const [event, setEvent] = useState(null);
+  const [team, setTeam] = useState(null);
+  const [postUser, setPostUser] = useState(null);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchChallengeAndEvent = async () => {
+      try {
+        const challengeResponse = await axios.get(`http://localhost:5001/challenges/${post.challengeId}`);
+        const fetchedChallenge = challengeResponse.data;
+        setChallenge(fetchedChallenge);
+
+        const eventResponse = await axios.get(`http://localhost:5001/events/${fetchedChallenge.eventId}`);
+        setEvent(eventResponse.data);
+      } catch (error) {
+        console.error('Error fetching challenge or event', error);
+      }
+    };
+
+    const fetchTeam = async () => {
+      if (post.teamId) {
+        try {
+          const teamResponse = await axios.get(`http://localhost:5001/teams/${post.teamId}`);
+          setTeam(teamResponse.data);
+        } catch (error) {
+          console.error('Error fetching team', error);
         }
-        if (normalizedReward.includes('biere') || normalizedReward.includes('bieres')) {
-          return beer_reward_icon;
-        }
-        return default_reward_icon;
-      };
+      }
+    };
+
+    const fetchUser = async () => {
+      try {
+        const userResponse = await axios.get(`http://localhost:5001/users/${post.user}`);
+        setPostUser(userResponse.data);
+      } catch (error) {
+        console.error('Error fetching post user', error);
+      }
+    };
+
+    fetchChallengeAndEvent();
+    fetchTeam();
+    fetchUser();
+  }, [post.challengeId, post.teamId, post.user]);
+
+  const handleSheeshClick = () => {
+    navigate(`/sheesh/${post.challengeId}`);
+  };
+
+  const handleDeleteClick = () => {
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:5001/posts/${post._id}`);
+      if (onDelete) {
+        onDelete(post._id);
+      }
+      setShowConfirmDelete(false);
+    } catch (error) {
+      console.error('Error deleting post', error);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmDelete(false);
+  };
+
+  if (!challenge || !event || !postUser || !user) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="post">
       <div className="post-header">
         <img src={logo} alt="Logo" className="logo" />
         <div className="post-info">
-          <span className="date">{post.event} - {post.date}</span>
-          <span className="user">{post.user}</span>
+          <span className="date">{event.title} - {formatDate(post.date)}</span>
+          <span className="user">{postUser.name}</span>
+          {team && <span className="team">Team: {team.name}</span>}
         </div>
         <div className="status">
           <span className="status-text">En cours</span>
         </div>
       </div>
       <div className="post-image">
-        <img src={post.image} alt={post.title} />
+        <img src={`http://localhost:5001/file/${post.picture}`} alt={challenge.title} />
       </div>
       <div className="post-body">
         <div className="reward">
-          <img src={getRewardIcon(post.reward)} alt="Reward Icon" className="reward-icon" />
-          <span className="reward-text">{post.reward}</span>
+          <img src={getRewardIcon(challenge.reward)} alt="Reward Icon" className="reward-icon" />
+          <span className="reward-text">{challenge.reward}</span>
         </div>
-        <img src={gold_ingot} alt="Points Icon" className="points-icon" />
+        <img src={getPrestigeIcon(challenge.prestige)} alt="Prestige Icon" className="points-icon" />
         <div className="post-title">
-          <span>{post.title}</span>
+          <span>{challenge.title}</span>
         </div>
         <div className="post-likes">
           <button className="likes-button">
@@ -51,9 +118,25 @@ const PostElement = ({ post }) => {
           {post.likes > 0 && <span>{post.likes}</span>}
         </div>
       </div>
-      <div className="post-footer">
-        <button className="sheesh-button">Je Sheesh!</button>
+      <div className="post-description">
+        <p>{post.description}</p>
       </div>
+      <div className="post-footer">
+        <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>
+        {user._id === postUser._id && (
+          <button className="delete-button" onClick={handleDeleteClick}>Delete</button>
+        )}
+      </div>
+
+      {showConfirmDelete && (
+        <div className="confirm-delete-popup">
+          <div className="confirm-delete-content">
+            <p>Are you sure you want to delete this post?</p>
+            <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>
+            <button className="cancel-delete-button" onClick={cancelDelete}>No</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

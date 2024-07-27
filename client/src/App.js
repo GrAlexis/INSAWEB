@@ -17,6 +17,7 @@ function App() {
                 <Route index element={<Home />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/sheesh" element={<Sheesh />} />
+                <Route path="/sheesh/:challengeId" element={<Sheesh />} />
                 <Route path="/login" element={<Login/>} />
               </Routes>
               <Navbar />
