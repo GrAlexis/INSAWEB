@@ -6,7 +6,7 @@ const challengeSchema = new mongoose.Schema({
     title: { type: String, required: true },
     reward: { type: String, required: true },
     limitDate: { type: Date, required: true },
-    event: { type: String, required: true },
+    eventId: { type: String, required: true },
     prestige : { type: String, required: true } 
 });
 

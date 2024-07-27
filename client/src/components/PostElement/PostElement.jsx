@@ -7,58 +7,83 @@ import { formatDate } from '../../utils/dateFormatter';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 
-
-
 import logo from '../../assets/logos/astus.png';
-import smiley_face from '../../assets/buttons/likes/thumbs-up.png'
-
+import smiley_face from '../../assets/buttons/likes/thumbs-up.png';
 
 const PostElement = ({ post, onDelete }) => {
+  const { user } = useUser();
+  const [challenge, setChallenge] = useState(null);
+  const [event, setEvent] = useState(null);
+  const [team, setTeam] = useState(null);
+  const [postUser, setPostUser] = useState(null);
+  const navigate = useNavigate();
 
-    const { user } = useUser();
-    const [challenge, setChallenge] = useState(null);
-    const navigate = useNavigate();
-
-
-    useEffect(() => {
-      const fetchChallenge = async () => {
-        try {
-          const response = await axios.get(`http://localhost:5001/challenges/${post.challengeId}`);
-          setChallenge(response.data);
-        } catch (error) {
-          console.error('Error fetching challenge', error);
-        }
-      };
-  
-      fetchChallenge();
-    }, [post.challengeId]);
-
-    const handleSheeshClick = () => {
-      navigate(`/sheesh/${post.challengeId}`);
-    };
-
-    const handleDeleteClick = async () => {
+  useEffect(() => {
+    const fetchChallengeAndEvent = async () => {
       try {
-        await axios.delete(`http://localhost:5001/posts/${post._id}`);
-        if (onDelete) {
-          onDelete(post._id);
-        }
+        const challengeResponse = await axios.get(`http://localhost:5001/challenges/${post.challengeId}`);
+        const fetchedChallenge = challengeResponse.data;
+        setChallenge(fetchedChallenge);
+
+        const eventResponse = await axios.get(`http://localhost:5001/events/${fetchedChallenge.eventId}`);
+        setEvent(eventResponse.data);
       } catch (error) {
-        console.error('Error deleting post', error);
+        console.error('Error fetching challenge or event', error);
       }
     };
-  
-    if (!challenge) {
-      return <div>Loading...</div>;
+
+    const fetchTeam = async () => {
+      if (post.teamId) {
+        try {
+          const teamResponse = await axios.get(`http://localhost:5001/teams/${post.teamId}`);
+          setTeam(teamResponse.data);
+        } catch (error) {
+          console.error('Error fetching team', error);
+        }
+      }
+    };
+
+    const fetchUser = async () => {
+      try {
+        const userResponse = await axios.get(`http://localhost:5001/users/${post.user}`);
+        setPostUser(userResponse.data);
+      } catch (error) {
+        console.error('Error fetching post user', error);
+      }
+    };
+
+    fetchChallengeAndEvent();
+    fetchTeam();
+    fetchUser();
+  }, [post.challengeId, post.teamId, post.user]);
+
+  const handleSheeshClick = () => {
+    navigate(`/sheesh/${post.challengeId}`);
+  };
+
+  const handleDeleteClick = async () => {
+    try {
+      await axios.delete(`http://localhost:5001/posts/${post._id}`);
+      if (onDelete) {
+        onDelete(post._id);
+      }
+    } catch (error) {
+      console.error('Error deleting post', error);
     }
+  };
+
+  if (!challenge || !event || !postUser || !user ) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="post">
       <div className="post-header">
         <img src={logo} alt="Logo" className="logo" />
         <div className="post-info">
-          <span className="date">{challenge.event} - {formatDate(post.date)}</span>
-          <span className="user">{post.user}</span>
+          <span className="date">{event.title} - {formatDate(post.date)}</span>
+          <span className="user">{postUser.name}</span>
+          {team && <span className="team">Team: {team.name}</span>}
         </div>
         <div className="status">
           <span className="status-text">En cours</span>
@@ -88,7 +113,7 @@ const PostElement = ({ post, onDelete }) => {
       </div>
       <div className="post-footer">
         <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>
-        {user.name === post.user && (
+        {user._id === postUser._id && (
           <button className="delete-button" onClick={handleDeleteClick}>Delete</button>
         )}
       </div>
