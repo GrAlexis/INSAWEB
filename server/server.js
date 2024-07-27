@@ -14,6 +14,8 @@ const Team = require('./models/team');
 
 
 const productRoutes = require("./routes/products.routes");
+const connexionRoutes = require("./routes/connexion.routes")
+const session = require('express-session')
 
 const app = express();
 
@@ -21,6 +23,13 @@ const app = express();
 app.listen(5001, () => {
     console.log("Backend is running on port 5001...");
 });
+
+// Setting up session management
+app.use(session({
+    secret: 'your_secret_key',
+    resave: false,
+    saveUninitialized: true
+  }))
 
 
 //connection to mongoDB 
@@ -52,6 +61,7 @@ const upload = multer({ storage });
 
 //routes
 app.use("/api/products",productRoutes);
+app.use('/api/connexion/', connexionRoutes)
 
 //upload image route
 app.post('/upload', upload.single('file'), async (req, res) => {
