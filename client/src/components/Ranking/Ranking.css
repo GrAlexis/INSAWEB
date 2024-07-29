@@ -1,0 +1,27 @@
+.ranking-page {
+    padding: 20px;
+  }
+  
+  .infobar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #f1f1f1;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .infobar select {
+    padding: 5px;
+    font-size: 16px;
+  }
+  
+  .ranking-list {
+    margin-top: 60px; /* to avoid overlap with the fixed infobar */
+  }
+  
+  .team-rank {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
