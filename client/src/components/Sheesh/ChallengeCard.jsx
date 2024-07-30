@@ -23,7 +23,7 @@ const ChallengeCard = ({ challenge }) => {
   useEffect(() => {
     const checkUserPost = async () => {
       try {
-        const response = await axios.get(`http://localhost:5001/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
+        const response = await axios.get(`http://localhost:5000/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
         if (response.data.length > 0) {
           setHasPosted(true);
         }
@@ -53,7 +53,7 @@ const ChallengeCard = ({ challenge }) => {
     try {
       // Check if the challenge belongs to a team event and if the user is in a team
       console.log("challenge.eventid", challenge.eventId);
-      const eventResponse = await axios.get(`http://localhost:5001/events/${challenge.eventId}`);
+      const eventResponse = await axios.get(`http://localhost:5000/events/${challenge.eventId}`);
       const event = eventResponse.data;
 
       // Check if user is part of a team and if the team is in the event's teams list
@@ -77,7 +77,7 @@ const ChallengeCard = ({ challenge }) => {
         formData.append('teamId', user.teamId);
       }
 
-      const response = await axios.post('http://localhost:5001/upload', formData, {
+      const response = await axios.post('http://localhost:5000/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
