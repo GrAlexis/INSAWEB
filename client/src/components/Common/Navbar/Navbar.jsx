@@ -36,7 +36,7 @@ const Navbar = () => {
             <img src={sheeshIcon} alt="Sheesh Icon" className="nav-icon" />
             <span>Sheesh</span>
         </Link>
-        <Link to="/events" className="nav-item">
+        <Link to="/ranking" className="nav-item">
             <img src={rankingIcon} alt="Ranking Icon" className="nav-icon" />
             <span>Ranking</span>
         </Link>
