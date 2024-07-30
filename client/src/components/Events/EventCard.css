@@ -1,0 +1,89 @@
+.event-card {
+    border: 1px solid #ddd;
+    padding: 16px;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    background-color: white;
+}
+
+.event-image {
+    width: 150px;
+    height: auto;
+    margin-right: 16px;
+}
+
+.event-details {
+    flex: 1;
+}
+
+.inscription-button{
+    margin-right: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 3px;
+    background-color: #ff9800;
+    color: white;
+    cursor: pointer;
+}
+
+.quest-button{
+    margin-right: 8px;
+    padding: 8px 16px;
+    border: 2px solid;
+    border-radius: 3px;
+    background-color:white ;
+    color: #ff9800;
+    cursor: pointer;
+}
+
+.inscription-button:hover,
+.quest-button:hover,
+.join-team-button:hover {
+  background-color: #0056b3;
+}
+
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+.popup-content {
+background-color: #fff;
+padding: 20px;
+border-radius: 5px;
+text-align: center;
+position: relative;
+}
+
+.close-button {
+position: absolute;
+top: 10px;
+right: 10px;
+background: none;
+border: none;
+font-size: 20px;
+cursor: pointer;
+}
+
+.popup-content button {
+margin: 10px 0;
+padding: 10px 20px;
+background-color: #007bff;
+color: #fff;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+}
+
+.popup-content button:hover {
+background-color: #0056b3;
+}
