@@ -19,9 +19,9 @@ const session = require('express-session')
 
 const app = express();
 
-//listen on port 5001
-app.listen(5001, () => {
-    console.log("Backend is running on port 5001...");
+//listen on port 5000
+app.listen(5000, () => {
+    console.log("Backend is running on port 5000...");
 });
 
 // Setting up session management
@@ -144,6 +144,23 @@ app.get('/events', async (req, res) => {
     }
 });
 
+// Fetch ranking for a specific event
+app.get('/ranking/:eventId', async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const teams = await Team.find({ eventId }).populate('members');
+      
+      const teamRankings = teams.map(team => {
+        const totalPoints = team.members.reduce((acc, member) => acc + (member.eventPoints.get(eventId) || 0), 0);
+        return { id: team.id, name: team.name, points: totalPoints };
+      }).sort((a, b) => b.points - a.points);
+  
+      res.json(teamRankings);
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching ranking' });
+    }
+});
+
 //fetch an event by its name
 app.get('/events/:id', async (req, res) => {
     try {
@@ -227,6 +244,23 @@ app.delete('/posts/:id', async (req, res) => {
     }
 });
 
+// Fetch team members for a specific team
+app.get('/teams/:id/members', async (req, res) => {
+    try {
+      const team = await Team.findOne({ id: req.params.id }).populate('members');
+  
+      const members = team.members.map(member => ({
+        id: member._id,
+        name: member.name,
+        points: member.eventPoints.get(team.eventId) || 0,
+      })).sort((a, b) => b.points - a.points);
+  
+      res.json(members);
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching team members' });
+    }
+});
+
 // Route to fetch a team by ID
 app.get('/teams/:id', async (req, res) => {
     try {
@@ -242,7 +276,7 @@ app.get('/teams/:id', async (req, res) => {
 
 //route to assign a team to an user
 app.post('/assignTeam', async (req, res) => {
-    const { userId, teamId, eventId } = req.body;
+    const { userId, teamId, eventId, previousTeamId } = req.body;
 
     try {
         // Find user
@@ -255,6 +289,15 @@ app.post('/assignTeam', async (req, res) => {
         const team = await Team.findOne({ id: teamId });
         if (!team) {
             return res.status(404).send('Team not found');
+        }
+
+        // Remove user from previous team's members if applicable
+        if (previousTeamId) {
+            const previousTeam = await Team.findOne({ id: previousTeamId });
+            if (previousTeam && previousTeam.members.includes(userId)) {
+                previousTeam.members = previousTeam.members.filter(memberId => memberId.toString() !== userId.toString());
+                await previousTeam.save();
+            }
         }
 
         // Assign user to team
