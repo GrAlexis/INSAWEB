@@ -3,6 +3,7 @@ import './PostElement.css';
 import axios from 'axios';
 
 import { getRewardIcon, getPrestigeIcon } from '../../utils/imageMapper';
+import {parseReward} from '../../utils/rewardParser'
 import { formatDate } from '../../utils/dateFormatter';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
@@ -10,7 +11,7 @@ import { useUser } from '../../hooks/commonHooks/UserContext';
 import logo from '../../assets/logos/astus.png';
 import smiley_face from '../../assets/buttons/likes/thumbs-up.png';
 
-const PostElement = ({ post, onDelete }) => {
+const PostElement = ({ post, onDelete, fetchPosts }) => {
   const { user } = useUser();
   const [challenge, setChallenge] = useState(null);
   const [event, setEvent] = useState(null);
@@ -82,6 +83,24 @@ const PostElement = ({ post, onDelete }) => {
     setShowConfirmDelete(false);
   };
 
+  const handleValidateClick = async () => {
+    try {
+      console.log('parsereward',parseReward(challenge.reward))
+      console.log('eventId',event.id)
+        const response = await axios.post(`http://localhost:5000/admin/validatePost/${post._id}`, {
+            isAdmin: user.isAdmin,
+            rewardPoints : parseReward(challenge.reward),
+            eventId : event.id
+        });
+        if (response.status === 200) {
+          fetchPosts(); // Refresh posts after validation
+        }
+    } catch (error) {
+        console.error('Error validating post', error);
+    }
+};
+
+
   if (!challenge || !event || !postUser || !user) {
     return <div>Loading...</div>;
   }
@@ -125,6 +144,9 @@ const PostElement = ({ post, onDelete }) => {
         <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>
         {user._id === postUser._id && (
           <button className="delete-button" onClick={handleDeleteClick}>Delete</button>
+        )}
+        {user.isAdmin && !post.isValidated && (
+          <button className="validate-button" onClick={handleValidateClick}>Validate Participation</button>
         )}
       </div>
 

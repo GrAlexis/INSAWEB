@@ -6,16 +6,16 @@ import './PostFeed.css';
 const PostFeed = ({ }) => {
   const [posts, setPosts] = useState([]);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/posts');
-        setPosts(response.data);
-      } catch (error) {
-        console.error('Error fetching posts', error);
-      }
-    };
+  const fetchPosts = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/posts');
+      setPosts(response.data);
+    } catch (error) {
+      console.error('Error fetching posts', error);
+    }
+  };
 
+  useEffect(() => {
     fetchPosts();
   }, []);
 
@@ -26,7 +26,7 @@ const PostFeed = ({ }) => {
   return (
     <div className="postfeed">
       {posts.map((post) => (
-        <PostElement key={post._id} post={post} onDelete={handleDelete} />
+        <PostElement key={post._id} post={post} onDelete={handleDelete} fetchPosts={fetchPosts} />
       ))}
     </div>
   );

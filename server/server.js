@@ -12,7 +12,6 @@ const Event = require('./models/event');
 const User = require('./models/user');
 const Team = require('./models/team');
 
-
 const productRoutes = require("./routes/products.routes");
 const connexionRoutes = require("./routes/connexion.routes")
 const session = require('express-session')
@@ -82,7 +81,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             likes: 0,
             picture: fileName,
             description: req.body.description,
-            teamId: req.body.teamId
+            teamId: req.body.teamId,
+            isValidated: false
         });
 
         try {
@@ -314,6 +314,42 @@ app.post('/assignTeam', async (req, res) => {
         await team.save();
 
         res.status(200).send('User assigned to team successfully');
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+// Middleware to check if the user is an admin
+const checkAdmin = (req, res, next) => {
+    const isAdmin = req.body.isAdmin;
+    if (isAdmin) {
+        next();
+    } else {
+        res.status(403).send('Access denied.');
+    }
+};
+
+// Route to validate a pending post
+app.post('/admin/validatePost/:id', checkAdmin, async (req, res) => {
+    try {
+        const { rewardPoints, eventId } = req.body;
+        const post = await Post.findById(req.params.id);
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+        post.isValidated = true;
+        await post.save();
+        // Parse the reward and update user's balance
+        const user = await User.findById(post.user);
+        if (user) {
+            console.log("usereventpoints",user.eventPoints)
+            if (!user.eventPoints.has(eventId)) {
+                user.eventPoints.set(eventId, 0); // Initialize points if not present
+            }
+            user.eventPoints.set(eventId, user.eventPoints.get(eventId) + rewardPoints);
+            await user.save();
+        }
+        res.status(200).send('Post validated successfully');
     } catch (error) {
         res.status(500).send(error.message);
     }
