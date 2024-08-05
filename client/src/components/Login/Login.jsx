@@ -2,7 +2,7 @@ import React from 'react';
 
 const Login = () => {
   const handleLogin = () => {
-    window.location.href = 'http://localhost:5001/api/connexion/';
+    window.location.href = 'http://localhost:5000/api/connexion/';
   };
 
   return (

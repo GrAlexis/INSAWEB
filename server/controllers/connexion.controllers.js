@@ -3,7 +3,7 @@ const xml2js = require('xml2js')
 
 const localhost = "3d-linux-02.insa-lyon.fr"
 const CAS_SERVER_URL = 'https://login.insa-lyon.fr/cas';
-const SERVICE_URL = `http://${localhost}:5001/api/connexion/validate`;
+const SERVICE_URL = `http://${localhost}:5000/api/connexion/validate`;
 const FRONTEND_HOME_URL = `http://${localhost}:3000/home`;
 
 const login = async(req, res)=>{

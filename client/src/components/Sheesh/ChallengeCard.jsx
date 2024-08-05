@@ -28,18 +28,18 @@ const ChallengeCard = ({ challenge }) => {
   useEffect(() => {
     const checkUserPost = async () => {
       try {
-        const response = await axios.get(`http://localhost:5001/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
+        const response = await axios.get(`http://localhost:5000/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
         if (response.data.length > 0) {
           setPost(response.data[0]);
         }
 
         if (challenge.isCollective && user.teamId) {
-          const teamPostsResponse = await axios.get(`http://localhost:5001/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+          const teamPostsResponse = await axios.get(`http://localhost:5000/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
           if (teamPostsResponse.data.length > 0) {
             const teamPost = teamPostsResponse.data[0];
             if (teamPost.user !== user._id) {
               setCollectivePost(teamPost);
-              const userResponse = await axios.get(`http://localhost:5001/users/${teamPost.user}`);
+              const userResponse = await axios.get(`http://localhost:5000/users/${teamPost.user}`);
               setTeammateName(userResponse.data.name);
             } else {
               setPost(teamPost); // If the user posted the collective challenge
@@ -70,7 +70,7 @@ const ChallengeCard = ({ challenge }) => {
     e.preventDefault();
 
     try {
-      const eventResponse = await axios.get(`http://localhost:5001/events/${challenge.eventId}`);
+      const eventResponse = await axios.get(`http://localhost:5000/events/${challenge.eventId}`);
       const event = eventResponse.data;
 
       if (event.teams.length > 0 && (!user.teamId || !event.teams.includes(user.teamId))) {
@@ -80,10 +80,10 @@ const ChallengeCard = ({ challenge }) => {
       }
 
       if (challenge.isCollective) {
-        const teamPostsResponse = await axios.get(`http://localhost:5001/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+        const teamPostsResponse = await axios.get(`http://localhost:5000/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
         if (teamPostsResponse.data.length > 0 && teamPostsResponse.data[0].user !== user._id) {
           setCollectivePost(teamPostsResponse.data[0]);
-          const userResponse = await axios.get(`http://localhost:5001/users/${teamPostsResponse.data[0].user}`);
+          const userResponse = await axios.get(`http://localhost:5000/users/${teamPostsResponse.data[0].user}`);
           setTeammateName(userResponse.data.name);
           setTimeout(() => setCollectivePost(null), 3000);
           return;
@@ -99,7 +99,7 @@ const ChallengeCard = ({ challenge }) => {
         formData.append('teamId', user.teamId);
       }
 
-      const response = await axios.post('http://localhost:5001/upload', formData, {
+      const response = await axios.post('http://localhost:5000/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 

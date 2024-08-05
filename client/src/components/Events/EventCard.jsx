@@ -12,7 +12,7 @@ const EventCard = ({ event }) => {
    useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await axios.get(`http://localhost:5001/events/${event.id}/teams`);
+        const response = await axios.get(`http://localhost:5000/events/${event.id}/teams`);
         setTeams(response.data);
       } catch (error) {
         console.error('Error fetching teams', error);
@@ -25,7 +25,7 @@ const EventCard = ({ event }) => {
   const handleJoinTeam = async (teamId) => {
     try {
       const previousTeamId = user.teamId;
-      const response = await axios.post('http://localhost:5001/assignTeam', {
+      const response = await axios.post('http://localhost:5000/assignTeam', {
         userId: user._id,
         teamId: teamId,
         eventId: event.id,
