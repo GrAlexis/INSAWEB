@@ -135,6 +135,10 @@
     }
 }
 
+.status-icon {
+    width : 20px;
+    height : 20px;
+}
 
 .sheesh-button {
     background-color: rgba(255, 247, 223);

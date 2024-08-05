@@ -3,6 +3,9 @@ import './ChallengeCard.css';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
+import validatedIcon from '../../assets/icons/sheesh/validated.webp';
+import waitingIcon from '../../assets/icons/sheesh/waiting.png';
+import collectiveIcon from '../../assets/icons/sheesh/together.png'
 
 const ChallengeCard = ({ challenge }) => {
   const { user } = useUser();
@@ -12,7 +15,9 @@ const ChallengeCard = ({ challenge }) => {
   const [description, setDescription] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [showTeamWarning, setShowTeamWarning] = useState(false);
-  const [hasPosted, setHasPosted] = useState(false);
+  const [post, setPost] = useState(null);
+  const [collectivePost, setCollectivePost] = useState(null);
+  const [teammateName, setTeammateName] = useState('');
 
   useEffect(() => {
     if (challenge.id === challengeId) {
@@ -23,17 +28,31 @@ const ChallengeCard = ({ challenge }) => {
   useEffect(() => {
     const checkUserPost = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
+        const response = await axios.get(`http://localhost:5001/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
         if (response.data.length > 0) {
-          setHasPosted(true);
+          setPost(response.data[0]);
+        }
+
+        if (challenge.isCollective && user.teamId) {
+          const teamPostsResponse = await axios.get(`http://localhost:5001/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+          if (teamPostsResponse.data.length > 0) {
+            const teamPost = teamPostsResponse.data[0];
+            if (teamPost.user !== user._id) {
+              setCollectivePost(teamPost);
+              const userResponse = await axios.get(`http://localhost:5001/users/${teamPost.user}`);
+              setTeammateName(userResponse.data.name);
+            } else {
+              setPost(teamPost); // If the user posted the collective challenge
+            }
+          }
         }
       } catch (error) {
-        console.error('Error checking user post', error);
+        console.error('Error checking user or team post', error);
       }
     };
 
     checkUserPost();
-  }, [user._id, challenge.id]);
+  }, [user._id, challenge.id, user.teamId, challenge.isCollective]);
 
   const handleButtonClick = () => {
     setIsUploading(true);
@@ -51,54 +70,52 @@ const ChallengeCard = ({ challenge }) => {
     e.preventDefault();
 
     try {
-      // Check if the challenge belongs to a team event and if the user is in a team
-      console.log("challenge.eventid", challenge.eventId);
-      const eventResponse = await axios.get(`http://localhost:5000/events/${challenge.eventId}`);
+      const eventResponse = await axios.get(`http://localhost:5001/events/${challenge.eventId}`);
       const event = eventResponse.data;
 
-      // Check if user is part of a team and if the team is in the event's teams list
-      if (event.teams.length > 0) {
-        if (!user.teamId || !event.teams.includes(user.teamId)) {
-          setShowTeamWarning(true);
-          setTimeout(() => setShowTeamWarning(false), 3000); // Hide after 3 seconds
+      if (event.teams.length > 0 && (!user.teamId || !event.teams.includes(user.teamId))) {
+        setShowTeamWarning(true);
+        setTimeout(() => setShowTeamWarning(false), 3000);
+        return;
+      }
+
+      if (challenge.isCollective) {
+        const teamPostsResponse = await axios.get(`http://localhost:5001/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+        if (teamPostsResponse.data.length > 0 && teamPostsResponse.data[0].user !== user._id) {
+          setCollectivePost(teamPostsResponse.data[0]);
+          const userResponse = await axios.get(`http://localhost:5001/users/${teamPostsResponse.data[0].user}`);
+          setTeammateName(userResponse.data.name);
+          setTimeout(() => setCollectivePost(null), 3000);
           return;
         }
       }
 
-      // Create form data using user and post info
       const formData = new FormData();
       formData.append('file', file);
       formData.append('challengeId', challenge.id);
       formData.append('user', user._id);
       formData.append('description', description);
-
-      // Include teamId if the user is in a team
       if (user.teamId) {
         formData.append('teamId', user.teamId);
       }
 
-      const response = await axios.post('http://localhost:5000/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const response = await axios.post('http://localhost:5001/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      console.log('File uploaded successfully', response.data);
+
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 2000);
 
-      // Reset the description and file fields
       setDescription('');
       setFile(null);
       setIsUploading(false);
-      setHasPosted(true);
+      setPost(response.data);
     } catch (error) {
       console.error('Error uploading file', error);
     }
   };
-    // Check if the user is not logged in
-    if (!user) {
-      return <div>Please log in to participate in challenges.</div>;
-    }
+
+  if (!user) return <div>Please log in to participate in challenges.</div>;
 
   return (
     <div className="challenge-card">
@@ -107,26 +124,41 @@ const ChallengeCard = ({ challenge }) => {
         <p>{challenge.title}</p>
         <p>{challenge.limitDate}</p>
         <p>{challenge.reward}</p>
+        {challenge.isCollective && <img src={collectiveIcon} alt="Collective Challenge" className="collective-icon" />} {/* Add the collective icon here */}
         {!isUploading ? (
-          <button className="participation-sheesh-button" onClick={handleButtonClick} disabled={hasPosted}>
+          <button className="participation-sheesh-button" onClick={handleButtonClick} disabled={post || collectivePost}>
             Je sheesh !
           </button>
         ) : (
           <form onSubmit={handleFormSubmit} className="upload-form">
-            <input type="file" onChange={handleFileChange} disabled={hasPosted} />
+            <input type="file" onChange={handleFileChange} disabled={post || collectivePost} />
             <textarea
               placeholder="Quelque chose à ajouter ?"
               value={description}
               onChange={handleDescriptionChange}
-              disabled={hasPosted}
+              disabled={post || collectivePost}
             />
-            <button type="submit" disabled={hasPosted}>Poster</button>
+            <button type="submit" disabled={post || collectivePost}>Poster</button>
           </form>
         )}
         {showSuccess && <div className="success-notification">Successfully posted</div>}
         {showTeamWarning && <div className="warning-notification">You must join a valid team to post</div>}
-        {hasPosted && <div className="warning-notification">You have already posted for this challenge</div>}
+        {post && <div className="warning-notification">You have already posted for this challenge</div>}
       </div>
+      {(post || collectivePost) && (
+        <div className="status-icon">
+          <img
+            src={(post ? post.isValidated : collectivePost.isValidated) ? validatedIcon : waitingIcon}
+            alt={(post ? post.isValidated : collectivePost.isValidated) ? "Validated Icon" : "Waiting Icon"}
+            className="status-icon-img"
+          />
+        </div>
+      )}
+      {collectivePost && (
+        <div className="team-post-notification">
+          {`A member of your team (${teammateName}) has already posted for this collective challenge`}
+        </div>
+      )}
     </div>
   );
 };

@@ -18,9 +18,9 @@ const session = require('express-session')
 
 const app = express();
 
-//listen on port 5000
-app.listen(5000, () => {
-    console.log("Backend is running on port 5000...");
+//listen on port 5001
+app.listen(5001, () => {
+    console.log("Backend is running on port 5001...");
 });
 
 // Setting up session management
@@ -68,6 +68,15 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         return res.status(400).send('No file uploaded.');
     }
 
+    // Check if a member of the same team has already posted for the collective challenge
+    const challenge = await Challenge.findOne({ id: req.body.challengeId });
+    if (challenge.isCollective && req.body.teamId) {
+        const existingPost = await Post.findOne({ teamId: req.body.teamId, challengeId: req.body.challengeId });
+        if (existingPost) {
+            return res.status(400).send('A member of your team has already posted for this collective challenge.');
+        }
+    }
+    
     const fileName = crypto.randomBytes(20).toString('hex') + path.extname(req.file.originalname);
     const writeStream = gridfsBucket.openUploadStream(fileName);
 
@@ -116,6 +125,18 @@ app.get('/posts/byUserAndChallenge', async (req, res) => {
       res.status(500).send(error.message);
     }
   });
+
+// Route to get posts by teamId and challengeId
+app.get('/posts/byTeamAndChallenge', async (req, res) => {
+    const { teamId, challengeId } = req.query;
+
+    try {
+        const posts = await Post.find({ teamId: teamId, challengeId: challengeId });
+        res.status(200).json(posts);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
 
 //get specfic image
 
@@ -329,7 +350,7 @@ const checkAdmin = (req, res, next) => {
     }
 };
 
-// Route to validate a pending post
+// Route to validate or unvalidate a pending post
 app.post('/admin/validatePost/:id', checkAdmin, async (req, res) => {
     try {
         const { rewardPoints, eventId } = req.body;
@@ -337,24 +358,48 @@ app.post('/admin/validatePost/:id', checkAdmin, async (req, res) => {
         if (!post) {
             return res.status(404).send('Post not found');
         }
-        post.isValidated = true;
+
+        // Toggle the validation state
+        post.isValidated = !post.isValidated;
         await post.save();
-        // Parse the reward and update user's balance
-        const user = await User.findById(post.user);
-        if (user) {
-            console.log("usereventpoints",user.eventPoints)
-            if (!user.eventPoints.has(eventId)) {
-                user.eventPoints.set(eventId, 0); // Initialize points if not present
+        
+        // Find the challenge to check if it is a collective challenge
+        const challenge = await Challenge.findOne({ id: post.challengeId });
+        
+        // If it's a collective challenge
+        if (challenge.isCollective && post.teamId) {
+            const team = await Team.findOne({ id: post.teamId }).populate('members');
+            const memberCount = team.members.length;
+            const pointsPerMember = rewardPoints / memberCount;
+
+            for (const member of team.members) {
+                if (!member.eventPoints.has(eventId)) {
+                    member.eventPoints.set(eventId, 0);
+                }
+                // Add or subtract points based on the validation state
+                const currentPoints = member.eventPoints.get(eventId);
+                member.eventPoints.set(eventId, post.isValidated ? currentPoints + pointsPerMember : currentPoints - pointsPerMember);
+                await member.save();
             }
-            user.eventPoints.set(eventId, user.eventPoints.get(eventId) + rewardPoints);
-            await user.save();
+        } else {
+            // For non-collective challenges
+            const user = await User.findById(post.user);
+            if (user) {
+                if (!user.eventPoints.has(eventId)) {
+                    user.eventPoints.set(eventId, 0);
+                }
+                // Add or subtract points based on the validation state
+                const currentPoints = user.eventPoints.get(eventId);
+                user.eventPoints.set(eventId, post.isValidated ? currentPoints + rewardPoints : currentPoints - rewardPoints);
+                await user.save();
+            }
         }
-        res.status(200).send('Post validated successfully');
+
+        res.status(200).send('Post validation status updated successfully');
     } catch (error) {
         res.status(500).send(error.message);
     }
 });
-
 
 
 app.get("/", (req,res) =>{

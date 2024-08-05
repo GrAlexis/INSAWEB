@@ -8,6 +8,7 @@ const challengeSchema = new mongoose.Schema({
     limitDate: { type: Date, required: true },
     eventId: { type: String, required: true },
     prestige : { type: String, required: true },
+    isCollective: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('Challenge', challengeSchema);

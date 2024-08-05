@@ -13,6 +13,11 @@
     height: auto;
     margin-right: 8px;
 }
+
+.collective-icon {
+    width: 20px;
+    height: 20px;
+}
   
 .challenge-details {
     flex: 1;
@@ -33,6 +38,11 @@
   
 .upload-form input[type="file"] {
     margin-bottom: 8px;
+}
+
+.status-icon-img {
+    width: 20px;
+    height: 20px;
 }
 
 .success-notification,

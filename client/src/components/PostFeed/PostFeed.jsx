@@ -3,12 +3,12 @@ import axios from 'axios';
 import PostElement from '../PostElement/PostElement';
 import './PostFeed.css';
 
-const PostFeed = ({ }) => {
+const PostFeed = () => {
   const [posts, setPosts] = useState([]);
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/posts');
+      const response = await axios.get('http://localhost:5001/posts');
       setPosts(response.data);
     } catch (error) {
       console.error('Error fetching posts', error);
