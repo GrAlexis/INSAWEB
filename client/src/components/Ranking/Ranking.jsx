@@ -11,7 +11,7 @@ const Ranking = () => {
 
   useEffect(() => {
     // Fetch events when the component mounts
-    axios.get('http://localhost:5001/events')
+    axios.get('http://localhost:5000/events')
       .then(response => setEvents(response.data))
       .catch(error => console.error('Error fetching events:', error));
   }, []);
@@ -19,7 +19,7 @@ const Ranking = () => {
   useEffect(() => {
     if (selectedEvent) {
       // Fetch ranking for the selected event
-      axios.get(`http://localhost:5001/ranking/${selectedEvent.id}`)
+      axios.get(`http://localhost:5000/ranking/${selectedEvent.id}`)
         .then(response => setRanking(response.data))
         .catch(error => console.error('Error fetching ranking:', error));
     }
@@ -31,7 +31,7 @@ const Ranking = () => {
       setTeamMembers([]);
     } else {
       setSelectedTeam(teamId);
-      axios.get(`http://localhost:5001/teams/${teamId}/members`)
+      axios.get(`http://localhost:5000/teams/${teamId}/members`)
         .then(response => setTeamMembers(response.data))
         .catch(error => console.error('Error fetching team members:', error));
     }

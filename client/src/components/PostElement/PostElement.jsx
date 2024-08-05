@@ -3,6 +3,9 @@ import './PostElement.css';
 import axios from 'axios';
 
 import { getRewardIcon, getPrestigeIcon } from '../../utils/imageMapper';
+import validatedIcon from '../../assets/icons/sheesh/validated.webp'
+import waitingIcon from '../../assets/icons/sheesh/waiting.png'
+import {parseReward} from '../../utils/rewardParser'
 import { formatDate } from '../../utils/dateFormatter';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
@@ -10,7 +13,7 @@ import { useUser } from '../../hooks/commonHooks/UserContext';
 import logo from '../../assets/logos/astus.png';
 import smiley_face from '../../assets/buttons/likes/thumbs-up.png';
 
-const PostElement = ({ post, onDelete }) => {
+const PostElement = ({ post, onDelete, fetchPosts }) => {
   const { user } = useUser();
   const [challenge, setChallenge] = useState(null);
   const [event, setEvent] = useState(null);
@@ -82,6 +85,24 @@ const PostElement = ({ post, onDelete }) => {
     setShowConfirmDelete(false);
   };
 
+  const handleValidateClick = async () => {
+    try {
+      console.log('parsereward',parseReward(challenge.reward))
+      console.log('eventId',event.id)
+        const response = await axios.post(`http://localhost:5000/admin/validatePost/${post._id}`, {
+            isAdmin: user.isAdmin,
+            rewardPoints : parseReward(challenge.reward),
+            eventId : event.id
+        });
+        if (response.status === 200) {
+          fetchPosts(); // Refresh posts after validation
+        }
+    } catch (error) {
+        console.error('Error validating post', error);
+    }
+};
+
+
   if (!challenge || !event || !postUser || !user) {
     return <div>Loading...</div>;
   }
@@ -96,7 +117,11 @@ const PostElement = ({ post, onDelete }) => {
           {team && <span className="team">Team: {team.name}</span>}
         </div>
         <div className="status">
-          <span className="status-text">En cours</span>
+          <img 
+            src={post.isValidated ? validatedIcon : waitingIcon} 
+            alt={post.isValidated ? "Validated Icon" : "Waiting Icon"} 
+            className="status-icon" 
+          />
         </div>
       </div>
       <div className="post-image">
@@ -123,8 +148,13 @@ const PostElement = ({ post, onDelete }) => {
       </div>
       <div className="post-footer">
         <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>
-        {user._id === postUser._id && (
+        {(user._id === postUser._id || (user.isAdmin && !post.isValidated) )&& (
           <button className="delete-button" onClick={handleDeleteClick}>Delete</button>
+        )}
+        {user.isAdmin && (
+          <button className="validate-button" onClick={handleValidateClick}>
+            {post.isValidated ? 'Unvalidate Participation' : 'Validate Participation'}
+          </button>
         )}
       </div>
 

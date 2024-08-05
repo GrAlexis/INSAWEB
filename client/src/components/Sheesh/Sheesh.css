@@ -2,6 +2,10 @@
     padding: 16px;
 }
 
+.event-section {
+    margin-bottom: 60px;
+}
+
 header {
     display: flex;
     justify-content: space-between;
