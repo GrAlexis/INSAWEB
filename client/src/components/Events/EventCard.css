@@ -27,12 +27,17 @@
     cursor: pointer;
 }
 
-.quest-button{
+.chevron-btn{
     margin-right: 8px;
     padding: 8px 16px;
-    border: 2px solid;
-    border-radius: 3px;
-    background-color:white ;
-    color: #ff9800;
+    border: none;
+    
+    background-color:white;
     cursor: pointer;
+}
+
+.chevron{
+    width: 10px;
+    height: 10px;
+    transform: rotate(270deg);
 }

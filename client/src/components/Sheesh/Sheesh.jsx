@@ -9,6 +9,7 @@ import Cup from '../../assets/icons/sheesh/cup.png';
 import Pied from '../../assets/icons/sheesh/pied.jpg';
 import Canoe from '../../assets/icons/sheesh/canoe.jpg';
 import SousEau from '../../assets/icons/sheesh/sousEau.jpg';
+import Animation from '../Animation';
 
 
 
@@ -46,6 +47,7 @@ const events = [
 
 const Sheesh = () => {
   return (
+    <Animation>
     <div className="home-page">
       <header>
         <button className="back-button">vers Place Publique</button>
@@ -70,6 +72,7 @@ const Sheesh = () => {
         </div>
       ))}
     </div>
+    </Animation>
   );
 };
 

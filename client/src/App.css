@@ -1,8 +1,32 @@
+:root{
+ 
+  font-family: fantasy;
+  background-color: #E8EACC  ;
+  color: #6a8a87;
+  
+}
+
 .app-container {
-    background-image: url('./assets/backgrounds/background_v1.png'); /* Path to your background image */
-    background-size: cover;
+    /*background-image: url('./assets/backgrounds/background_v1.png'); /*Path to your background image */
+    /*background-image: url('./assets/backgrounds/backGround_v2.jpeg');*/
+
+    /* Si on utilise une image : */
+   /* background-size: cover;
     background-position: center;
     height: 100vh;
     display: flex;
-    flex-direction: column;
+    flex-direction: column;*/
+
+    /* Code couleur Back ground :
+      Vert clair : #E8EACC 
+      Beige clair : #F4EBD6
+      gris clair : #EDF2F4
+      clair : #E8EACC
+      foncé : #051C24
+
+    */
+   /* background-color: #EDF2F4;*/
+   /* background-color: #051C24;*/
+/* #6a8a87*/
+
   }

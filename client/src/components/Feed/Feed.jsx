@@ -1,11 +1,13 @@
+import './Feed.css';
 import PostFeed from '../PostFeed/PostFeed'
 import InfoBar from '../InfoBar/InfoBar';
-import './Home.css';
+import Animation from '../Animation';
 import Post1 from '../../assets/pictures/post/kayak1.jpeg'
 import Post2 from '../../assets/pictures/post/kayak2.jpeg'
+import Post3 from '../../assets/pictures/post/kayak1.jpeg'
 import { useState, useEffect } from 'react';
 
-const Home = () => {
+const Feed = () => {
     const [posts, setPosts] = useState([]);
 
     useEffect(() => {
@@ -37,6 +39,18 @@ const Home = () => {
             idDefi:'20',
             reward: '1 biere'
             },
+            {
+                id: 3,
+                image: Post3,
+                title: 'Attraper un phoque',
+                points: 100,
+                likes: 19,
+                user: 'Marie Friot',
+                date: '26/05',
+                event: 'WEK',
+                idDefi:'20',
+                reward: '1 biere'
+                },
         ];
         setPosts(postsData);
         };
@@ -47,15 +61,17 @@ const Home = () => {
 
 
     return (
-        <div>
+        <Animation>
+            <>
              <div className="infobar-container">
                 <InfoBar />
             </div>
             <div className="postfeed-container">
                 <PostFeed posts={posts} />
             </div>
-        </div>
+            </>
+        </Animation>
     );
 }
 
-export default Home;
+export default Feed;
