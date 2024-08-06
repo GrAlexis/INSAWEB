@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
 import profilIcon from '../../../assets/buttons/navbar/profil/profil_v1.png'; 
 import feedIcon from '../../../assets/buttons/navbar/feed/feed_v1.png'; 
@@ -35,7 +34,8 @@ const Navbar = () => {
         <span>Ranking</span>
       </Link>
     </nav>
-  );
+    );
+    }
 }
 
 export default Navbar;

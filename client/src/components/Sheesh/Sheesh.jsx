@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 import './Sheesh.css';
 import EventCard from '../Events/EventCard';
 import ChallengeCard from './ChallengeCard';
+import Animation from '../Animation'
 import { getImageByKey } from '../../utils/imageMapper';
 
 

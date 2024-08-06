@@ -1,11 +1,6 @@
 import './Feed.css';
 import PostFeed from '../PostFeed/PostFeed'
 import InfoBar from '../InfoBar/InfoBar';
-<<<<<<< HEAD:client/src/components/Home/Home.jsx
-import './Home.css';
-
-const Home = () => {
-=======
 import Animation from '../Animation';
 import Post1 from '../../assets/pictures/post/kayak1.jpeg'
 import Post2 from '../../assets/pictures/post/kayak2.jpeg'
@@ -64,7 +59,6 @@ const Feed = () => {
     }, []);
 
 
->>>>>>> esthetique:client/src/components/Feed/Feed.jsx
 
     return (
         <Animation>
@@ -73,7 +67,7 @@ const Feed = () => {
                 <InfoBar />
             </div>
             <div className="postfeed-container">
-                <PostFeed/>
+                <PostFeed posts={posts} />
             </div>
             </>
         </Animation>
