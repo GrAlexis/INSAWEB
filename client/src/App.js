@@ -1,6 +1,8 @@
 import React from 'react'
-import Home from "./components/Home/Home"
+import Home from "./components/Feed/Feed"
 import Sheesh from "./components/Sheesh/Sheesh"
+import Profil from "./components/Profil/Profil"
+
 import Login from './components/Login/Login'
 import Ranking from './components/Ranking/Ranking'
 import { BrowserRouter, Routes, Route} from "react-router-dom"
@@ -21,6 +23,7 @@ function App() {
                 <Route path="/ranking" element={<Ranking />} />
                 <Route path="/sheesh/:challengeId" element={<Sheesh />} />
                 <Route path="/login" element={<Login/>} />
+                <Route path="/profil" element={<Profil/>} />
               </Routes>
               <Navbar />
           </BrowserRouter>

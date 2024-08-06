@@ -1,0 +1,40 @@
+/* DropdownMenu.css */
+.dropdown-menu {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .dropdown-button {
+    background-color: #ff9800;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .dropdown-content {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    top: 100%;
+    left: 0;
+    width: 160px;
+    z-index: 1;
+  }
+  
+  .dropdown-content a {
+    padding: 12px;
+    text-decoration: none;
+    color: black;
+    display: block;
+  }
+  
+  .dropdown-content a:hover {
+    background-color: #f1f1f1;
+  }
+  

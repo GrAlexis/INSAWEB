@@ -90,6 +90,7 @@ const Sheesh = () => {
   };
 
   return (
+    <Animation>
     <div className="home-page">
       <header>
         {/* <button className="back-button">vers Place Publique</button> */}
@@ -119,6 +120,7 @@ const Sheesh = () => {
         </div>
       ))}
     </div>
+    </Animation>
   );
 };
 
