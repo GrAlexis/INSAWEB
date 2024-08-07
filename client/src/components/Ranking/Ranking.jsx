@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Ranking.css'
+import Animation from '../Animation'
 
 const Ranking = () => {
   const [events, setEvents] = useState([]);
@@ -39,6 +40,7 @@ const Ranking = () => {
 
 
   return (
+    <Animation>
     <div className="ranking-page">
       <div className="infobar">
         <select onChange={(e) => {
@@ -54,16 +56,22 @@ const Ranking = () => {
       </div>
       <div className="ranking-list">
         {ranking.map((team, index) => (
-          <div key={team.id}>
+          <div key={team.id} className="team">
             <div className="team-rank" onClick={() => handleTeamClick(team.id)}>
-              <span>{index + 1}. {team.name} - {team.points} points</span>
+              <span className="team-rank-name">{index + 1}. {team.name}</span>
+              <span className="team-rank-points">{team.points} points</span>
             </div>
             {selectedTeam === team.id && (
               <div className="team-members">
                 {teamMembers.map(member => (
-                  <div key={member.id} className="member">
+                  <>
+                  <div key={member.id} className="member-name">
                     {member.name} - {member.points} points
                   </div>
+                  <div key={member.id} className="member-points">
+                  {member.points} points
+                </div>
+                </>
                 ))}
               </div>
             )}
@@ -71,6 +79,7 @@ const Ranking = () => {
         ))}
       </div>
     </div>
+    </Animation>
   );
 };
 

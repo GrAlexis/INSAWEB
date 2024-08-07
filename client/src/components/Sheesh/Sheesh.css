@@ -13,15 +13,6 @@ header {
     margin-bottom: 16px;
 }
 
-.back-button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    background-color: #ff9800;
-    color: white;
-    cursor: pointer;
-}
-
 .sort-options {
     display: flex;
     align-items: center;

@@ -68,3 +68,7 @@
     object-fit: contain;
   }
   
+  .user-info{
+    display: flex;
+    
+  }
