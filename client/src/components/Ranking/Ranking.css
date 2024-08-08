@@ -1,0 +1,46 @@
+  .infobar {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    background-color: #d9dbbd;
+  }
+  
+  .infobar select {
+    font-family: 'montserrat', sans-serif;
+    padding: 5px;
+    font-size: 16px;
+    width: 50%;
+    background-color:#d9dbbd;
+    border: none;
+    border-bottom: 1px solid #6a8a8781;
+    justify-content: center;
+    
+  }
+  
+  .ranking-list {
+    margin-top: 13px; /* to avoid overlap with the fixed infobar */
+  }
+
+  .team{
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .team-rank {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 13px;
+    font-weight: bold;
+    font-size: medium;
+  }
+
+  .team-members{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-left: 20px;
+    padding-right: 13px;
+    padding-bottom: 7px;
+  }
+  

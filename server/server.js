@@ -12,7 +12,6 @@ const Event = require('./models/event');
 const User = require('./models/user');
 const Team = require('./models/team');
 
-
 const productRoutes = require("./routes/products.routes");
 const connexionRoutes = require("./routes/connexion.routes")
 const session = require('express-session')
@@ -69,6 +68,15 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         return res.status(400).send('No file uploaded.');
     }
 
+    // Check if a member of the same team has already posted for the collective challenge
+    const challenge = await Challenge.findOne({ id: req.body.challengeId });
+    if (challenge.isCollective && req.body.teamId) {
+        const existingPost = await Post.findOne({ teamId: req.body.teamId, challengeId: req.body.challengeId });
+        if (existingPost) {
+            return res.status(400).send('A member of your team has already posted for this collective challenge.');
+        }
+    }
+    
     const fileName = crypto.randomBytes(20).toString('hex') + path.extname(req.file.originalname);
     const writeStream = gridfsBucket.openUploadStream(fileName);
 
@@ -82,7 +90,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             likes: 0,
             picture: fileName,
             description: req.body.description,
-            teamId: req.body.teamId
+            teamId: req.body.teamId,
+            isValidated: false
         });
 
         try {
@@ -117,6 +126,18 @@ app.get('/posts/byUserAndChallenge', async (req, res) => {
     }
   });
 
+// Route to get posts by teamId and challengeId
+app.get('/posts/byTeamAndChallenge', async (req, res) => {
+    const { teamId, challengeId } = req.query;
+
+    try {
+        const posts = await Post.find({ teamId: teamId, challengeId: challengeId });
+        res.status(200).json(posts);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
 //get specfic image
 
 app.get('/file/:filename', async (req, res) => {
@@ -141,6 +162,23 @@ app.get('/events', async (req, res) => {
         res.status(200).json(events);
     } catch (error) {
         res.status(500).send(error.message);
+    }
+});
+
+// Fetch ranking for a specific event
+app.get('/ranking/:eventId', async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const teams = await Team.find({ eventId }).populate('members');
+      
+      const teamRankings = teams.map(team => {
+        const totalPoints = team.members.reduce((acc, member) => acc + (member.eventPoints.get(eventId) || 0), 0);
+        return { id: team.id, name: team.name, points: totalPoints };
+      }).sort((a, b) => b.points - a.points);
+  
+      res.json(teamRankings);
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching ranking' });
     }
 });
 
@@ -227,6 +265,23 @@ app.delete('/posts/:id', async (req, res) => {
     }
 });
 
+// Fetch team members for a specific team
+app.get('/teams/:id/members', async (req, res) => {
+    try {
+      const team = await Team.findOne({ id: req.params.id }).populate('members');
+  
+      const members = team.members.map(member => ({
+        id: member._id,
+        name: member.name,
+        points: member.eventPoints.get(team.eventId) || 0,
+      })).sort((a, b) => b.points - a.points);
+  
+      res.json(members);
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching team members' });
+    }
+});
+
 // Route to fetch a team by ID
 app.get('/teams/:id', async (req, res) => {
     try {
@@ -242,7 +297,7 @@ app.get('/teams/:id', async (req, res) => {
 
 //route to assign a team to an user
 app.post('/assignTeam', async (req, res) => {
-    const { userId, teamId, eventId } = req.body;
+    const { userId, teamId, eventId, previousTeamId } = req.body;
 
     try {
         // Find user
@@ -255,6 +310,15 @@ app.post('/assignTeam', async (req, res) => {
         const team = await Team.findOne({ id: teamId });
         if (!team) {
             return res.status(404).send('Team not found');
+        }
+
+        // Remove user from previous team's members if applicable
+        if (previousTeamId) {
+            const previousTeam = await Team.findOne({ id: previousTeamId });
+            if (previousTeam && previousTeam.members.includes(userId)) {
+                previousTeam.members = previousTeam.members.filter(memberId => memberId.toString() !== userId.toString());
+                await previousTeam.save();
+            }
         }
 
         // Assign user to team
@@ -276,6 +340,66 @@ app.post('/assignTeam', async (req, res) => {
     }
 });
 
+// Middleware to check if the user is an admin
+const checkAdmin = (req, res, next) => {
+    const isAdmin = req.body.isAdmin;
+    if (isAdmin) {
+        next();
+    } else {
+        res.status(403).send('Access denied.');
+    }
+};
+
+// Route to validate or unvalidate a pending post
+app.post('/admin/validatePost/:id', checkAdmin, async (req, res) => {
+    try {
+        const { rewardPoints, eventId } = req.body;
+        const post = await Post.findById(req.params.id);
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+
+        // Toggle the validation state
+        post.isValidated = !post.isValidated;
+        await post.save();
+        
+        // Find the challenge to check if it is a collective challenge
+        const challenge = await Challenge.findOne({ id: post.challengeId });
+        
+        // If it's a collective challenge
+        if (challenge.isCollective && post.teamId) {
+            const team = await Team.findOne({ id: post.teamId }).populate('members');
+            const memberCount = team.members.length;
+            const pointsPerMember = rewardPoints / memberCount;
+
+            for (const member of team.members) {
+                if (!member.eventPoints.has(eventId)) {
+                    member.eventPoints.set(eventId, 0);
+                }
+                // Add or subtract points based on the validation state
+                const currentPoints = member.eventPoints.get(eventId);
+                member.eventPoints.set(eventId, post.isValidated ? currentPoints + pointsPerMember : currentPoints - pointsPerMember);
+                await member.save();
+            }
+        } else {
+            // For non-collective challenges
+            const user = await User.findById(post.user);
+            if (user) {
+                if (!user.eventPoints.has(eventId)) {
+                    user.eventPoints.set(eventId, 0);
+                }
+                // Add or subtract points based on the validation state
+                const currentPoints = user.eventPoints.get(eventId);
+                user.eventPoints.set(eventId, post.isValidated ? currentPoints + rewardPoints : currentPoints - rewardPoints);
+                await user.save();
+            }
+        }
+
+        res.status(200).send('Post validation status updated successfully');
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
 
 
 app.get("/", (req,res) =>{

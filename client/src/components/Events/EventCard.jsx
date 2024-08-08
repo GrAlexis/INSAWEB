@@ -24,10 +24,12 @@ const EventCard = ({ event }) => {
 
   const handleJoinTeam = async (teamId) => {
     try {
+      const previousTeamId = user.teamId;
       const response = await axios.post('http://localhost:5000/assignTeam', {
         userId: user._id,
         teamId: teamId,
         eventId: event.id,
+        previousTeamId: previousTeamId,
       });
       setUser({ ...user, teamId: teamId });
       setIsPopupOpen(false);

@@ -7,7 +7,8 @@ const postSchema = new mongoose.Schema({
     likes: { type: Number, default: 0 },
     picture: { type: String, required: true },
     description : { type: String, required: true },
-    teamId : {type: String, required: false}
+    teamId : {type: String, required: false},
+    isValidated: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('Post', postSchema);
