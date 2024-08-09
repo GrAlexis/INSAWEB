@@ -66,7 +66,7 @@ const Ranking = () => {
                 {teamMembers.map(member => (
                   <>
                   <div key={member.id} className="member-name">
-                    {member.name} - {member.points} points
+                    {member.name}
                   </div>
                   <div key={member.id} className="member-points">
                   {member.points} points

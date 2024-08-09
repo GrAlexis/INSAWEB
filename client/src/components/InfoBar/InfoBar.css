@@ -50,11 +50,30 @@
 
   }
   
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding-top: 10px;
+    line-height: 1.5;
+  }
+  
+
   .user-info-container h2 {
     font-size: 15px;
   }
 
-
+  .user-info h2 {
+    font-size: 15px;
+  }
+  
+  .user-item {
+    padding-right: 10px;
+  }
+  
 
   .balance-rank {
     display: flex;
@@ -66,9 +85,4 @@
     max-width: 25px; 
     max-height: 25px; 
     object-fit: contain;
-  }
-  
-  .user-info{
-    display: flex;
-    
   }

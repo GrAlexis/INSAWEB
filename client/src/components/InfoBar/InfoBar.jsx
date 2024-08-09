@@ -50,8 +50,8 @@ const InfoBar = () => {
         <img src={logo} alt="Association Logo" className="astuce-logo" />
       </div>
       <div className="section user-info">
-        <h2 onClick={handleUserClick} style={{ cursor: 'pointer' }}>{user.name} ({user.teamName})</h2>
-        <h2>{user.classYear}</h2>
+        <h2 onClick={handleUserClick}>{user.name} ({user.teamName})</h2>
+        <h2>{user.balance} Sh</h2>
         <div className="balance-rank">
           {user.rank === 1 ? (
             <img src={rankOneIcon} alt="Rank 1 Icon" className="rank-icon" />
@@ -62,7 +62,7 @@ const InfoBar = () => {
           ) : (
             <p>Rank: {user.rank}</p>
           )}
-          <p>{user.balance} Sh</p>
+          
         </div>
       </div>
       {isPanelOpen && (
