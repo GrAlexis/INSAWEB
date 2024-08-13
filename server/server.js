@@ -209,12 +209,88 @@ app.get('/events/:id/teams', async (req, res) => {
 
 app.get('/challenges', async (req, res) => {
     try {
-        const challenges = await Challenge.find();
+        const { eventId } = req.query;
+        let challenges;
+        if (eventId) {
+            challenges = await Challenge.find({ eventId });
+        } else {
+            challenges = await Challenge.find();
+        }
         res.status(200).json(challenges);
     } catch (error) {
         res.status(500).send(error.message);
     }
 });
+
+app.post('/challenges', async (req, res) => {
+    try {
+        const { id, eventId, title, reward, isCollective, icon } = req.body;
+
+        // Ensure the challenge ID is unique
+        const existingChallenge = await Challenge.findOne({ id });
+        if (existingChallenge) {
+            return res.status(400).send('Challenge ID already taken.');
+        }
+
+        const newChallenge = new Challenge({
+            id,
+            eventId,
+            title,
+            reward,
+            isCollective,
+            icon
+        });
+
+        await newChallenge.save();
+
+        // Update the event's challenges list
+        const event = await Event.findOne({ id: eventId });
+        if (event) {
+            event.challenges = event.challenges ? event.challenges + `,${id}` : `${id}`;
+            await event.save();
+        }
+
+        res.status(201).json(newChallenge);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+//route for deleting a challenge
+app.delete('/challenges/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const challenge = await Challenge.findOneAndDelete({ id });
+
+        if (!challenge) {
+            return res.status(404).send('Challenge not found');
+        }
+
+        // Optionally update the event's challenge list if needed
+        const event = await Event.findOne({ id: challenge.eventId });
+        if (event) {
+            event.challenges = event.challenges.split(',').filter(challengeId => challengeId !== id.toString()).join(',');
+            await event.save();
+        }
+
+        res.status(200).send('Challenge deleted');
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+
+app.get('/challenges/ids', async (req, res) => {
+    try {
+        const challenges = await Challenge.find({}, { id: 1, _id: 0 });
+        res.status(200).json(challenges);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+
+
 
 //route to fetch a challenge by id
 app.get('/challenges/:id', async (req, res) => {
@@ -264,6 +340,42 @@ app.delete('/posts/:id', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+
+// Route to create a new team
+app.post('/teams', async (req, res) => {
+    const { id, name, eventId } = req.body;
+  
+    try {
+      const newTeam = new Team({
+        id,
+        name,
+        eventId,
+        members: []
+      });
+  
+      const savedTeam = await newTeam.save();
+  
+      // Update the event with the new team ID
+      await Event.updateOne(
+        { id: eventId },
+        { $push: { teams: id } }
+      );
+  
+      res.status(201).json(savedTeam);
+    } catch (error) {
+      res.status(500).json({ message: 'Error creating team', error });
+    }
+  });
+  
+// Route to get all team IDs
+app.get('/teams/ids', async (req, res) => {
+    try {
+      const teams = await Team.find({}, { id: 1, _id: 0 });
+      res.status(200).json(teams);
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching team IDs', error });
+    }
+  });
 
 // Fetch team members for a specific team
 app.get('/teams/:id/members', async (req, res) => {

@@ -1,0 +1,166 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import './ManageChallenges.css';
+import { imageMapper } from '../../utils/imageMapper';
+
+
+const ManageChallenges = ({ eventId }) => {
+  const [challenges, setChallenges] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [newChallenge, setNewChallenge] = useState({
+    title: '',
+    reward: '',
+    isCollective: false,
+    icon: ''
+  });
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [challengeToDelete, setChallengeToDelete] = useState(null);
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setNewChallenge(prevState => ({
+      ...prevState,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      // Fetch all challenges to generate a unique ID
+      const allChallengeIdsResponse = await axios.get('http://localhost:5000/challenges/ids');
+      const allChallengeIds = allChallengeIdsResponse.data.map(challenge => parseInt(challenge.id, 10));
+
+      // Generate a unique ID for the new challenge
+      const newId = Math.max(...allChallengeIds) + 1;
+      console.log("newid "+newId)
+
+      const response = await axios.post('http://localhost:5000/challenges', {
+        id: newId,
+        eventId,
+        ...newChallenge,
+      });
+
+      setChallenges([...challenges, response.data]);
+      setShowForm(false);
+      setNewChallenge({
+        title: '',
+        reward: '',
+        isCollective: false,
+        icon: ''
+      });
+    } catch (error) {
+      console.error('Error creating new challenge:', error);
+    }
+  };
+
+  const handleDeleteClick = (challenge) => {
+    setChallengeToDelete(challenge);
+    setShowConfirmationModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await axios.delete(`http://localhost:5000/challenges/${challengeToDelete.id}`);
+      setChallenges(challenges.filter(challenge => challenge.id !== challengeToDelete.id));
+      setShowConfirmationModal(false);
+      setChallengeToDelete(null);
+    } catch (error) {
+      console.error('Error deleting challenge:', error);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowConfirmationModal(false);
+    setChallengeToDelete(null);
+  };
+
+  useEffect(() => {
+    axios.get(`http://localhost:5000/challenges?eventId=${eventId}`)
+      .then(response => setChallenges(response.data))
+      .catch(error => console.error('Error fetching challenges:', error));
+  }, [eventId]);
+
+  return (
+    <div className="manage-challenges">
+      <button className="add-challenge-button" onClick={() => setShowForm(!showForm)}>
+        +
+      </button>
+
+      {showForm && (
+        <div className="challenge-form-card">
+          <form onSubmit={handleFormSubmit}>
+            <label>
+              Title:
+              <input
+                type="text"
+                name="title"
+                value={newChallenge.title}
+                onChange={handleInputChange}
+                required
+              />
+            </label>
+            <label>
+              Reward:
+              <input
+                type="text"
+                name="reward"
+                value={newChallenge.reward}
+                onChange={handleInputChange}
+                required
+              />
+            </label>
+            <label>
+              Icon:
+              <select
+                name="icon"
+                value={newChallenge.icon}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Select an Icon</option>
+                {Object.keys(imageMapper).map(key => (
+                  <option key={key} value={key}>{key}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Collective:
+              <input
+                type="checkbox"
+                name="isCollective"
+                checked={newChallenge.isCollective}
+                onChange={handleInputChange}
+              />
+            </label>
+            <button type="submit">Add Challenge</button>
+          </form>
+        </div>
+      )}
+
+      <div className="challenge-list">
+        {challenges.map(challenge => (
+          <div key={challenge.id} className="challenge-item">
+            <button className="delete-challenge-button" onClick={() => handleDeleteClick(challenge)}>x</button>
+            <h3>{challenge.title}</h3>
+            <p>Reward: {challenge.reward}</p>
+          </div>
+        ))}
+      </div>
+
+      {showConfirmationModal && (
+        <div className="confirmation-modal">
+          <div className="confirmation-modal-content">
+            <p>Are you sure you want to delete this challenge?</p>
+            <button onClick={handleDeleteConfirm}>Yes</button>
+            <button onClick={handleDeleteCancel}>No</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+export default ManageChallenges;

@@ -132,7 +132,6 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           <img src={getRewardIcon(challenge.reward)} alt="Reward Icon" className="reward-icon" />
           <span className="reward-text">{challenge.reward}</span>
         </div>
-        <img src={getPrestigeIcon(challenge.prestige)} alt="Prestige Icon" className="points-icon" />
         <div className="post-title">
           <span>{challenge.title}</span>
         </div>

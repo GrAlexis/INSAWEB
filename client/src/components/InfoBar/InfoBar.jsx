@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import './InfoBar.css';
 
@@ -8,7 +8,7 @@ import rankTwoIcon from '../../assets/icons/ranks/2_v1.png';
 import rankThreeIcon from '../../assets/icons/ranks/3_v1.svg';
 
 const InfoBar = () => {
-  const { user, setUser, users } = useUser();
+  const { user, setUser, users, updateUserTeamName } = useUser();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   const handleUserClick = () => {
@@ -19,6 +19,12 @@ const InfoBar = () => {
     setUser(selectedUser);
     setIsPanelOpen(false);
   };
+
+  useEffect(() => {
+    if (user && user.teamId) {
+      updateUserTeamName(user);
+    }
+  }, [user?.teamId, updateUserTeamName]);
 
   if (!user) {
     return <div>Loading...</div>;

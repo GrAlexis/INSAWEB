@@ -3,6 +3,8 @@ import Home from "./components/Home/Home"
 import Sheesh from "./components/Sheesh/Sheesh"
 import Login from './components/Login/Login'
 import Ranking from './components/Ranking/Ranking'
+import AdminPage from './components/AdminPage/AdminPage';
+import ProtectedRoute from './utils/ProtectedRoute'
 import { BrowserRouter, Routes, Route} from "react-router-dom"
 import Navbar from './components/Common/Navbar/Navbar'
 import { UserProvider } from './hooks/commonHooks/UserContext';
@@ -21,7 +23,15 @@ function App() {
                 <Route path="/ranking" element={<Ranking />} />
                 <Route path="/sheesh/:challengeId" element={<Sheesh />} />
                 <Route path="/login" element={<Login/>} />
-              </Routes>
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute>
+                      <AdminPage />
+                    </ProtectedRoute>
+                  }
+                />              
+            </Routes>
               <Navbar />
           </BrowserRouter>
       </div>

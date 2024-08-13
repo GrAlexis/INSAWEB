@@ -1,0 +1,40 @@
+.manage-teams {
+  padding: 20px;
+}
+
+.create-team-form {
+  margin-bottom: 20px;
+}
+
+.create-team-form input {
+  padding: 10px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.create-team-form button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #28a745;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.team-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.team-item {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 20px;
+  margin: 10px;
+  width: 200px;
+}
+
+.team-item h3 {
+  margin-top: 0;
+}

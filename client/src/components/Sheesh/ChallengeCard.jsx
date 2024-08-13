@@ -5,12 +5,11 @@ import { useParams } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import validatedIcon from '../../assets/icons/sheesh/validated.webp';
 import waitingIcon from '../../assets/icons/sheesh/waiting.png';
-import collectiveIcon from '../../assets/icons/sheesh/together.png'
+import collectiveIcon from '../../assets/icons/sheesh/together.png';
 
-const ChallengeCard = ({ challenge }) => {
+const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
   const { user } = useUser();
   const { challengeId } = useParams();
-  const [isUploading, setIsUploading] = useState(false);
   const [file, setFile] = useState(null);
   const [description, setDescription] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
@@ -21,9 +20,9 @@ const ChallengeCard = ({ challenge }) => {
 
   useEffect(() => {
     if (challenge.id === challengeId) {
-      setIsUploading(true);
+      setOpenChallengeId(challenge.id);
     }
-  }, [challenge.id, challengeId]);
+  }, [challenge.id, challengeId, setOpenChallengeId]);
 
   useEffect(() => {
     const checkUserPost = async () => {
@@ -55,7 +54,13 @@ const ChallengeCard = ({ challenge }) => {
   }, [user._id, challenge.id, user.teamId, challenge.isCollective]);
 
   const handleButtonClick = () => {
-    setIsUploading(true);
+    setOpenChallengeId(challenge.id);
+  };
+
+  const handleCloseForm = () => {
+    setOpenChallengeId(null);
+    setFile(null);
+    setDescription('');
   };
 
   const handleFileChange = (e) => {
@@ -108,7 +113,7 @@ const ChallengeCard = ({ challenge }) => {
 
       setDescription('');
       setFile(null);
-      setIsUploading(false);
+      setOpenChallengeId(null);
       setPost(response.data);
     } catch (error) {
       console.error('Error uploading file', error);
@@ -124,22 +129,25 @@ const ChallengeCard = ({ challenge }) => {
         <p>{challenge.title}</p>
         <p>{challenge.limitDate}</p>
         <p>{challenge.reward}</p>
-        {challenge.isCollective && <img src={collectiveIcon} alt="Collective Challenge" className="collective-icon" />} {/* Add the collective icon here */}
-        {!isUploading ? (
+        {challenge.isCollective && <img src={collectiveIcon} alt="Collective Challenge" className="collective-icon" />}
+        {!isOpen ? (
           <button className="participation-sheesh-button" onClick={handleButtonClick} disabled={post || collectivePost}>
             Je sheesh !
           </button>
         ) : (
-          <form onSubmit={handleFormSubmit} className="upload-form">
-            <input type="file" onChange={handleFileChange} disabled={post || collectivePost} />
-            <textarea
-              placeholder="Quelque chose à ajouter ?"
-              value={description}
-              onChange={handleDescriptionChange}
-              disabled={post || collectivePost}
-            />
-            <button type="submit" disabled={post || collectivePost}>Poster</button>
-          </form>
+          <div>
+            <form onSubmit={handleFormSubmit} className="upload-form">
+              <input type="file" onChange={handleFileChange} disabled={post || collectivePost} />
+              <textarea
+                placeholder="Quelque chose à ajouter ?"
+                value={description}
+                onChange={handleDescriptionChange}
+                disabled={post || collectivePost}
+              />
+              <button type="submit" disabled={post || collectivePost}>Poster</button>
+            </form>
+            <button className="close-form-button" onClick={handleCloseForm}>Fermer</button>
+          </div>
         )}
         {showSuccess && <div className="success-notification">Successfully posted</div>}
         {showTeamWarning && <div className="warning-notification">You must join a valid team to post</div>}

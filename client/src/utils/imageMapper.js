@@ -14,7 +14,7 @@ import gold_prestige_icon from '../assets/icons/prestige/gold.png';
 import silver_prestige_icon from '../assets/icons/prestige/silver.webp';
 import bronze_prestige_icon from '../assets/icons/prestige/bronze.png';
 
-const imageMapper = {
+export const imageMapper = {
   'WEI_TC': WEI_TC,
   'WEC_TC': WEC_TC,
   'pigeon': Pigeon,

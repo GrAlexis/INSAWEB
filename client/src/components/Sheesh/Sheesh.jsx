@@ -8,43 +8,11 @@ import EventCard from '../Events/EventCard';
 import ChallengeCard from './ChallengeCard';
 import { getImageByKey } from '../../utils/imageMapper';
 
-
-// TODO : remove static events and challenges declaration, as it is now fetched from mongoDB
-// const events = [
-//   {
-//     id: 1,
-//     image: WEI_TC,
-//     title: 'WEI TC',
-//     date: '21-23 septembre',
-//     participants: 25,
-//     sheeshes: 10,
-//     Organisateur: 'Astus',
-//     challenges: [
-//       { id: 1, icon: Pigeon, title: 'Attraper un pigeon', reward: '1 pinte + 200 sh', limitDate: '24/09/2024' },
-//       { id: 2, icon: Cup, title: 'Ramasser 20 eco-cups', reward: '1 frite + 100 sh', limitDate: '25/09/2024'  },
-//       { id: 3, icon: Pied, title: 'Trouver 3 pieds nus', reward: '1 frite + 50 sh', limitDate: '26/09/2024' },
-//     ],
-//   },
-//   {
-//     id: 2,
-//     image: WEC_TC,
-//     title: 'Week-End canoë TC',
-//     date: '26-27 mai',
-//     participants: 25,
-//     sheeshes: 10,
-//     organisateur: 'Astus',
-//     challenges: [
-//       { id: 4, icon: Canoe, title: 'Gagner la course de canoë', reward: '1 pinte + 200 sh', limitDate: '27/09/2024' },
-//       { id: 5, icon: Canoe, title: 'Retourner un canoë', reward: '1 frite + 100 sh', limitDate: '28/09/2024' },
-//       { id: 6, icon: SousEau, title: 'Prendre une photo sous l\'eau', reward: '1 frite + 50 sh', limitDate: '29/09/2024' },
-//     ],
-//   },
-// ];
-
 const Sheesh = () => {
   const { challengeId } = useParams();
   const [events, setEvents] = useState([]);
   const [challenges, setChallenges] = useState([]);
+  const [openChallengeId, setOpenChallengeId] = useState(null);
   const challengeRefs = useRef({});
 
   useEffect(() => {
@@ -113,7 +81,11 @@ const Sheesh = () => {
                 key={challenge.id}
                 ref={el => (challengeRefs.current[challenge.id] = el)}
               >
-                <ChallengeCard challenge={challenge} />
+                <ChallengeCard 
+                  challenge={challenge}
+                  isOpen={openChallengeId === challenge.id}
+                  setOpenChallengeId={setOpenChallengeId}
+                />
             </div>
           ))}
         </div>

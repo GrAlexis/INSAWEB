@@ -7,6 +7,7 @@ const EventCard = ({ event }) => {
   const { user, setUser } = useUser();
   const [teams, setTeams] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [currentTeamName, setCurrentTeamName] = useState('');
 
    // Fetch the teams for the specific event
    useEffect(() => {
@@ -14,6 +15,12 @@ const EventCard = ({ event }) => {
       try {
         const response = await axios.get(`http://localhost:5000/events/${event.id}/teams`);
         setTeams(response.data);
+        if (user.teamId) {
+          const currentTeam = response.data.find(team => team.id === user.teamId);
+          setCurrentTeamName(currentTeam ? currentTeam.name : 'No team');
+        } else {
+          setCurrentTeamName('No team');
+        }
       } catch (error) {
         console.error('Error fetching teams', error);
       }
@@ -23,6 +30,10 @@ const EventCard = ({ event }) => {
   }, [event.id]);
 
   const handleJoinTeam = async (teamId) => {
+    if (user.teamId === teamId) {
+      setIsPopupOpen(false);
+      return;
+    }
     try {
       const previousTeamId = user.teamId;
       const response = await axios.post('http://localhost:5000/assignTeam', {
@@ -32,6 +43,7 @@ const EventCard = ({ event }) => {
         previousTeamId: previousTeamId,
       });
       setUser({ ...user, teamId: teamId });
+      setCurrentTeamName(teams.find(team => team.id === teamId).name);
       setIsPopupOpen(false);
       console.log('Joined team successfully', response.data);
     } catch (error) {
@@ -74,6 +86,7 @@ const EventCard = ({ event }) => {
               &times;
             </button>
             <h2>Join a team</h2>
+            <p>You are currently in: {currentTeamName}</p>
             {teams.map((team) => (
               <button key={team.id} onClick={() => handleJoinTeam(team.id)}>
                 Join {team.name}
