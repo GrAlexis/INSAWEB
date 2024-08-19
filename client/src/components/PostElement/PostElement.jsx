@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './PostElement.css';
 import axios from 'axios';
 
-import { getRewardIcon, getPrestigeIcon } from '../../utils/imageMapper';
+import { getRewardIcon } from '../../utils/imageMapper';
 import validatedIcon from '../../assets/icons/sheesh/validated.webp'
 import waitingIcon from '../../assets/icons/sheesh/waiting.png'
 import {parseReward} from '../../utils/rewardParser'
@@ -25,11 +25,11 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   useEffect(() => {
     const fetchChallengeAndEvent = async () => {
       try {
-        const challengeResponse = await axios.get(`http://localhost:5000/challenges/${post.challengeId}`);
+        const challengeResponse = await axios.get(`http://localhost:5001/challenges/${post.challengeId}`);
         const fetchedChallenge = challengeResponse.data;
         setChallenge(fetchedChallenge);
 
-        const eventResponse = await axios.get(`http://localhost:5000/events/${fetchedChallenge.eventId}`);
+        const eventResponse = await axios.get(`http://localhost:5001/events/${fetchedChallenge.eventId}`);
         setEvent(eventResponse.data);
       } catch (error) {
         console.error('Error fetching challenge or event', error);
@@ -39,7 +39,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     const fetchTeam = async () => {
       if (post.teamId) {
         try {
-          const teamResponse = await axios.get(`http://localhost:5000/teams/${post.teamId}`);
+          const teamResponse = await axios.get(`http://localhost:5001/teams/${post.teamId}`);
           setTeam(teamResponse.data);
         } catch (error) {
           console.error('Error fetching team', error);
@@ -49,7 +49,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
     const fetchUser = async () => {
       try {
-        const userResponse = await axios.get(`http://localhost:5000/users/${post.user}`);
+        const userResponse = await axios.get(`http://localhost:5001/users/${post.user}`);
         setPostUser(userResponse.data);
       } catch (error) {
         console.error('Error fetching post user', error);
@@ -71,7 +71,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:5000/posts/${post._id}`);
+      await axios.delete(`http://localhost:5001/posts/${post._id}`);
       if (onDelete) {
         onDelete(post._id);
       }
@@ -89,7 +89,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     try {
       console.log('parsereward',parseReward(challenge.reward))
       console.log('eventId',event.id)
-        const response = await axios.post(`http://localhost:5000/admin/validatePost/${post._id}`, {
+        const response = await axios.post(`http://localhost:5001/admin/validatePost/${post._id}`, {
             isAdmin: user.isAdmin,
             rewardPoints : parseReward(challenge.reward),
             eventId : event.id
@@ -100,7 +100,12 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     } catch (error) {
         console.error('Error validating post', error);
     }
-};
+  };
+
+  // Helper function to check if the file is a video
+  const isVideo = (fileName) => {
+    return /\.(mp4|mov|avi|wmv|flv|mkv)$/i.test(fileName);
+  };
 
 
   if (!challenge || !event || !postUser || !user) {
@@ -124,8 +129,15 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           />
         </div>
       </div>
-      <div className="post-image">
-        <img src={`http://localhost:5000/file/${post.picture}`} alt={challenge.title} />
+      <div className="post-media">
+        {isVideo(post.picture) ? (
+          <video controls className="post-video">
+            <source src={`http://localhost:5001/file/${post.picture}`} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        ) : (
+          <img src={`http://localhost:5001/file/${post.picture}`} alt={challenge.title} className="post-image" />
+        )}
       </div>
       <div className="post-body">
         <div className="reward">

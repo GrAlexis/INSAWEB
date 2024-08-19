@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ManageChallenges.css';
 import { imageMapper } from '../../utils/imageMapper';
-
+import modifyButtonIcon from '../../assets/buttons/modify.png';
 
 const ManageChallenges = ({ eventId }) => {
   const [challenges, setChallenges] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [editChallenge, setEditChallenge] = useState(null);
   const [newChallenge, setNewChallenge] = useState({
     title: '',
     reward: '',
@@ -28,22 +29,32 @@ const ManageChallenges = ({ eventId }) => {
     e.preventDefault();
 
     try {
-      // Fetch all challenges to generate a unique ID
-      const allChallengeIdsResponse = await axios.get('http://localhost:5000/challenges/ids');
-      const allChallengeIds = allChallengeIdsResponse.data.map(challenge => parseInt(challenge.id, 10));
+      if (editChallenge) {
+        // If editing an existing challenge, update it
+        const response = await axios.put(`http://localhost:5001/challenges/${editChallenge.id}`, {
+          ...newChallenge,
+          eventId,
+        });
+        setChallenges(challenges.map(challenge => challenge.id === editChallenge.id ? response.data : challenge));
+      } else {
+        // Fetch all challenges to generate a unique ID
+        const allChallengeIdsResponse = await axios.get('http://localhost:5001/challenges/ids');
+        const allChallengeIds = allChallengeIdsResponse.data.map(challenge => parseInt(challenge.id, 10));
 
-      // Generate a unique ID for the new challenge
-      const newId = Math.max(...allChallengeIds) + 1;
-      console.log("newid "+newId)
+        // Generate a unique ID for the new challenge
+        const newId = Math.max(...allChallengeIds) + 1;
 
-      const response = await axios.post('http://localhost:5000/challenges', {
-        id: newId,
-        eventId,
-        ...newChallenge,
-      });
+        const response = await axios.post('http://localhost:5001/challenges', {
+          id: newId,
+          eventId,
+          ...newChallenge,
+        });
 
-      setChallenges([...challenges, response.data]);
+        setChallenges([...challenges, response.data]);
+      }
+
       setShowForm(false);
+      setEditChallenge(null);
       setNewChallenge({
         title: '',
         reward: '',
@@ -51,7 +62,7 @@ const ManageChallenges = ({ eventId }) => {
         icon: ''
       });
     } catch (error) {
-      console.error('Error creating new challenge:', error);
+      console.error('Error saving challenge:', error);
     }
   };
 
@@ -62,7 +73,7 @@ const ManageChallenges = ({ eventId }) => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:5000/challenges/${challengeToDelete.id}`);
+      await axios.delete(`http://localhost:5001/challenges/${challengeToDelete.id}`);
       setChallenges(challenges.filter(challenge => challenge.id !== challengeToDelete.id));
       setShowConfirmationModal(false);
       setChallengeToDelete(null);
@@ -76,8 +87,19 @@ const ManageChallenges = ({ eventId }) => {
     setChallengeToDelete(null);
   };
 
+  const handleEditClick = (challenge) => {
+    setEditChallenge(challenge);
+    setNewChallenge({
+      title: challenge.title,
+      reward: challenge.reward,
+      isCollective: challenge.isCollective,
+      icon: challenge.icon || ''
+    });
+    setShowForm(true);
+  };
+
   useEffect(() => {
-    axios.get(`http://localhost:5000/challenges?eventId=${eventId}`)
+    axios.get(`http://localhost:5001/challenges?eventId=${eventId}`)
       .then(response => setChallenges(response.data))
       .catch(error => console.error('Error fetching challenges:', error));
   }, [eventId]);
@@ -85,7 +107,7 @@ const ManageChallenges = ({ eventId }) => {
   return (
     <div className="manage-challenges">
       <button className="add-challenge-button" onClick={() => setShowForm(!showForm)}>
-        +
+        {editChallenge ? "Edit Challenge" : "+"}
       </button>
 
       {showForm && (
@@ -134,7 +156,7 @@ const ManageChallenges = ({ eventId }) => {
                 onChange={handleInputChange}
               />
             </label>
-            <button type="submit">Add Challenge</button>
+            <button type="submit">{editChallenge ? "Update Challenge" : "Add Challenge"}</button>
           </form>
         </div>
       )}
@@ -143,6 +165,9 @@ const ManageChallenges = ({ eventId }) => {
         {challenges.map(challenge => (
           <div key={challenge.id} className="challenge-item">
             <button className="delete-challenge-button" onClick={() => handleDeleteClick(challenge)}>x</button>
+            <button className="edit-challenge-button" onClick={() => handleEditClick(challenge)}>
+              <img src={modifyButtonIcon} alt="Modify" />
+            </button>
             <h3>{challenge.title}</h3>
             <p>Reward: {challenge.reward}</p>
           </div>
@@ -150,17 +175,16 @@ const ManageChallenges = ({ eventId }) => {
       </div>
 
       {showConfirmationModal && (
-        <div className="confirmation-modal">
-          <div className="confirmation-modal-content">
+        <div className="confirm-delete-popup">
+          <div className="confirm-delete-content">
             <p>Are you sure you want to delete this challenge?</p>
-            <button onClick={handleDeleteConfirm}>Yes</button>
-            <button onClick={handleDeleteCancel}>No</button>
+            <button className="confirm-delete-button" onClick={handleDeleteConfirm}>Yes</button>
+            <button className="cancel-delete-button" onClick={handleDeleteCancel}>No</button>
           </div>
         </div>
       )}
     </div>
   );
 };
-
 
 export default ManageChallenges;

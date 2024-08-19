@@ -9,14 +9,23 @@ const EventCard = ({ event }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [currentTeamName, setCurrentTeamName] = useState('');
 
-   // Fetch the teams for the specific event
-   useEffect(() => {
+  useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/events/${event.id}/teams`);
-        setTeams(response.data);
+        const response = await axios.get(`http://localhost:5001/events/${event.id}/teams`);
+        const teamsWithMembersCount = await Promise.all(
+          response.data.map(async (team) => {
+            const membersResponse = await axios.get(`http://localhost:5001/teams/${team.id}/members`);
+            return {
+              ...team,
+              membersCount: membersResponse.data.length,
+            };
+          })
+        );
+        setTeams(teamsWithMembersCount);
+
         if (user.teamId) {
-          const currentTeam = response.data.find(team => team.id === user.teamId);
+          const currentTeam = teamsWithMembersCount.find((team) => team.id === user.teamId);
           setCurrentTeamName(currentTeam ? currentTeam.name : 'No team');
         } else {
           setCurrentTeamName('No team');
@@ -27,7 +36,7 @@ const EventCard = ({ event }) => {
     };
 
     fetchTeams();
-  }, [event.id]);
+  }, [event.id, user.teamId]);
 
   const handleJoinTeam = async (teamId) => {
     if (user.teamId === teamId) {
@@ -36,24 +45,26 @@ const EventCard = ({ event }) => {
     }
     try {
       const previousTeamId = user.teamId;
-      const response = await axios.post('http://localhost:5000/assignTeam', {
+      const response = await axios.post('http://localhost:5001/assignTeam', {
         userId: user._id,
         teamId: teamId,
         eventId: event.id,
         previousTeamId: previousTeamId,
       });
       setUser({ ...user, teamId: teamId });
-      setCurrentTeamName(teams.find(team => team.id === teamId).name);
+      setCurrentTeamName(teams.find((team) => team.id === teamId).name);
       setIsPopupOpen(false);
       console.log('Joined team successfully', response.data);
     } catch (error) {
       console.error('Error joining team', error);
     }
   };
+
   if (!user) {
-    return ("loading")
+    return 'Loading...';
   }
-  //this to transform a DD/MM/YYYY string into an date object
+
+  // Transform DD/MM/YYYY string into a Date object
   const parseDate = (dateStr) => {
     const [day, month, year] = dateStr.split('/');
     return new Date(`${year}-${month}-${day}`);
@@ -87,11 +98,25 @@ const EventCard = ({ event }) => {
             </button>
             <h2>Join a team</h2>
             <p>You are currently in: {currentTeamName}</p>
-            {teams.map((team) => (
-              <button key={team.id} onClick={() => handleJoinTeam(team.id)}>
-                Join {team.name}
-              </button>
-            ))}
+            {teams.map((team) => {
+              const isTeamFull = team.maxMembers && team.membersCount >= team.maxMembers;
+              return (
+                <div key={team.id} className="team-option">
+                  <button
+                    onClick={() => handleJoinTeam(team.id)}
+                    disabled={isTeamFull}
+                    className={isTeamFull ? 'team-button-disabled' : 'team-button'}
+                  >
+                    Join {team.name}
+                  </button>
+                  <p>
+                    {team.membersCount} joueur{team.membersCount !== 1 ? 's' : ''}
+                    {team.maxMembers ? ` / ${team.maxMembers}` : ''}
+                  </p>
+                  {isTeamFull && <p className="team-full-warning">Max player number reached</p>}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

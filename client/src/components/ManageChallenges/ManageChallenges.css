@@ -91,4 +91,15 @@ border-radius: 5px;
     border-radius: 5px;
     text-align: center;
   }
+  .edit-challenge-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  
+  .edit-challenge-button img {
+    width: 20px; /* Adjust the size as needed */
+    height: 20px; /* Adjust the size as needed */
+  }
   

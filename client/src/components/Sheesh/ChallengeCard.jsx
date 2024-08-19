@@ -6,6 +6,11 @@ import { useUser } from '../../hooks/commonHooks/UserContext';
 import validatedIcon from '../../assets/icons/sheesh/validated.webp';
 import waitingIcon from '../../assets/icons/sheesh/waiting.png';
 import collectiveIcon from '../../assets/icons/sheesh/together.png';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile } from '@ffmpeg/util';
+
+
+const ffmpeg = new FFmpeg();
 
 const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
   const { user } = useUser();
@@ -17,6 +22,7 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
   const [post, setPost] = useState(null);
   const [collectivePost, setCollectivePost] = useState(null);
   const [teammateName, setTeammateName] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     if (challenge.id === challengeId) {
@@ -27,18 +33,18 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
   useEffect(() => {
     const checkUserPost = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
+        const response = await axios.get(`http://localhost:5001/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
         if (response.data.length > 0) {
           setPost(response.data[0]);
         }
 
         if (challenge.isCollective && user.teamId) {
-          const teamPostsResponse = await axios.get(`http://localhost:5000/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+          const teamPostsResponse = await axios.get(`http://localhost:5001/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
           if (teamPostsResponse.data.length > 0) {
             const teamPost = teamPostsResponse.data[0];
             if (teamPost.user !== user._id) {
               setCollectivePost(teamPost);
-              const userResponse = await axios.get(`http://localhost:5000/users/${teamPost.user}`);
+              const userResponse = await axios.get(`http://localhost:5001/users/${teamPost.user}`);
               setTeammateName(userResponse.data.name);
             } else {
               setPost(teamPost); // If the user posted the collective challenge
@@ -75,9 +81,9 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
     e.preventDefault();
 
     try {
-      const eventResponse = await axios.get(`http://localhost:5000/events/${challenge.eventId}`);
+      const eventResponse = await axios.get(`http://localhost:5001/events/${challenge.eventId}`);
       const event = eventResponse.data;
-
+      
       if (event.teams.length > 0 && (!user.teamId || !event.teams.includes(user.teamId))) {
         setShowTeamWarning(true);
         setTimeout(() => setShowTeamWarning(false), 3000);
@@ -85,15 +91,17 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
       }
 
       if (challenge.isCollective) {
-        const teamPostsResponse = await axios.get(`http://localhost:5000/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+        const teamPostsResponse = await axios.get(`http://localhost:5001/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
         if (teamPostsResponse.data.length > 0 && teamPostsResponse.data[0].user !== user._id) {
           setCollectivePost(teamPostsResponse.data[0]);
-          const userResponse = await axios.get(`http://localhost:5000/users/${teamPostsResponse.data[0].user}`);
+          const userResponse = await axios.get(`http://localhost:5001/users/${teamPostsResponse.data[0].user}`);
           setTeammateName(userResponse.data.name);
           setTimeout(() => setCollectivePost(null), 3000);
           return;
         }
       }
+      console.log("avant appel de compress video")
+      // const compressedFile = file.type.startsWith('video/') ? await compressVideo(file) : file;
 
       const formData = new FormData();
       formData.append('file', file);
@@ -104,7 +112,7 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
         formData.append('teamId', user.teamId);
       }
 
-      const response = await axios.post('http://localhost:5000/upload', formData, {
+      const response = await axios.post('http://localhost:5001/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
@@ -118,6 +126,31 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
     } catch (error) {
       console.error('Error uploading file', error);
     }
+  };
+
+  const compressVideo = async (file) => {
+    setIsProcessing(true);
+    console.log("compress video lancé")
+    await ffmpeg.load({ log: true });
+
+    console.log("ffmpeg is loaded")
+    await ffmpeg.writeFile('video.avi', await fetchFile(file))
+    console.log("writefile passé")
+    ffmpeg.on("log", () => {})
+    ffmpeg.on("progress", () => {})
+    // await ffmpeg.exec('-i', 'video.avi', '-vf', 'scale=640:-1', '-c:v', 'libx264', '-crf', '28');
+    await ffmpeg.exec( '-r','12','-i','video.avi');
+
+    console.log("exec passé")
+// List the files in the virtual file system to debug
+const files = ffmpeg.listDir('/');
+console.log("Files in virtual file system:", files);
+    const data = await ffmpeg.readFile('video.avi');
+    console.log("readfile passé")
+    const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
+    setIsProcessing(false);
+
+    return new File([videoBlob], 'video.avi', { type: 'video/mp4' });
   };
 
   if (!user) return <div>Please log in to participate in challenges.</div>;
@@ -144,7 +177,9 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
                 onChange={handleDescriptionChange}
                 disabled={post || collectivePost}
               />
-              <button type="submit" disabled={post || collectivePost}>Poster</button>
+              <button type="submit" disabled={post || collectivePost || isProcessing}>
+                {isProcessing ? 'Uploading...' : 'Poster'}
+              </button>         
             </form>
             <button className="close-form-button" onClick={handleCloseForm}>Fermer</button>
           </div>

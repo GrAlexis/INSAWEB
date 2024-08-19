@@ -18,9 +18,9 @@ const session = require('express-session')
 
 const app = express();
 
-//listen on port 5000
-app.listen(5000, () => {
-    console.log("Backend is running on port 5000...");
+//listen on port 5001
+app.listen(5001, () => {
+    console.log("Backend is running on port 5001...");
 });
 
 // Setting up session management
@@ -305,6 +305,25 @@ app.get('/challenges/:id', async (req, res) => {
     }
 });
 
+app.put('/challenges/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updatedChallenge = req.body;
+  
+      // Find the challenge by ID and update it with the new data
+      const challenge = await Challenge.findOneAndUpdate({ id }, updatedChallenge, { new: true });
+  
+      if (!challenge) {
+        return res.status(404).send('Challenge not found');
+      }
+  
+      res.status(200).json(challenge);
+    } catch (error) {
+      res.status(500).send('Error updating challenge: ' + error.message);
+    }
+  });
+  
+
 //route to fetch all users
 app.get('/users', async (req, res) => {
     try {
@@ -343,14 +362,15 @@ app.delete('/posts/:id', async (req, res) => {
 
 // Route to create a new team
 app.post('/teams', async (req, res) => {
-    const { id, name, eventId } = req.body;
+    const { id, name, eventId, maxMembers } = req.body;
   
     try {
       const newTeam = new Team({
         id,
         name,
         eventId,
-        members: []
+        members: [],
+        maxMembers: maxMembers
       });
   
       const savedTeam = await newTeam.save();
@@ -365,7 +385,68 @@ app.post('/teams', async (req, res) => {
     } catch (error) {
       res.status(500).json({ message: 'Error creating team', error });
     }
-  });
+});
+
+// Route to update a team
+app.put('/teams/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name, maxMembers } = req.body;
+
+    try {
+        const updatedTeam = await Team.findOneAndUpdate(
+            { id },
+            { name, maxMembers },
+            { new: true }
+        );
+
+        if (!updatedTeam) {
+            return res.status(404).json({ message: 'Team not found' });
+        }
+
+        res.status(200).json(updatedTeam);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating team', error });
+    }
+});
+
+// Route to delete a team
+app.delete('/teams/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Find and delete the team
+        const deletedTeam = await Team.findOneAndDelete({ id });
+
+        if (!deletedTeam) {
+            return res.status(404).json({ message: 'Team not found' });
+        }
+
+        // Update the event to remove the deleted team ID
+        await Event.updateOne(
+            { id: deletedTeam.eventId },
+            { $pull: { teams: id } }
+        );
+
+        // Clear the teamId for all users who were in the deleted team
+        await User.updateMany(
+            { teamId: id },
+            { $unset: { teamId: "" } } // Clears the teamId field
+        );
+
+        // Clear the teamId for all posts associated with the deleted team
+        await Post.updateMany(
+            { teamId: id },
+            { $unset: { teamId: "" } } // Clears the teamId field
+        );
+
+        res.status(200).json({ message: 'Team deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting team', error });
+    }
+});
+
+
+
   
 // Route to get all team IDs
 app.get('/teams/ids', async (req, res) => {
@@ -383,7 +464,8 @@ app.get('/teams/:id/members', async (req, res) => {
       const team = await Team.findOne({ id: req.params.id }).populate('members');
   
       const members = team.members.map(member => ({
-        id: member._id,
+        _id: member._id,
+        teamId: member.teamId,
         name: member.name,
         points: member.eventPoints.get(team.eventId) || 0,
       })).sort((a, b) => b.points - a.points);
@@ -418,19 +500,27 @@ app.post('/assignTeam', async (req, res) => {
             return res.status(404).send('User not found');
         }
 
-        // Find team by teamId
-        const team = await Team.findOne({ id: teamId });
-        if (!team) {
-            return res.status(404).send('Team not found');
-        }
-
         // Remove user from previous team's members if applicable
         if (previousTeamId) {
+            console.log("userId "+userId)
             const previousTeam = await Team.findOne({ id: previousTeamId });
             if (previousTeam && previousTeam.members.includes(userId)) {
                 previousTeam.members = previousTeam.members.filter(memberId => memberId.toString() !== userId.toString());
                 await previousTeam.save();
             }
+        }
+
+        // If the new teamId is empty, simply remove the teamId from the user
+        if (!teamId) {
+            user.teamId = '';
+            await user.save();
+            return res.status(200).send('User removed from team successfully');
+        }
+
+        // Find team by teamId
+        const team = await Team.findOne({ id: teamId });
+        if (!team) {
+            return res.status(404).send('Team not found');
         }
 
         // Assign user to team
@@ -451,6 +541,7 @@ app.post('/assignTeam', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+
 
 // Middleware to check if the user is an admin
 const checkAdmin = (req, res, next) => {
