@@ -31,20 +31,20 @@ const ManageChallenges = ({ eventId }) => {
     try {
       if (editChallenge) {
         // If editing an existing challenge, update it
-        const response = await axios.put(`http://localhost:5001/challenges/${editChallenge.id}`, {
+        const response = await axios.put(`http://localhost:5000/challenges/${editChallenge.id}`, {
           ...newChallenge,
           eventId,
         });
         setChallenges(challenges.map(challenge => challenge.id === editChallenge.id ? response.data : challenge));
       } else {
         // Fetch all challenges to generate a unique ID
-        const allChallengeIdsResponse = await axios.get('http://localhost:5001/challenges/ids');
+        const allChallengeIdsResponse = await axios.get('http://localhost:5000/challenges/ids');
         const allChallengeIds = allChallengeIdsResponse.data.map(challenge => parseInt(challenge.id, 10));
 
         // Generate a unique ID for the new challenge
         const newId = Math.max(...allChallengeIds) + 1;
 
-        const response = await axios.post('http://localhost:5001/challenges', {
+        const response = await axios.post('http://localhost:5000/challenges', {
           id: newId,
           eventId,
           ...newChallenge,
@@ -73,7 +73,7 @@ const ManageChallenges = ({ eventId }) => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:5001/challenges/${challengeToDelete.id}`);
+      await axios.delete(`http://localhost:5000/challenges/${challengeToDelete.id}`);
       setChallenges(challenges.filter(challenge => challenge.id !== challengeToDelete.id));
       setShowConfirmationModal(false);
       setChallengeToDelete(null);
@@ -99,7 +99,7 @@ const ManageChallenges = ({ eventId }) => {
   };
 
   useEffect(() => {
-    axios.get(`http://localhost:5001/challenges?eventId=${eventId}`)
+    axios.get(`http://localhost:5000/challenges?eventId=${eventId}`)
       .then(response => setChallenges(response.data))
       .catch(error => console.error('Error fetching challenges:', error));
   }, [eventId]);

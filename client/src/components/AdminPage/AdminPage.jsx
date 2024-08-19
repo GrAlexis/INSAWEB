@@ -9,7 +9,7 @@ const AdminPage = () => {
 
   useEffect(() => {
     // Fetch events when the component mounts
-    axios.get('http://localhost:5001/events')
+    axios.get('http://localhost:5000/events')
       .then(response => setEvents(response.data))
       .catch(error => console.error('Error fetching events:', error));
   }, []);
