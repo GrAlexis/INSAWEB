@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 import './Sheesh.css';
 import EventCard from '../Events/EventCard';
 import ChallengeCard from './ChallengeCard';
+import Animation from '../Animation'
 import { getImageByKey } from '../../utils/imageMapper';
 
 const Sheesh = () => {
@@ -58,6 +59,7 @@ const Sheesh = () => {
   };
 
   return (
+    <Animation>
     <div className="home-page">
       <header>
         {/* <button className="back-button">vers Place Publique</button> */}
@@ -91,6 +93,7 @@ const Sheesh = () => {
         </div>
       ))}
     </div>
+    </Animation>
   );
 };
 

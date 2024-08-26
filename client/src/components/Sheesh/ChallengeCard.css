@@ -1,3 +1,4 @@
+
 .challenge-card {
     display: flex;
     align-items: center;
@@ -28,9 +29,6 @@
     border-radius: 20px;
 }
 
-.participation-sheesh-button:hover{
-    background-color: #ff9800;
-}
 
 .upload-form {
     margin-top: 8px;

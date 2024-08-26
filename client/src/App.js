@@ -1,6 +1,8 @@
 import React from 'react'
-import Home from "./components/Home/Home"
+import Home from "./components/Feed/Feed"
 import Sheesh from "./components/Sheesh/Sheesh"
+import Profil from "./components/Profil/Profil"
+
 import Login from './components/Login/Login'
 import Ranking from './components/Ranking/Ranking'
 import AdminPage from './components/AdminPage/AdminPage';
@@ -31,7 +33,8 @@ function App() {
                     </ProtectedRoute>
                   }
                 />              
-            </Routes>
+                <Route path="/profil" element={<Profil/>} />
+              </Routes>
               <Navbar />
           </BrowserRouter>
       </div>
