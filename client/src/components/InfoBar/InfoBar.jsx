@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import './InfoBar.css';
 
@@ -19,7 +19,7 @@ import badgeIcon6 from '../../assets/icons/ranks/1_v1.png';
 
 
 const InfoBar = () => {
-  const { user, setUser, users } = useUser();
+  const { user, setUser, users, updateUserTeamName } = useUser();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   const handleUserClick = () => {
@@ -30,6 +30,12 @@ const InfoBar = () => {
     setUser(selectedUser);
     setIsPanelOpen(false);
   };
+
+  useEffect(() => {
+    if (user && user.teamId) {
+      updateUserTeamName(user);
+    }
+  }, [user?.teamId, updateUserTeamName]);
 
   if (!user) {
     return <div>Loading...</div>;

@@ -5,12 +5,16 @@ import { useParams } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import validatedIcon from '../../assets/icons/sheesh/validated.webp';
 import waitingIcon from '../../assets/icons/sheesh/waiting.png';
-import collectiveIcon from '../../assets/icons/sheesh/together.png'
+import collectiveIcon from '../../assets/icons/sheesh/together.png';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile } from '@ffmpeg/util';
 
-const ChallengeCard = ({ challenge }) => {
+
+const ffmpeg = new FFmpeg();
+
+const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
   const { user } = useUser();
   const { challengeId } = useParams();
-  const [isUploading, setIsUploading] = useState(false);
   const [file, setFile] = useState(null);
   const [description, setDescription] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
@@ -18,12 +22,13 @@ const ChallengeCard = ({ challenge }) => {
   const [post, setPost] = useState(null);
   const [collectivePost, setCollectivePost] = useState(null);
   const [teammateName, setTeammateName] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     if (challenge.id === challengeId) {
-      setIsUploading(true);
+      setOpenChallengeId(challenge.id);
     }
-  }, [challenge.id, challengeId]);
+  }, [challenge.id, challengeId, setOpenChallengeId]);
 
   useEffect(() => {
     const checkUserPost = async () => {
@@ -55,7 +60,13 @@ const ChallengeCard = ({ challenge }) => {
   }, [user._id, challenge.id, user.teamId, challenge.isCollective]);
 
   const handleButtonClick = () => {
-    setIsUploading(true);
+    setOpenChallengeId(challenge.id);
+  };
+
+  const handleCloseForm = () => {
+    setOpenChallengeId(null);
+    setFile(null);
+    setDescription('');
   };
 
   const handleFileChange = (e) => {
@@ -72,7 +83,7 @@ const ChallengeCard = ({ challenge }) => {
     try {
       const eventResponse = await axios.get(`http://localhost:5000/events/${challenge.eventId}`);
       const event = eventResponse.data;
-
+      
       if (event.teams.length > 0 && (!user.teamId || !event.teams.includes(user.teamId))) {
         setShowTeamWarning(true);
         setTimeout(() => setShowTeamWarning(false), 3000);
@@ -89,6 +100,8 @@ const ChallengeCard = ({ challenge }) => {
           return;
         }
       }
+      console.log("avant appel de compress video")
+      // const compressedFile = file.type.startsWith('video/') ? await compressVideo(file) : file;
 
       const formData = new FormData();
       formData.append('file', file);
@@ -108,11 +121,36 @@ const ChallengeCard = ({ challenge }) => {
 
       setDescription('');
       setFile(null);
-      setIsUploading(false);
+      setOpenChallengeId(null);
       setPost(response.data);
     } catch (error) {
       console.error('Error uploading file', error);
     }
+  };
+
+  const compressVideo = async (file) => {
+    setIsProcessing(true);
+    console.log("compress video lancé")
+    await ffmpeg.load({ log: true });
+
+    console.log("ffmpeg is loaded")
+    await ffmpeg.writeFile('video.avi', await fetchFile(file))
+    console.log("writefile passé")
+    ffmpeg.on("log", () => {})
+    ffmpeg.on("progress", () => {})
+    // await ffmpeg.exec('-i', 'video.avi', '-vf', 'scale=640:-1', '-c:v', 'libx264', '-crf', '28');
+    await ffmpeg.exec( '-r','12','-i','video.avi');
+
+    console.log("exec passé")
+// List the files in the virtual file system to debug
+const files = ffmpeg.listDir('/');
+console.log("Files in virtual file system:", files);
+    const data = await ffmpeg.readFile('video.avi');
+    console.log("readfile passé")
+    const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
+    setIsProcessing(false);
+
+    return new File([videoBlob], 'video.avi', { type: 'video/mp4' });
   };
 
   if (!user) return <div>Please log in to participate in challenges.</div>;
@@ -124,22 +162,27 @@ const ChallengeCard = ({ challenge }) => {
         <p>{challenge.title}</p>
         <p>{challenge.limitDate}</p>
         <p>{challenge.reward}</p>
-        {challenge.isCollective && <img src={collectiveIcon} alt="Collective Challenge" className="collective-icon" />} {/* Add the collective icon here */}
-        {!isUploading ? (
+        {challenge.isCollective && <img src={collectiveIcon} alt="Collective Challenge" className="collective-icon" />}
+        {!isOpen ? (
           <button className="participation-sheesh-button" onClick={handleButtonClick} disabled={post || collectivePost}>
             Je sheesh !
           </button>
         ) : (
-          <form onSubmit={handleFormSubmit} className="upload-form">
-            <input type="file" onChange={handleFileChange} disabled={post || collectivePost} />
-            <textarea
-              placeholder="Quelque chose à ajouter ?"
-              value={description}
-              onChange={handleDescriptionChange}
-              disabled={post || collectivePost}
-            />
-            <button type="submit" disabled={post || collectivePost}>Poster</button>
-          </form>
+          <div>
+            <form onSubmit={handleFormSubmit} className="upload-form">
+              <input type="file" onChange={handleFileChange} disabled={post || collectivePost} />
+              <textarea
+                placeholder="Quelque chose à ajouter ?"
+                value={description}
+                onChange={handleDescriptionChange}
+                disabled={post || collectivePost}
+              />
+              <button type="submit" disabled={post || collectivePost || isProcessing}>
+                {isProcessing ? 'Uploading...' : 'Poster'}
+              </button>         
+            </form>
+            <button className="close-form-button" onClick={handleCloseForm}>Fermer</button>
+          </div>
         )}
         {showSuccess && <div className="success-notification">Successfully posted</div>}
         {showTeamWarning && <div className="warning-notification">You must join a valid team to post</div>}

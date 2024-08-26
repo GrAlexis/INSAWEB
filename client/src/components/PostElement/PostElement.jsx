@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './PostElement.css';
 import axios from 'axios';
 
-import { getRewardIcon, getPrestigeIcon } from '../../utils/imageMapper';
+import { getRewardIcon } from '../../utils/imageMapper';
 import validatedIcon from '../../assets/icons/sheesh/validated.webp'
 import waitingIcon from '../../assets/icons/sheesh/waiting.png'
 import {parseReward} from '../../utils/rewardParser'
@@ -100,7 +100,12 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     } catch (error) {
         console.error('Error validating post', error);
     }
-};
+  };
+
+  // Helper function to check if the file is a video
+  const isVideo = (fileName) => {
+    return /\.(mp4|mov|avi|wmv|flv|mkv)$/i.test(fileName);
+  };
 
 
   if (!challenge || !event || !postUser || !user) {
@@ -124,15 +129,21 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           />
         </div>
       </div>
-      <div className="post-image">
-        <img src={`http://localhost:5000/file/${post.picture}`} alt={challenge.title} />
+      <div className="post-media">
+        {isVideo(post.picture) ? (
+          <video controls className="post-video">
+            <source src={`http://localhost:5000/file/${post.picture}`} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        ) : (
+          <img src={`http://localhost:5000/file/${post.picture}`} alt={challenge.title} className="post-image" />
+        )}
       </div>
       <div className="post-body">
         <div className="reward">
           <img src={getRewardIcon(challenge.reward)} alt="Reward Icon" className="reward-icon" />
           <span className="reward-text">{challenge.reward}</span>
         </div>
-        <img src={getPrestigeIcon(challenge.prestige)} alt="Prestige Icon" className="points-icon" />
         <div className="post-title">
           <span>{challenge.title}</span>
         </div>

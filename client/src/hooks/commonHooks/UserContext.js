@@ -1,10 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-// Create a context with default value as null
 const UserContext = createContext(null);
 
-// Create a provider component
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState([]);
@@ -24,7 +22,7 @@ export const UserProvider = ({ children }) => {
             user.teamName = 'No Team';
           }
         }
-        
+
         setUsers(usersData);
         // Set the first user as the default user
         if (usersData.length > 0) {
@@ -38,13 +36,31 @@ export const UserProvider = ({ children }) => {
     fetchUsers();
   }, []);
 
-  // Provide the state and the function to update it
+  // Method to update user team name
+  const updateUserTeamName = async (currentUser) => {
+    if (currentUser.teamId) {
+      try {
+        const teamResponse = await axios.get(`http://localhost:5000/teams/${currentUser.teamId}`);
+        const teamName = teamResponse.data.name;
+        if (currentUser.teamName !== teamName) {
+          setUser({ ...currentUser, teamName });
+        }
+      } catch (error) {
+        console.error('Error fetching team name', error);
+      }
+    } else {
+      if (currentUser.teamName !== 'No Team') {
+        setUser({ ...currentUser, teamName: 'No Team' });
+      }
+    }
+  };
+
+
   return (
-    <UserContext.Provider value={{ user, setUser, users }}>
+    <UserContext.Provider value={{ user, setUser, users, updateUserTeamName }}>
       {children}
     </UserContext.Provider>
   );
 };
 
-// Create a custom hook to use the UserContext
 export const useUser = () => useContext(UserContext);

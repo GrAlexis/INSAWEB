@@ -5,6 +5,8 @@ import Profil from "./components/Profil/Profil"
 
 import Login from './components/Login/Login'
 import Ranking from './components/Ranking/Ranking'
+import AdminPage from './components/AdminPage/AdminPage';
+import ProtectedRoute from './utils/ProtectedRoute'
 import { BrowserRouter, Routes, Route} from "react-router-dom"
 import Navbar from './components/Common/Navbar/Navbar'
 import { UserProvider } from './hooks/commonHooks/UserContext';
@@ -23,6 +25,14 @@ function App() {
                 <Route path="/ranking" element={<Ranking />} />
                 <Route path="/sheesh/:challengeId" element={<Sheesh />} />
                 <Route path="/login" element={<Login/>} />
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute>
+                      <AdminPage />
+                    </ProtectedRoute>
+                  }
+                />              
                 <Route path="/profil" element={<Profil/>} />
               </Routes>
               <Navbar />
