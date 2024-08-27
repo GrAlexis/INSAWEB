@@ -7,7 +7,8 @@ const userSchema = new mongoose.Schema({
     balance: { type: Number, required: true },
     teamId: {type: String, default: null },
     eventPoints: { type: Map, of: Number, default: {} }, // Points par event_id
-    isAdmin: { type: Boolean, default: false }
+    isAdmin: { type: Boolean, default: false },
+    pinnedChallenges: [{ type: String, default: [] }]
 });
 
 module.exports = mongoose.model('User', userSchema);

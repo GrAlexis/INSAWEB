@@ -6,14 +6,11 @@ import { useUser } from '../../hooks/commonHooks/UserContext';
 import validatedIcon from '../../assets/icons/sheesh/validated.webp';
 import waitingIcon from '../../assets/icons/sheesh/waiting.png';
 import collectiveIcon from '../../assets/icons/sheesh/together.png';
-import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile } from '@ffmpeg/util';
-
-
-const ffmpeg = new FFmpeg();
+import pinIcon from '../../assets/buttons/pin.png';
+import unpinIcon from '../../assets/buttons/unpin.webp';
 
 const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const { challengeId } = useParams();
   const [file, setFile] = useState(null);
   const [description, setDescription] = useState('');
@@ -32,19 +29,21 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
 
   useEffect(() => {
     const checkUserPost = async () => {
+      if (!user) return; // Ensure user is not null before making requests
+
       try {
-        const response = await axios.get(`http://localhost:5000/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
+        const response = await axios.get(`/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
         if (response.data.length > 0) {
           setPost(response.data[0]);
         }
 
         if (challenge.isCollective && user.teamId) {
-          const teamPostsResponse = await axios.get(`http://localhost:5000/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+          const teamPostsResponse = await axios.get(`/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
           if (teamPostsResponse.data.length > 0) {
             const teamPost = teamPostsResponse.data[0];
             if (teamPost.user !== user._id) {
               setCollectivePost(teamPost);
-              const userResponse = await axios.get(`http://localhost:5000/users/${teamPost.user}`);
+              const userResponse = await axios.get(`/users/${teamPost.user}`);
               setTeammateName(userResponse.data.name);
             } else {
               setPost(teamPost); // If the user posted the collective challenge
@@ -57,7 +56,24 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
     };
 
     checkUserPost();
-  }, [user._id, challenge.id, user.teamId, challenge.isCollective]);
+  }, [user, challenge.id, user?.teamId, challenge.isCollective]);
+
+  const handlePinClick = async () => {
+    if (!user) return; // Ensure user is not null before proceeding
+
+    try {
+      const response = user.pinnedChallenges.includes(challenge.id)
+        ? await axios.post('http://localhost:5000/unpinChallenge', { userId: user._id, challengeId: challenge.id })
+        : await axios.post('http://localhost:5000/pinChallenge', { userId: user._id, challengeId: challenge.id });
+
+      setUser(prevUser => ({
+        ...prevUser,
+        pinnedChallenges: response.data
+      }));
+    } catch (error) {
+      console.error('Error pinning/unpinning challenge:', error);
+    }
+  };
 
   const handleButtonClick = () => {
     setOpenChallengeId(challenge.id);
@@ -81,27 +97,25 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
     e.preventDefault();
 
     try {
-      const eventResponse = await axios.get(`http://localhost:5000/events/${challenge.eventId}`);
+      const eventResponse = await axios.get(`/events/${challenge.eventId}`);
       const event = eventResponse.data;
-      
+
       if (event.teams.length > 0 && (!user.teamId || !event.teams.includes(user.teamId))) {
         setShowTeamWarning(true);
         setTimeout(() => setShowTeamWarning(false), 3000);
         return;
       }
 
-      if (challenge.isCollective) {
-        const teamPostsResponse = await axios.get(`http://localhost:5000/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+      if (challenge.isCollective &&user.teamId) {
+        const teamPostsResponse = await axios.get(`/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
         if (teamPostsResponse.data.length > 0 && teamPostsResponse.data[0].user !== user._id) {
           setCollectivePost(teamPostsResponse.data[0]);
-          const userResponse = await axios.get(`http://localhost:5000/users/${teamPostsResponse.data[0].user}`);
+          const userResponse = await axios.get(`/users/${teamPostsResponse.data[0].user}`);
           setTeammateName(userResponse.data.name);
           setTimeout(() => setCollectivePost(null), 3000);
           return;
         }
       }
-      console.log("avant appel de compress video")
-      // const compressedFile = file.type.startsWith('video/') ? await compressVideo(file) : file;
 
       const formData = new FormData();
       formData.append('file', file);
@@ -112,7 +126,7 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
         formData.append('teamId', user.teamId);
       }
 
-      const response = await axios.post('http://localhost:5000/upload', formData, {
+      const response = await axios.post('/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
@@ -128,34 +142,9 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
     }
   };
 
-  const compressVideo = async (file) => {
-    setIsProcessing(true);
-    console.log("compress video lancé")
-    await ffmpeg.load({ log: true });
-
-    console.log("ffmpeg is loaded")
-    await ffmpeg.writeFile('video.avi', await fetchFile(file))
-    console.log("writefile passé")
-    ffmpeg.on("log", () => {})
-    ffmpeg.on("progress", () => {})
-    // await ffmpeg.exec('-i', 'video.avi', '-vf', 'scale=640:-1', '-c:v', 'libx264', '-crf', '28');
-    await ffmpeg.exec( '-r','12','-i','video.avi');
-
-    console.log("exec passé")
-// List the files in the virtual file system to debug
-const files = ffmpeg.listDir('/');
-console.log("Files in virtual file system:", files);
-    const data = await ffmpeg.readFile('video.avi');
-    console.log("readfile passé")
-    const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
-    setIsProcessing(false);
-
-    return new File([videoBlob], 'video.avi', { type: 'video/mp4' });
-  };
-
   if (!user) return <div>Please log in to participate in challenges.</div>;
 
-  return (
+  if ( user )return (
     <div className="challenge-card">
       <img src={challenge.icon} alt={challenge.title} className="challenge-icon" />
       <div className="challenge-details">
@@ -163,8 +152,16 @@ console.log("Files in virtual file system:", files);
         <p>{challenge.limitDate}</p>
         <p>{challenge.reward}</p>
         {challenge.isCollective && <img src={collectiveIcon} alt="Collective Challenge" className="collective-icon" />}
+        
+        {/* Pin Button */}
+        {user && (
+          <button onClick={handlePinClick} className="pin-button">
+            <img src={user.pinnedChallenges.includes(challenge.id) ? unpinIcon : pinIcon} alt="Pin/Unpin Icon" />
+          </button>
+        )}
+
         {!isOpen ? (
-          <button className="participation-sheesh-button" onClick={handleButtonClick} disabled={post || collectivePost}>
+          <button className="sheesh-button" onClick={handleButtonClick} disabled={post || collectivePost}>
             Je sheesh !
           </button>
         ) : (
@@ -185,8 +182,6 @@ console.log("Files in virtual file system:", files);
           </div>
         )}
         {showSuccess && <div className="success-notification">Successfully posted</div>}
-        {showTeamWarning && <div className="warning-notification">You must join a valid team to post</div>}
-        {post && <div className="warning-notification">You have already posted for this challenge</div>}
       </div>
       {(post || collectivePost) && (
         <div className="status-icon">

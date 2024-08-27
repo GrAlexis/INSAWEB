@@ -59,3 +59,16 @@
   .success-notification.fade-out {
     opacity: 0;
   }
+  .pin-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 10px;
+  }
+  
+  .pin-button img {
+    width: 24px;  /* Adjust size as needed */
+    height: auto;
+  }
+  

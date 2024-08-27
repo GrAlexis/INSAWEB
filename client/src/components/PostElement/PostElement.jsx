@@ -147,24 +147,26 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
         <div className="post-title">
           <span>{challenge.title}</span>
         </div>
-        <div className="post-likes">
+        {/* <div className="post-likes">
           <button className="likes-button">
             <img src={smiley_face} alt="Likes Icon" className="likes-icon" />
           </button>
           {post.likes > 0 && <span>{post.likes}</span>}
-        </div>
+        </div> */}
       </div>
       <div className="post-description">
         <p>{post.description}</p>
       </div>
       <div className="post-footer">
         <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>
-        {(user._id === postUser._id || (user.isAdmin && !post.isValidated) )&& (
-          <button className="delete-button" onClick={handleDeleteClick}>Delete</button>
-        )}
+        {(user._id === postUser._id || (user.isAdmin && !post.isValidated)) && (
+  <button className="delete-button" onClick={handleDeleteClick}>
+    <span className="delete-cross">✕</span>
+  </button>
+)}
         {user.isAdmin && (
           <button className="validate-button" onClick={handleValidateClick}>
-            {post.isValidated ? 'Unvalidate Participation' : 'Validate Participation'}
+            {post.isValidated ? 'Invalider' : 'Valider'}
           </button>
         )}
       </div>

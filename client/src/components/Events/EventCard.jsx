@@ -44,7 +44,15 @@ const EventCard = ({ event }) => {
       return;
     }
     try {
-      const previousTeamId = user.teamId;
+      var previousTeamId = ""
+      if (user.teamId)
+      {
+        previousTeamId = user.teamId;
+      }
+      else
+      {
+        previousTeamId = ""
+      }
       const response = await axios.post('http://localhost:5000/assignTeam', {
         userId: user._id,
         teamId: teamId,
@@ -74,7 +82,7 @@ const EventCard = ({ event }) => {
   const currentDate = new Date();
   const canChangeTeam = currentDate < eventDate;
 
-  return (
+  if (user && user.teamId)return (
     <div className="event-card">
       <img src={event.image} alt={event.title} className="event-image" />
       <div className="event-details">

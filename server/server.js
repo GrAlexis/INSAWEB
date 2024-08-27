@@ -603,6 +603,37 @@ app.post('/admin/validatePost/:id', checkAdmin, async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+// Route to pin a challenge
+app.post('/pinChallenge', async (req, res) => {
+    const { userId, challengeId } = req.body;
+
+    try {
+        const user = await User.findById(userId);
+        if (!user.pinnedChallenges.includes(challengeId)) {
+            user.pinnedChallenges.push(challengeId);
+            await user.save();
+        }
+        res.status(200).json(user.pinnedChallenges);
+    } catch (error) {
+        console.error('Error pinning challenge:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// Route to unpin a challenge
+app.post('/unpinChallenge', async (req, res) => {
+    const { userId, challengeId } = req.body;
+
+    try {
+        const user = await User.findById(userId);
+        user.pinnedChallenges = user.pinnedChallenges.filter(id => id !== challengeId);
+        await user.save();
+        res.status(200).json(user.pinnedChallenges);
+    } catch (error) {
+        console.error('Error unpinning challenge:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 
 app.get("/", (req,res) =>{
