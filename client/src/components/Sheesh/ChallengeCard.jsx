@@ -153,32 +153,27 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
         <p>{challenge.reward}</p>
         {challenge.isCollective && <img src={collectiveIcon} alt="Collective Challenge" className="collective-icon" />}
         
-        {/* Pin Button */}
-        {user && (
-          <button onClick={handlePinClick} className="pin-button">
-            <img src={user.pinnedChallenges.includes(challenge.id) ? unpinIcon : pinIcon} alt="Pin/Unpin Icon" />
-          </button>
-        )}
+
 
         {!isOpen ? (
           <button className="sheesh-button" onClick={handleButtonClick} disabled={post || collectivePost}>
-            Je sheesh !
+            {post ? "Déjà participé" : "Je sheesh !"}
           </button>
         ) : (
           <div>
             <form onSubmit={handleFormSubmit} className="upload-form">
-              <input type="file" onChange={handleFileChange} disabled={post || collectivePost} />
-              <textarea
+            <input placeholder='Choisir une photo'  id="file-upload" type="file" onChange={handleFileChange} disabled={post || collectivePost} />             
+         <textarea
                 placeholder="Quelque chose à ajouter ?"
                 value={description}
                 onChange={handleDescriptionChange}
                 disabled={post || collectivePost}
               />
-              <button type="submit" disabled={post || collectivePost || isProcessing}>
-                {isProcessing ? 'Uploading...' : 'Poster'}
+              <button type="submit" className='sheesh-button' disabled={post || collectivePost || isProcessing}>
+                {isProcessing ? 'Uploading...' : 'Sheeeeeesh!'}
               </button>         
             </form>
-            <button className="close-form-button" onClick={handleCloseForm}>Fermer</button>
+            <button className='delete-button' onClick={handleCloseForm}>✕</button>
           </div>
         )}
         {showSuccess && <div className="success-notification">Successfully posted</div>}
@@ -190,6 +185,11 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
             alt={(post ? post.isValidated : collectivePost.isValidated) ? "Validated Icon" : "Waiting Icon"}
             className="status-icon-img"
           />
+        {user && (
+          <button onClick={handlePinClick} className="pin-button">
+            <img src={user.pinnedChallenges.includes(challenge.id) ? unpinIcon : pinIcon} alt="Pin/Unpin Icon" />
+          </button>
+        )}
         </div>
       )}
       {collectivePost && (

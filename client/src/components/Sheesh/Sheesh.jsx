@@ -73,7 +73,7 @@ const Sheesh = () => {
         {/* Display pinned challenges first */}
         {pinnedChallenges.length > 0 && (
           <div className="pinned-challenges">
-            <h2>Pinned Challenges</h2>
+            <h2>Sheesh épinglés</h2>
             {pinnedChallenges.map(challenge => (
               <div
                 key={challenge.id}

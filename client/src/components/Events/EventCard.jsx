@@ -82,19 +82,19 @@ const EventCard = ({ event }) => {
   const currentDate = new Date();
   const canChangeTeam = currentDate < eventDate;
 
-  if (user && user.teamId)return (
+  if (user)return (
     <div className="event-card">
       <img src={event.image} alt={event.title} className="event-image" />
       <div className="event-details">
         <h2>{event.title}</h2>
         <p>{event.date}</p>
-        <p>{event.participants} inscrits</p>
-        <p>{event.sheeshes} Sheeshers</p>
-        <button className="inscription-button">s'inscrire</button>
-        <button className="quest-button">Voir les quêtes</button>
+        {/* <p>{event.participants} inscrits</p> */}
+        {/* <p>{event.sheeshes} Sheeshers</p> */}
+        {/* <button className="inscription-button">s'inscrire</button> */}
+        {/* <button className="quest-button">Voir les quêtes</button> */}
         {canChangeTeam && (
-          <button className="join-team-button" onClick={() => setIsPopupOpen(true)}>
-            {user.teamId ? 'Change team' : 'Join a team!'}
+          <button className="sheesh-button" onClick={() => setIsPopupOpen(true)}>
+            {user.teamId ? 'Changer d\'equipe' : 'Rejoins une equipe!'}
           </button>
         )}
       </div>
