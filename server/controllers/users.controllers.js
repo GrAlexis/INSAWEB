@@ -63,8 +63,8 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    const { username, lastName, password } = req.body;
-    const user = await User.findOne({ name:username, lastName });
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'User does not exist' });
     }
