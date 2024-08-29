@@ -11,7 +11,7 @@ const Login = () => {
   useEffect(() => {
     const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
     if (isAuthenticated) {
-      navigate('/dashboard'); // Redirigez immédiatement si l'utilisateur est déjà authentifié
+      navigate('/profil'); // Redirigez immédiatement si l'utilisateur est déjà authentifié
     }
   }, [navigate]);
 
@@ -40,7 +40,7 @@ const Login = () => {
       sessionStorage.setItem('isAuthenticated', 'true');
       
       // Rediriger après l'authentification réussie
-      navigate('/dashboard');
+      navigate('/profil');
 
     } catch (error) {
       console.error('Erreur lors de la connexion:', error);
