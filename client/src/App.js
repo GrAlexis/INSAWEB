@@ -31,12 +31,18 @@ function App() {
                 <Route
                   path="/admin"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute adminOnly={true} >
                       <AdminPage />
                     </ProtectedRoute>
                   }
-                />              
-                <Route path="/profil" element={<Profil/>} />
+                />   <Route
+                path="/profil"
+                element={
+                  <ProtectedRoute  >
+                    <Profil />
+                  </ProtectedRoute>
+                }
+              />            
               </Routes>
               <Navbar />
           </BrowserRouter>
