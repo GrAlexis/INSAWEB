@@ -1,36 +1,81 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; 
+import './Login.css';
 
 const Login = () => {
-  const handleLogin = () => {
-    window.location.href = 'http://localhost:5000/api/connexion/';
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate(); 
+
+  // Vérifiez si l'utilisateur est déjà authentifié
+  useEffect(() => {
+    const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
+    if (isAuthenticated) {
+      navigate('/dashboard'); // Redirigez immédiatement si l'utilisateur est déjà authentifié
+    }
+  }, [navigate]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch('MY_URL', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+
+      // Stocker le token dans le sessionStorage
+      sessionStorage.setItem('token', data.token);
+
+      // Mettre à jour la variable de session isAuthenticated à true
+      sessionStorage.setItem('isAuthenticated', 'true');
+      
+      // Rediriger après l'authentification réussie
+      navigate('/dashboard');
+
+    } catch (error) {
+      console.error('Erreur lors de la connexion:', error);
+      // Vous pouvez afficher un message d'erreur à l'utilisateur ici
+    }
   };
 
   return (
-    <div style={styles.container}>
-      <h1>Login</h1>
-      <button onClick={handleLogin} style={styles.button}>Login with CAS</button>
+    <div className="login-container">
+      <form onSubmit={handleSubmit} className="login-form">
+        <h2>Login</h2>
+        <div className="input-group">
+          <label htmlFor="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="input-group">
+          <label htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit" className="login-button">Login</button>
+      </form>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100vh',
-    backgroundColor: '#f0f0f0'
-  },
-  button: {
-    padding: '10px 20px',
-    fontSize: '16px',
-    cursor: 'pointer',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px'
-  }
 };
 
 export default Login;
