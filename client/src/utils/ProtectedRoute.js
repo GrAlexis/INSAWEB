@@ -35,14 +35,13 @@ const isAuthenticated = async () => {
 
 const ProtectedRoute = ({ children, adminOnly=false }) => {
   const { user } = useUser();
-
+  console.log(user)
   if (!isAuthenticated()) {
     return <Navigate to="/login" />;
   }
   else{
     if (adminOnly){
-      const { user } = useUser();
-      if (!user || !user.isAdmin){
+      if (!user.isAdmin){
         alert("Page réservée aux administrateur\nConnectez-vous avec un compte admin.")
         return <Navigate to="/login" />
       }
