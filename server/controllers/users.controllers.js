@@ -45,13 +45,14 @@ const getAllUsers = async (req, res) => {
 const registerUser = async (req, res) => {
   try {
     const { username, password, isAdmin, classYear, lastName } = req.body; // Include isAdmin in request body
-    const userAlreadyExist = await User.findOne({ name:username });
+    const email = `${username}.${lastName}@insa-lyon.fr`.toLowerCase()
+    const userAlreadyExist = await User.findOne({ email });
     if (userAlreadyExist) {
       return res.status(401).json({ message: 'User already exists' });
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
       const user = await User.create({name: username, hashedPassword,
-      isAdmin: isAdmin, classYear:classYear,
+      isAdmin: isAdmin, classYear:classYear, email,
       balance:0, lastName }); // Include isAdmin in user creation
       res.status(201).json({ message: 'User created successfully' });
     }
