@@ -28,7 +28,7 @@ function SignupPage() {
     };
 
     try {
-      const response = await axios.post("MY_URL", payload);
+      const response = await axios.post("http://localhost:5000/api/user/register", payload);
       console.log("Signup success:", response.data);
       // Handle successful signup
     } catch (error) {
