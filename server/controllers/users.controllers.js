@@ -70,7 +70,7 @@ const loginUser = async (req, res) => {
     }
     const passwordMatch = await bcrypt.compare(password, user.hashedPassword);
     if (passwordMatch) {
-      const token = jwt.sign({ username: user.name }, 'your_secret_key');
+      const token = jwt.sign({ email:email }, 'your_secret_key');
       res.status(200).json({ token });
     } else {
       return res.status(401).json({ message: 'Invalid username or password' });
@@ -85,7 +85,7 @@ const decodeToken = (req,res) => {
     const { token } = req.body;
     const secretKey = 'your_secret_key'
     const decoded = jwt.verify(token, secretKey);
-    res.status(200).json({'username':decoded.username});
+    res.status(200).json({'email':decoded.email});
   } catch (error) {
     res.status(500).json('Token decoding failed');
 
@@ -93,7 +93,25 @@ const decodeToken = (req,res) => {
   
 };
 
+const isAdmin = async (req, res) => {
+  try{
+    const email = req.params.email
+    if (!email){
+      res.status(500).json('Missing url parameter email')
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: 'User does not exist' });
+    }
+    else{
+      res.status(200).json(user.isAdmin)
+    }
+  }
+  catch (error){
+    res.status(500).json(error)
+  }
 
+}
 
 module.exports = {
   registerUser,
@@ -101,5 +119,6 @@ module.exports = {
   loginUser,
   getAllUsers,
   decodeToken,
-  updateUser
+  updateUser,
+  isAdmin
 };
