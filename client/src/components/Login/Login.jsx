@@ -36,8 +36,7 @@ const Login = () => {
       // Stocker le token dans le sessionStorage
       sessionStorage.setItem('token', data.token);
 
-      // Mettre à jour la variable de session isAuthenticated à true
-      sessionStorage.setItem('isAuthenticated', 'true');
+
       
       // Rediriger après l'authentification réussie
       navigate('/profil');
