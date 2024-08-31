@@ -27,15 +27,6 @@
     cursor: pointer;
 }
 
-.chevron-btn{
-    margin-right: 8px;
-    padding: 8px 16px;
-    border: none;
-    
-    background-color:white;
-    cursor: pointer;
-}
-
 .popup {
     position: fixed;
     top: 0;
