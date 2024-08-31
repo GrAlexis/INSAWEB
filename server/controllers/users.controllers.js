@@ -113,6 +113,29 @@ const isAdmin = async (req, res) => {
 
 }
 
+const getUser = async (req, res) => {
+  try {
+    const email = req.params.email
+    if (!email){
+      res.status(500).json('Missing url parameter email')
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: 'User does not exist' });
+    }
+    return res.status(200).json({'Prénom':user.name,
+      'Nom':user.lastName,
+      'Classe':user.classYear,
+      'Argent':user.balance,
+      'isAdmin':user.isAdmin,
+      'Classement': user.rank
+    })
+  }
+  catch (error){
+    res.status(500).json(error)
+  }
+}
+
 module.exports = {
   registerUser,
   deleteUser,
@@ -120,5 +143,6 @@ module.exports = {
   getAllUsers,
   decodeToken,
   updateUser,
-  isAdmin
+  isAdmin,
+  getUser
 };
