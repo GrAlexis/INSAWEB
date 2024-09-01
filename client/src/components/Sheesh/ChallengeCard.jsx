@@ -32,18 +32,18 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
       if (!user) return; // Ensure user is not null before making requests
 
       try {
-        const response = await axios.get(`/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
+        const response = await axios.get(`http://localhost:5000/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
         if (response.data.length > 0) {
           setPost(response.data[0]);
         }
 
         if (challenge.isCollective && user.teamId) {
-          const teamPostsResponse = await axios.get(`/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+          const teamPostsResponse = await axios.get(`http://localhost:5000/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
           if (teamPostsResponse.data.length > 0) {
             const teamPost = teamPostsResponse.data[0];
             if (teamPost.user !== user._id) {
               setCollectivePost(teamPost);
-              const userResponse = await axios.get(`/users/${teamPost.user}`);
+              const userResponse = await axios.get(`http://localhost:5000/users/${teamPost.user}`);
               setTeammateName(userResponse.data.name);
             } else {
               setPost(teamPost); // If the user posted the collective challenge
@@ -97,7 +97,7 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
     e.preventDefault();
 
     try {
-      const eventResponse = await axios.get(`/events/${challenge.eventId}`);
+      const eventResponse = await axios.get(`http://localhost:5000/events/${challenge.eventId}`);
       const event = eventResponse.data;
 
       if (event.teams.length > 0 && (!user.teamId || !event.teams.includes(user.teamId))) {
@@ -107,7 +107,7 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
       }
 
       if (challenge.isCollective &&user.teamId) {
-        const teamPostsResponse = await axios.get(`/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+        const teamPostsResponse = await axios.get(`http://localhost:5000/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
         if (teamPostsResponse.data.length > 0 && teamPostsResponse.data[0].user !== user._id) {
           setCollectivePost(teamPostsResponse.data[0]);
           const userResponse = await axios.get(`/users/${teamPostsResponse.data[0].user}`);
@@ -126,7 +126,7 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
         formData.append('teamId', user.teamId);
       }
 
-      const response = await axios.post('/upload', formData, {
+      const response = await axios.post('http://localhost:5000/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
@@ -153,32 +153,27 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
         <p>{challenge.reward}</p>
         {challenge.isCollective && <img src={collectiveIcon} alt="Collective Challenge" className="collective-icon" />}
         
-        {/* Pin Button */}
-        {user && (
-          <button onClick={handlePinClick} className="pin-button">
-            <img src={user.pinnedChallenges.includes(challenge.id) ? unpinIcon : pinIcon} alt="Pin/Unpin Icon" />
-          </button>
-        )}
+
 
         {!isOpen ? (
           <button className="sheesh-button" onClick={handleButtonClick} disabled={post || collectivePost}>
-            Je sheesh !
+            {post ? "Déjà participé" : "Je sheesh !"}
           </button>
         ) : (
           <div>
             <form onSubmit={handleFormSubmit} className="upload-form">
-              <input type="file" onChange={handleFileChange} disabled={post || collectivePost} />
-              <textarea
+            <input placeholder='Choisir une photo'  id="file-upload" type="file" onChange={handleFileChange} disabled={post || collectivePost} />             
+         <textarea
                 placeholder="Quelque chose à ajouter ?"
                 value={description}
                 onChange={handleDescriptionChange}
                 disabled={post || collectivePost}
               />
-              <button type="submit" disabled={post || collectivePost || isProcessing}>
-                {isProcessing ? 'Uploading...' : 'Poster'}
+              <button type="submit" className='sheesh-button' disabled={post || collectivePost || isProcessing}>
+                {isProcessing ? 'Uploading...' : 'Sheeeeeesh!'}
               </button>         
             </form>
-            <button className="close-form-button" onClick={handleCloseForm}>Fermer</button>
+            <button className='delete-button' onClick={handleCloseForm}>✕</button>
           </div>
         )}
         {showSuccess && <div className="success-notification">Successfully posted</div>}
@@ -190,6 +185,11 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
             alt={(post ? post.isValidated : collectivePost.isValidated) ? "Validated Icon" : "Waiting Icon"}
             className="status-icon-img"
           />
+        {user && (
+          <button onClick={handlePinClick} className="pin-button">
+            <img src={user.pinnedChallenges.includes(challenge.id) ? unpinIcon : pinIcon} alt="Pin/Unpin Icon" />
+          </button>
+        )}
         </div>
       )}
       {collectivePost && (

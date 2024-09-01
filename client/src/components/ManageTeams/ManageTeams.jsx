@@ -13,25 +13,33 @@ const ManageTeams = ({ eventId }) => {
   const [teamToDelete, setTeamToDelete] = useState(null);
   const [showUserTransferPanel, setShowUserTransferPanel] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [usersWithoutTeam, setUsersWithoutTeam] = useState([]);
 
   useEffect(() => {
-    const fetchTeams = async () => {
+    const fetchTeamsAndUsers = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/events/${eventId}/teams`);
-        const teamsWithPoints = await Promise.all(response.data.map(async team => {
+        // Fetch teams and their members
+        const teamsResponse = await axios.get(`http://localhost:5000/events/${eventId}/teams`);
+        const teamsWithPoints = await Promise.all(teamsResponse.data.map(async team => {
           const membersResponse = await axios.get(`http://localhost:5000/teams/${team.id}/members`);
           const points = membersResponse.data.reduce((acc, member) => acc + (member.points || 0), 0);
           return { ...team, members: membersResponse.data, points };
         }));
         setTeams(teamsWithPoints);
+
+        // Fetch users without a team
+        const usersResponse = await axios.get(`http://localhost:5000/users`);
+        const usersWithoutTeam = usersResponse.data.filter(user => !user.teamId || user.teamId === '');
+        setUsersWithoutTeam(usersWithoutTeam);
+
         setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching teams:', error);
+        console.error('Error fetching data:', error);
         setIsLoading(false);
       }
     };
 
-    fetchTeams();
+    fetchTeamsAndUsers();
   }, [eventId]);
 
   const handleCreateOrEditTeam = async (e) => {
@@ -98,10 +106,6 @@ const ManageTeams = ({ eventId }) => {
   const handleUserTransfer = async (newTeamId) => {
     try {
       const previousTeamId = selectedUser.teamId;
-      console.log("newTeamId "+newTeamId)
-      console.log("selecteduser._id "+selectedUser._id)
-      console.log("previousteamid "+selectedUser.teamId)
-      console.log("selectedusrname "+selectedUser.name)
 
       await axios.post('http://localhost:5000/assignTeam', {
         userId: selectedUser._id,
@@ -110,7 +114,7 @@ const ManageTeams = ({ eventId }) => {
         previousTeamId: previousTeamId,
       });
 
-      // Refresh the team list
+      // Update team lists
       const updatedTeams = teams.map(team => {
         if (team.id === previousTeamId) {
           return { ...team, members: team.members.filter(member => member._id !== selectedUser._id) };
@@ -121,6 +125,8 @@ const ManageTeams = ({ eventId }) => {
         return team;
       });
       setTeams(updatedTeams);
+
+      setUsersWithoutTeam(usersWithoutTeam.filter(user => user._id !== selectedUser._id));
       setShowUserTransferPanel(false);
     } catch (error) {
       console.error('Error transferring user:', error);
@@ -136,19 +142,19 @@ const ManageTeams = ({ eventId }) => {
       <form onSubmit={handleCreateOrEditTeam} className="create-team-form">
         <input
           type="text"
-          placeholder="Team Name"
+          placeholder="Nom de l'équipe"
           value={teamName}
           onChange={(e) => setTeamName(e.target.value)}
           required
         />
         <input
           type="number"
-          placeholder="Max Members"
+          placeholder="Joueurs Max"
           value={maxMembers}
           onChange={(e) => setMaxMembers(e.target.value)}
           min="1"
         />
-        <button type="submit">{isEditing ? 'Update Team' : 'Create Team'}</button>
+        <button type="submit">{isEditing ? 'Update Team' : 'Créer une équipe'}</button>
       </form>
 
       <div className="team-list">
@@ -161,18 +167,16 @@ const ManageTeams = ({ eventId }) => {
             <button className="edit-team-button" onClick={() => handleEditClick(team)}>
               <img src={modifyButtonIcon} alt="Modify" />
             </button>
-            <button onClick={() => handleDeleteClick(team.id)}>Delete</button>
+            <button className='delete-button' onClick={() => handleDeleteClick(team.id)}>✕</button>
             <div className="team-members">
               {team.members.map(member => (
                 <div key={member._id} className="member-item">
                   <span>{member.name}</span>
-                  <button onClick={() => {
+                  <button className='change-team-button' onClick={() => {
                     setSelectedUser(member);
-                    console.log("setselecteduser "+member.name+ member._id+ member.teamId)
-                    console.log("team.members "+team.members)
                     setShowUserTransferPanel(true);
                   }}>
-                    Change Team
+                    Réassigner
                   </button>
                 </div>
               ))}
@@ -181,18 +185,55 @@ const ManageTeams = ({ eventId }) => {
         ))}
       </div>
 
+      {/* Card for Users Without a Team */}
+      <div className="no-team-users">
+        <h2>Sans chasubles</h2>
+        {usersWithoutTeam.length > 0 ? (
+          usersWithoutTeam.map(user => (
+            <div key={user._id} className="user-card">
+              <h3>{user.name}</h3>
+              <p>No Team</p>
+              <button className='change-team-button' onClick={() => {
+                setSelectedUser(user);
+                setShowUserTransferPanel(true);
+              }}>
+                Assigner
+              </button>
+            </div>
+          ))
+        ) : (
+          <p>No users without a team.</p>
+        )}
+      </div>
+
       {showUserTransferPanel && (
         <div className="user-transfer-panel">
           <h2>Transfer {selectedUser.name} to:</h2>
           {teams.map(team => (
-            <button key={team.id} onClick={() => handleUserTransfer(team.id)} disabled={team.maxMembers && team.members.length >= team.maxMembers}>
+            <button
+              key={team.id}
+              className={`team-transfer-button ${team.maxMembers && team.members.length >= team.maxMembers ? 'disabled' : ''}`}
+              onClick={() => handleUserTransfer(team.id)}
+              disabled={team.maxMembers && team.members.length >= team.maxMembers}
+            >
               {team.name} ({team.members.length}/{team.maxMembers || 'Unlimited'} members)
             </button>
           ))}
-          <button onClick={() => handleUserTransfer('')}>No Team</button>
-          <button onClick={() => setShowUserTransferPanel(false)}>Cancel</button>
+          <button
+            className="no-team-button"
+            onClick={() => handleUserTransfer('')}
+          >
+            No Team
+          </button>
+          <button
+            className="cancel-transfer-button"
+            onClick={() => setShowUserTransferPanel(false)}
+          >
+            Cancel
+          </button>
         </div>
       )}
+
 
       {showConfirmDelete && (
         <div className="confirm-delete-popup">

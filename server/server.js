@@ -167,6 +167,31 @@ app.get('/events', async (req, res) => {
     }
 });
 
+app.get('/getUsersTotalPoints', async (req, res) => {
+    try {
+      // Fetch all users
+      const users = await User.find();
+  
+      // Calculate total points for each user
+      const usersWithPoints = users.map(user => {
+        const totalPoints = Array.from(user.eventPoints.values()).reduce((acc, points) => acc + points, 0);
+        return {
+          ...user.toObject(),
+          totalPoints,
+        };
+      });
+  
+      // Sort users by total points descending
+      usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
+  
+      res.json(usersWithPoints);
+    } catch (error) {
+      console.error('Error fetching user rankings:', error);
+      res.status(500).json({ error: 'Error fetching user rankings' });
+    }
+  });
+  
+
 // Fetch ranking for a specific event
 app.get('/ranking/:eventId', async (req, res) => {
     try {
