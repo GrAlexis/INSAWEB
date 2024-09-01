@@ -1,51 +1,19 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-
-
 import './Sheesh.css';
 import EventCard from '../Events/EventCard';
 import ChallengeCard from './ChallengeCard';
-import Animation from '../Animation'
+import Animation from '../Animation';
 import { getImageByKey } from '../../utils/imageMapper';
-
-
-// TODO : remove static events and challenges declaration, as it is now fetched from mongoDB
-// const events = [
-//   {
-//     id: 1,
-//     image: WEI_TC,
-//     title: 'WEI TC',
-//     date: '21-23 septembre',
-//     participants: 25,
-//     sheeshes: 10,
-//     Organisateur: 'Astus',
-//     challenges: [
-//       { id: 1, icon: Pigeon, title: 'Attraper un pigeon', reward: '1 pinte + 200 sh', limitDate: '24/09/2024' },
-//       { id: 2, icon: Cup, title: 'Ramasser 20 eco-cups', reward: '1 frite + 100 sh', limitDate: '25/09/2024'  },
-//       { id: 3, icon: Pied, title: 'Trouver 3 pieds nus', reward: '1 frite + 50 sh', limitDate: '26/09/2024' },
-//     ],
-//   },
-//   {
-//     id: 2,
-//     image: WEC_TC,
-//     title: 'Week-End canoë TC',
-//     date: '26-27 mai',
-//     participants: 25,
-//     sheeshes: 10,
-//     organisateur: 'Astus',
-//     challenges: [
-//       { id: 4, icon: Canoe, title: 'Gagner la course de canoë', reward: '1 pinte + 200 sh', limitDate: '27/09/2024' },
-//       { id: 5, icon: Canoe, title: 'Retourner un canoë', reward: '1 frite + 100 sh', limitDate: '28/09/2024' },
-//       { id: 6, icon: SousEau, title: 'Prendre une photo sous l\'eau', reward: '1 frite + 50 sh', limitDate: '29/09/2024' },
-//     ],
-//   },
-// ];
+import { useUser } from '../../hooks/commonHooks/UserContext';
 
 const Sheesh = () => {
   const { challengeId } = useParams();
+  const { user, setUser } = useUser(); // Assuming you have a setUser function to update the user context
   const [events, setEvents] = useState([]);
   const [challenges, setChallenges] = useState([]);
+  const [openChallengeId, setOpenChallengeId] = useState(null);
   const challengeRefs = useRef({});
 
   useEffect(() => {
@@ -90,37 +58,56 @@ const Sheesh = () => {
     return challenges.filter(challenge => challengeIds.includes(challenge.id));
   };
 
+  // Get the pinned challenges of the user
+  const pinnedChallenges = challenges.filter(challenge => user.pinnedChallenges.includes(challenge.id));
+  // Get the rest of the challenges
+  const otherChallenges = challenges.filter(challenge => !user.pinnedChallenges.includes(challenge.id));
+
   return (
     <Animation>
-    <div className="home-page">
-      <header>
-        {/* <button className="back-button">vers Place Publique</button> */}
-        <div className="sort-options">
-          <label>trier par :</label>
-          <select>
-            <option value="datePlusRecent">Date + recents</option>
-            <option value="dateMoinRecent">Date - recents</option>
-            <option value="plusParticipants">Participants +</option>
-            <option value="moinsParticipants">Participants -</option>
-            <option value="gainsImportant">Gains +</option>
+      <div className="home-page">
+        <header>
+          {/* Sort options or other header elements */}
+        </header>
+        
+        {/* Display pinned challenges first */}
+        {pinnedChallenges.length > 0 && (
+          <div className="pinned-challenges">
+            <h2>Sheesh épinglés</h2>
+            {pinnedChallenges.map(challenge => (
+              <div
+                key={challenge.id}
+                ref={el => (challengeRefs.current[challenge.id] = el)}
+              >
+                <ChallengeCard 
+                  challenge={challenge}
+                  isOpen={openChallengeId === challenge.id}
+                  setOpenChallengeId={setOpenChallengeId}
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
-          </select>
-        </div>
-      </header>
-      {events.map(event => (
-        <div key={event.id} className="event-section">
-          <EventCard event={event} />
+        {/* Display other challenges under their respective events */}
+        {events.map(event => (
+          <div key={event.id} className="event-section">
+            <EventCard event={event} />
             {getEventChallenges(event.challenges).map(challenge => (
               <div
                 key={challenge.id}
                 ref={el => (challengeRefs.current[challenge.id] = el)}
               >
-                <ChallengeCard challenge={challenge} />
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
+                <ChallengeCard 
+                  challenge={challenge}
+                  isOpen={openChallengeId === challenge.id}
+                  setOpenChallengeId={setOpenChallengeId}
+                />
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
     </Animation>
   );
 };
