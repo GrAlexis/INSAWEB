@@ -7,6 +7,7 @@ import ChallengeCard from './ChallengeCard';
 import Animation from '../Animation';
 import { getImageByKey } from '../../utils/imageMapper';
 import { useUser } from '../../hooks/commonHooks/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 const Sheesh = () => {
   const { challengeId } = useParams();
@@ -15,8 +16,17 @@ const Sheesh = () => {
   const [challenges, setChallenges] = useState([]);
   const [openChallengeId, setOpenChallengeId] = useState(null);
   const challengeRefs = useRef({});
-
+  const navigate = useNavigate();
   useEffect(() => {
+    const token = sessionStorage.getItem('token');
+
+        if (!token) {
+          // If no token, redirect to login page
+          navigate('/login');
+          return; // Exit useEffect early to prevent further code execution
+        }
+
+    
     const fetchEvents = async () => {
       try {
         const eventResponse = await axios.get('http://localhost:5000/events');

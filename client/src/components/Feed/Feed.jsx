@@ -6,11 +6,22 @@ import Post1 from '../../assets/pictures/post/kayak1.jpeg'
 import Post2 from '../../assets/pictures/post/kayak2.jpeg'
 import Post3 from '../../assets/pictures/post/kayak1.jpeg'
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 
 const Feed = () => {
     const [posts, setPosts] = useState([]);
-
+    const navigate = useNavigate();
     useEffect(() => {
+
+        const token = sessionStorage.getItem('token');
+
+        if (!token) {
+          // If no token, redirect to login page
+          navigate('/login');
+          return; // Exit useEffect early to prevent further code execution
+        }
+
+
         // Simulate fetching data
         const fetchPosts = async () => {
         // Replace this with actual API call if needed

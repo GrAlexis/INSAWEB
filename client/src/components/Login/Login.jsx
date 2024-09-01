@@ -8,9 +8,10 @@ const Login = () => {
 
   // Vérifiez si l'utilisateur est déjà authentifié
   useEffect(() => {
+    
     const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
     if (isAuthenticated) {
-      navigate('/profil'); // Redirigez immédiatement si l'utilisateur est déjà authentifié
+      navigate('/home'); // Redirigez immédiatement si l'utilisateur est déjà authentifié
     }
   }, [navigate]);
 
@@ -38,7 +39,7 @@ const Login = () => {
 
       
       // Rediriger après l'authentification réussie
-      navigate('/profil');
+      navigate('/home');
 
     } catch (error) {
       console.error('Erreur lors de la connexion:', error);
@@ -71,6 +72,7 @@ const Login = () => {
           />
         </div>
         <button type="submit" className="login-button">Login</button>
+        <button  onClick={() => navigate('/register')} type="submit" className="login-button">S'inscire ? </button>
       </form>
     </div>
   );

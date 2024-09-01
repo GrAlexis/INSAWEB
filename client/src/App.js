@@ -13,7 +13,7 @@ import Navbar from './components/Common/Navbar/Navbar'
 import { UserProvider } from './hooks/commonHooks/UserContext';
 import './App.css';
 import Login from './components/Login/Login'
-
+import EventPage from './components/Events/EventPage'
 
 function App() {
   return (
@@ -21,13 +21,14 @@ function App() {
       <div className="app-container">
           <BrowserRouter>
               <Routes>
-                <Route index element={<Home />} />
+                <Route index element={<Login />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/sheesh" element={<Sheesh />} />
                 <Route path="/ranking" element={<Ranking />} />
                 <Route path="/sheesh/:challengeId" element={<Sheesh />} />
                 <Route path="/register" element={<Register/>} />
                 <Route path="/login" element={<Login/>} />
+                <Route path="/events" element={<EventPage/>} />
                 <Route
                   path="/admin"
                   element={
