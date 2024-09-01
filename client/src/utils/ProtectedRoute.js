@@ -50,8 +50,8 @@ const fetchIsAdmin = async () => {
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const [loading, setLoading] = useState(true);
-  const [authStatus, setAuthStatus] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(null);
+  const [authStatus, setAuthStatus] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -60,7 +60,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 
       if (isAuthenticated && adminOnly) {
         const adminStatus = await fetchIsAdmin();
-        console.log('adminStatus',adminStatus)
+        console.log(adminStatus)
         setIsAdmin(adminStatus);
       }
 
@@ -74,20 +74,17 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     return <div>Loading...</div>; // Loading state
   }
 
-  // Redirect if the user is not authenticated
   if (!authStatus) {
     return <Navigate to="/login" />;
   }
 
-  // Redirect if the user is authenticated but not an admin and the route is admin-only
-  if (adminOnly && isAdmin === false) {
-    console.log('isAdmin', isAdmin)
+  if (adminOnly && !isAdmin) {
     alert("Page réservée aux administrateurs. Connectez-vous avec un compte admin.");
     return <Navigate to="/login" />;
   }
 
-  // Render the protected content
   return children;
 };
 
 export default ProtectedRoute;
+

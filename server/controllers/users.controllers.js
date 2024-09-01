@@ -44,14 +44,14 @@ const getAllUsers = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, password, isAdmin, classYear, lastName } = req.body; // Include isAdmin in request body
-    const email = `${name}.${lastName}@insa-lyon.fr`.toLowerCase()
+    const { username, password, isAdmin, classYear, lastName } = req.body; // Include isAdmin in request body
+    const email = `${username}.${lastName}@insa-lyon.fr`.toLowerCase()
     const userAlreadyExist = await User.findOne({ email });
     if (userAlreadyExist) {
       return res.status(401).json({ message: 'User already exists' });
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await User.create({name: name, hashedPassword,
+      const user = await User.create({name: username, hashedPassword,
       isAdmin: isAdmin, classYear:classYear, email,
       balance:0, lastName }); // Include isAdmin in user creation
       res.status(201).json({ message: 'User created successfully' });
@@ -85,7 +85,7 @@ const decodeToken = (req,res) => {
     const { token } = req.body;
     const secretKey = 'your_secret_key'
     const decoded = jwt.verify(token, secretKey);
-    res.status(200).json({'email':decoded.email});
+    res.status(200).json({'username':decoded.username});
   } catch (error) {
     res.status(500).json('Token decoding failed');
 
@@ -93,48 +93,7 @@ const decodeToken = (req,res) => {
   
 };
 
-const isAdmin = async (req, res) => {
-  try{
-    const email = req.params.email
-    if (!email){
-      res.status(500).json('Missing url parameter email')
-    }
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: 'User does not exist' });
-    }
-    else{
-      res.status(200).json(user.isAdmin)
-    }
-  }
-  catch (error){
-    res.status(500).json(error)
-  }
 
-}
-
-const getUser = async (req, res) => {
-  try {
-    const email = req.params.email
-    if (!email){
-      res.status(500).json('Missing url parameter email')
-    }
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: 'User does not exist' });
-    }
-    return res.status(200).json({'Prénom':user.name,
-      'Nom':user.lastName,
-      'Classe':user.classYear,
-      'Argent':user.balance,
-      'isAdmin':user.isAdmin,
-      'Classement': user.rank
-    })
-  }
-  catch (error){
-    res.status(500).json(error)
-  }
-}
 
 module.exports = {
   registerUser,
@@ -142,7 +101,6 @@ module.exports = {
   loginUser,
   getAllUsers,
   decodeToken,
-  updateUser,
-  isAdmin,
-  getUser
+  updateUser
 };
+

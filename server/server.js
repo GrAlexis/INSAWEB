@@ -62,7 +62,7 @@ const upload = multer({ storage });
 //routes
 app.use("/api/products",productRoutes);
 app.use('/api/connexion/', connexionRoutes)
-app.use("/api/user/", userRoutes)
+app.use('/api/user/', userRoutes)
 
 //upload image route
 app.post('/upload', upload.single('file'), async (req, res) => {
@@ -659,6 +659,6 @@ app.get('/getUsersTotalPoints', async (req, res) => {
   
 
 app.get("/", (req,res) =>{
-    res.send("Hello from Backend Server !!");
+    res.send("Hello from Backend Server !");
 });
 

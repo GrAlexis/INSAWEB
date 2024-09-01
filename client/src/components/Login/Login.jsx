@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; 
-import './Login.css';
+
+
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -11,7 +12,7 @@ const Login = () => {
   useEffect(() => {
     const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
     if (isAuthenticated) {
-      navigate('/profil'); // Redirigez immédiatement si l'utilisateur est déjà authentifié
+      navigate('/home'); // Redirigez immédiatement si l'utilisateur est déjà authentifié
     }
   }, [navigate]);
 
@@ -39,7 +40,7 @@ const Login = () => {
 
       
       // Rediriger après l'authentification réussie
-      navigate('/profil');
+      navigate('/home');
 
     } catch (error) {
       console.error('Erreur lors de la connexion:', error);
@@ -52,7 +53,7 @@ const Login = () => {
       <form onSubmit={handleSubmit} className="login-form">
         <h2>Login</h2>
         <div className="input-group">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">Email INSA</label>
           <input
             type="email"
             id="email"
