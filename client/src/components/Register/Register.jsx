@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
 
 function SignupPage() {
   const [firstName, setFirstName] = useState("");
@@ -10,6 +11,9 @@ function SignupPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [classYear, setClassYear] = useState("3TC");
   const [isApprentice, setIsApprentice] = useState(false);
+
+  const navigate = useNavigate();
+
 
   const handleSignup = async () => {
     if (password !== confirmPassword) {
@@ -125,6 +129,9 @@ function SignupPage() {
         <button onClick={handleSignup} style={styles.button}>
           S'inscrire
         </button>
+        <button onClick={() => navigate('/login')} style={styles.button}>
+      Ou se connecter
+    </button>
       </div>
     </div>
   );

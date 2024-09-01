@@ -21,7 +21,7 @@ function App() {
       <div className="app-container">
           <BrowserRouter>
               <Routes>
-                <Route index element={<Home />} />
+                <Route index element={<Login />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/sheesh" element={<Sheesh />} />
                 <Route path="/ranking" element={<Ranking />} />
