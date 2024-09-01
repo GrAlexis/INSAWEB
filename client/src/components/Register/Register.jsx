@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from 'react-router-dom';
 
 function SignupPage() {
-  const [firstName, setFirstName] = useState("");
+  const [name, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -24,7 +24,7 @@ function SignupPage() {
     const year = `${classYear}${isApprentice ? 'A' : ''}`;
     
     const payload = {
-      firstName,
+      name,
       lastName,
       password,
       isAdmin,
@@ -48,7 +48,7 @@ function SignupPage() {
         <label style={styles.label}>Prénom:</label>
         <input
           type="text"
-          value={firstName}
+          value={name}
           onChange={(e) => setFirstName(e.target.value)}
           style={styles.input}
         />
