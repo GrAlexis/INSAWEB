@@ -34,8 +34,7 @@ const Login = () => {
 
       // Stocker le token dans le sessionStorage
       sessionStorage.setItem('token', data.token);
-
-
+      sessionStorage.setItem('email', email)
       
       // Rediriger après l'authentification réussie
       navigate('/profil');

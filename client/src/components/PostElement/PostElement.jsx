@@ -49,7 +49,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
     const fetchUser = async () => {
       try {
-        const userResponse = await axios.get(`http://localhost:5000/users/${post.user}`);
+        const userResponse = await axios.get(`http://localhost:5000/api/user/${post.user}`);
         setPostUser(userResponse.data);
       } catch (error) {
         console.error('Error fetching post user', error);

@@ -13,7 +13,6 @@ const InfoBar = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [rankedUsers, setRankedUsers] = useState([]);
   const [userRank, setUserRank] = useState(null);
-
   useEffect(() => {
     if (user && user.teamId) {
       updateUserTeamName(user);
@@ -73,7 +72,7 @@ const InfoBar = () => {
         <img src={logo} alt="Association Logo" className="astuce-logo" />
       </div>
       <div className="section user-info">
-        <h2 onClick={() => setIsPanelOpen(!isPanelOpen)}>{user.name} ({user.teamName})</h2>
+        <h2 onClick={() => setIsPanelOpen(!isPanelOpen)}>{user.name} ({user.teamName ?? ''})</h2>
         <h2>{user.balance} Sh</h2>
       </div>
       {isPanelOpen && (
