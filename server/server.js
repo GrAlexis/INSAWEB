@@ -15,6 +15,7 @@ const Team = require('./models/team');
 const productRoutes = require("./routes/products.routes");
 const connexionRoutes = require("./routes/connexion.routes")
 const userRoutes = require("./routes/user.routes")
+const teamRoutes = require('./routes/team.routes')
 const session = require('express-session')
 
 const app = express();
@@ -63,6 +64,7 @@ const upload = multer({ storage });
 app.use("/api/products",productRoutes);
 app.use('/api/connexion/', connexionRoutes)
 app.use("/api/user/", userRoutes)
+app.use('/api/team/', teamRoutes)
 
 //upload image route
 app.post('/upload', upload.single('file'), async (req, res) => {
