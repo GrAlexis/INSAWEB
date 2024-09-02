@@ -8,7 +8,7 @@ const PostFeed = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/posts');
+      const response = await axios.get('http://92.243.24.55:5000/posts');
       setPosts(response.data);
     } catch (error) {
       console.error('Error fetching posts', error);
