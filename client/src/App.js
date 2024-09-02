@@ -26,7 +26,7 @@ function App() {
                 <Route path="/sheesh" element={<ProtectedRoute><Sheesh /></ProtectedRoute>} />
                 <Route path="/ranking" element={<ProtectedRoute><Ranking /></ProtectedRoute>} />
                 <Route path="/sheesh/:challengeId" element={<ProtectedRoute><Sheesh /></ProtectedRoute>} />
-                <Route path="/register" element={<ProtectedRoute><Register/></ProtectedRoute>} />
+                <Route path="/register" element={<Register/>}/>
                 <Route path="/login" element={<Login/>}/>
                 <Route
                   path="/admin"
