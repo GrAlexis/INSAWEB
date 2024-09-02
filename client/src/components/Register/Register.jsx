@@ -68,7 +68,7 @@ function SignupPage() {
       </div><div style={styles.inputGroup}>
         <label style={styles.label}>Email INSA</label>
         <input
-          type="text"
+          type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           style={styles.input}
