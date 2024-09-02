@@ -23,7 +23,7 @@ const AdminPage = () => {
         }
 
     // Fetch events when the component mounts
-    axios.get('http://localhost:5000/events')
+    axios.get('http://92.243.24.55:5000/events')
       .then(response => setEvents(response.data))
       .catch(error => console.error('Error fetching events:', error));
   }, []);

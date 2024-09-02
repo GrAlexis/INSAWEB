@@ -20,7 +20,7 @@ const session = require('express-session')
 const app = express();
 
 //listen on port 5000
-app.listen(5000, () => {
+app.listen(5000, "92.243.24.55",() => {
     console.log("Backend is running on port 5000...");
 });
 
@@ -33,7 +33,7 @@ app.use(session({
 
 
 //connection to mongoDB 
-mongoose.connect("mongodb://172.16.52.69:27017/test")
+mongoose.connect("mongodb://localhost:27017/test")
     .then(()=>{
         console.log("Connected to Database...");
     })

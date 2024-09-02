@@ -23,7 +23,7 @@ const InfoBar = () => {
   useEffect(() => {
     const fetchRankings = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/getUsersTotalPoints');
+        const response = await axios.get('http://92.243.24.55:5000/getUsersTotalPoints');
         const users = response.data;
         
         setRankedUsers(users);

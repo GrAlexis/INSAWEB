@@ -25,11 +25,11 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   useEffect(() => {
     const fetchChallengeAndEvent = async () => {
       try {
-        const challengeResponse = await axios.get(`http://localhost:5000/challenges/${post.challengeId}`);
+        const challengeResponse = await axios.get(`http://92.243.24.55:5000/challenges/${post.challengeId}`);
         const fetchedChallenge = challengeResponse.data;
         setChallenge(fetchedChallenge);
 
-        const eventResponse = await axios.get(`http://localhost:5000/events/${fetchedChallenge.eventId}`);
+        const eventResponse = await axios.get(`http://92.243.24.55:5000/events/${fetchedChallenge.eventId}`);
         setEvent(eventResponse.data);
       } catch (error) {
         console.error('Error fetching challenge or event', error);
@@ -39,7 +39,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     const fetchTeam = async () => {
       if (post.teamId) {
         try {
-          const teamResponse = await axios.get(`http://localhost:5000/teams/${post.teamId}`);
+          const teamResponse = await axios.get(`http://92.243.24.55:5000/teams/${post.teamId}`);
           setTeam(teamResponse.data);
         } catch (error) {
           console.error('Error fetching team', error);
@@ -49,7 +49,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
     const fetchUser = async () => {
       try {
-        const userResponse = await axios.get(`http://localhost:5000/users/${post.user}`);
+        const userResponse = await axios.get(`http://92.243.24.55:5000/users/${post.user}`);
         setPostUser(userResponse.data);
       } catch (error) {
         console.error('Error fetching post user', error);
