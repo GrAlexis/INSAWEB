@@ -72,7 +72,7 @@ const InfoBar = () => {
         <img src={logo} alt="Association Logo" className="astuce-logo" />
       </div>
       <div className="section user-info">
-        <h2 onClick={() => setIsPanelOpen(!isPanelOpen)}>{user.name} ({user.teamName ?? ''})</h2>
+        <h2 onClick={() => setIsPanelOpen(!isPanelOpen)}>{user.name.charAt(0).toUpperCase() + user.name.slice(1)} ({user.teamName ?? 'No team'})</h2>
         <h2>{user.balance} Sh</h2>
       </div>
       {isPanelOpen && (
