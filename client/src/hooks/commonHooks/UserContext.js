@@ -10,13 +10,13 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/users');
+        const response = await axios.get('http://92.243.24.55:5000/users');
         const usersData = response.data;
 
         // Fetch team details for each user
         for (const user of usersData) {
           if (user.teamId) {
-            const teamResponse = await axios.get(`http://localhost:5000/teams/${user.teamId}`);
+            const teamResponse = await axios.get(`http://92.243.24.55:5000/teams/${user.teamId}`);
             user.teamName = teamResponse.data.name;
           } else {
             user.teamName = 'No Team';
@@ -40,7 +40,7 @@ export const UserProvider = ({ children }) => {
   const updateUserTeamName = async (currentUser) => {
     if (currentUser.teamId) {
       try {
-        const teamResponse = await axios.get(`http://localhost:5000/teams/${currentUser.teamId}`);
+        const teamResponse = await axios.get(`http://92.243.24.55:5000/teams/${currentUser.teamId}`);
         const teamName = teamResponse.data.name;
         if (currentUser.teamName !== teamName) {
           setUser({ ...currentUser, teamName });

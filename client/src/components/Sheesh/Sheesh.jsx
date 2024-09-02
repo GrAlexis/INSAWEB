@@ -29,7 +29,7 @@ const Sheesh = () => {
     
     const fetchEvents = async () => {
       try {
-        const eventResponse = await axios.get('http://localhost:5000/events');
+        const eventResponse = await axios.get('http://92.243.24.55:5000/events');
         const eventsWithImages = eventResponse.data.map(event => ({
           ...event,
           image: getImageByKey(event.image)
@@ -42,7 +42,7 @@ const Sheesh = () => {
 
     const fetchChallenges = async () => {
       try {
-        const challengeResponse = await axios.get('http://localhost:5000/challenges');
+        const challengeResponse = await axios.get('http://92.243.24.55:5000/challenges');
         const challengesWithIcons = challengeResponse.data.map(challenge => ({
           ...challenge,
           icon: getImageByKey(challenge.icon)

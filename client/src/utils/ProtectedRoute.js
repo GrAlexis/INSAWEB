@@ -6,7 +6,7 @@ const fetchIsAuthenticated = async () => {
   
   if (token) {
     try {
-      const response = await fetch('http://localhost:5000/api/user/decode', {
+      const response = await fetch('http://92.243.24.55:5000/api/user/decode', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -35,7 +35,7 @@ const fetchIsAuthenticated = async () => {
 const fetchIsAdmin = async () => {
   try {
     const email = sessionStorage.getItem('email');
-    const response = await fetch(`http://localhost:5000/api/user/isAdmin/${email}`, {
+    const response = await fetch(`http://92.243.24.55:5000/api/user/isAdmin/${email}`, {
       method: 'GET',
     });
 

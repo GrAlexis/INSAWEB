@@ -71,7 +71,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:5000/posts/${post._id}`);
+      await axios.delete(`http://92.243.24.55:5000/posts/${post._id}`);
       if (onDelete) {
         onDelete(post._id);
       }
@@ -89,7 +89,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     try {
       console.log('parsereward',parseReward(challenge.reward))
       console.log('eventId',event.id)
-        const response = await axios.post(`http://localhost:5000/admin/validatePost/${post._id}`, {
+        const response = await axios.post(`http://92.243.24.55:5000/admin/validatePost/${post._id}`, {
             isAdmin: user.isAdmin,
             rewardPoints : parseReward(challenge.reward),
             eventId : event.id
@@ -132,11 +132,11 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
       <div className="post-media">
         {isVideo(post.picture) ? (
           <video controls className="post-video">
-            <source src={`http://localhost:5000/file/${post.picture}`} type="video/mp4" />
+            <source src={`http://92.243.24.55:5000/file/${post.picture}`} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         ) : (
-          <img src={`http://localhost:5000/file/${post.picture}`} alt={challenge.title} className="post-image" />
+          <img src={`http://92.243.24.55:5000/file/${post.picture}`} alt={challenge.title} className="post-image" />
         )}
       </div>
       <div className="post-body">

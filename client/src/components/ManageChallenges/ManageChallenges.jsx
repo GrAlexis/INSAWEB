@@ -73,7 +73,7 @@ const ManageChallenges = ({ eventId }) => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:5000/challenges/${challengeToDelete.id}`);
+      await axios.delete(`http://92.243.24.55:5000/challenges/${challengeToDelete.id}`);
       setChallenges(challenges.filter(challenge => challenge.id !== challengeToDelete.id));
       setShowConfirmationModal(false);
       setChallengeToDelete(null);
@@ -99,7 +99,7 @@ const ManageChallenges = ({ eventId }) => {
   };
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/challenges?eventId=${eventId}`)
+    axios.get(`http://92.243.24.55:5000/challenges?eventId=${eventId}`)
       .then(response => setChallenges(response.data))
       .catch(error => console.error('Error fetching challenges:', error));
   }, [eventId]);
