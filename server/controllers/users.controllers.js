@@ -33,7 +33,8 @@ const updateUser = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({}, 'username isAdmin'); 
+    const users = await User.find({}, 'name isAdmin'); 
+    users.forEach(obj => {delete obj._id})
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -43,13 +44,16 @@ const getAllUsers = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { username, password, isAdmin } = req.body; // Include isAdmin in request body
-    const userAlreadyExist = await User.findOne({ username });
+    const { username, password, isAdmin, classYear, lastName } = req.body; // Include isAdmin in request body
+    const email = `${username}.${lastName}@insa-lyon.fr`.toLowerCase()
+    const userAlreadyExist = await User.findOne({ email });
     if (userAlreadyExist) {
       return res.status(401).json({ message: 'User already exists' });
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await User.create({ username, password: hashedPassword, isAdmin: isAdmin }); // Include isAdmin in user creation
+      const user = await User.create({name: username, hashedPassword,
+      isAdmin: isAdmin, classYear:classYear, email,
+      balance:0, lastName }); // Include isAdmin in user creation
       res.status(201).json({ message: 'User created successfully' });
     }
   } catch (error) {
@@ -59,14 +63,14 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'User does not exist' });
     }
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await bcrypt.compare(password, user.hashedPassword);
     if (passwordMatch) {
-      const token = jwt.sign({ username: user.username }, 'your_secret_key');
+      const token = jwt.sign({ email:email }, 'your_secret_key');
       res.status(200).json({ token });
     } else {
       return res.status(401).json({ message: 'Invalid username or password' });
@@ -78,11 +82,13 @@ const loginUser = async (req, res) => {
 
 const decodeToken = (req,res) => {
   try {
-    const { token, secretKey } = req.body;
+    const { token } = req.body;
+    const secretKey = 'your_secret_key'
     const decoded = jwt.verify(token, secretKey);
-    res.status(200).json(decoded.username);
+    res.status(200).json({'username':decoded.username});
   } catch (error) {
-    throw new Error('Token decoding failed');
+    res.status(500).json('Token decoding failed');
+
   }
   
 };
@@ -97,3 +103,4 @@ module.exports = {
   decodeToken,
   updateUser
 };
+

@@ -31,7 +31,9 @@
 
 
 .upload-form {
-    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between elements */
 }
   
 .upload-form input[type="file"] {
@@ -58,4 +60,36 @@
   
   .success-notification.fade-out {
     opacity: 0;
+  }
+  .pin-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 10px;
+  }
+  
+  .pin-button img {
+    width: 24px;  /* Adjust size as needed */
+    height: auto;
+  }
+  .close-form-button {
+    align-self: flex-end; /* Aligns the button to the right */
+    background-color: #ff4d4d; /* Red background */
+    color: white; /* White text */
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+  }
+  
+  .close-form-button:hover {
+    background-color: #cc0000; /* Darker red on hover */
+  }
+  .error-message {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px
   }

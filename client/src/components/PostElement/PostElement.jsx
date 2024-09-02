@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './PostElement.css';
 import axios from 'axios';
 
-import { getRewardIcon, getPrestigeIcon } from '../../utils/imageMapper';
+import { getRewardIcon } from '../../utils/imageMapper';
 import validatedIcon from '../../assets/icons/sheesh/validated.webp'
 import waitingIcon from '../../assets/icons/sheesh/waiting.png'
 import {parseReward} from '../../utils/rewardParser'
@@ -100,7 +100,12 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     } catch (error) {
         console.error('Error validating post', error);
     }
-};
+  };
+
+  // Helper function to check if the file is a video
+  const isVideo = (fileName) => {
+    return /\.(mp4|mov|avi|wmv|flv|mkv)$/i.test(fileName);
+  };
 
 
   if (!challenge || !event || !postUser || !user) {
@@ -124,36 +129,44 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           />
         </div>
       </div>
-      <div className="post-image">
-        <img src={`http://localhost:5000/file/${post.picture}`} alt={challenge.title} />
+      <div className="post-media">
+        {isVideo(post.picture) ? (
+          <video controls className="post-video">
+            <source src={`http://localhost:5000/file/${post.picture}`} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        ) : (
+          <img src={`http://localhost:5000/file/${post.picture}`} alt={challenge.title} className="post-image" />
+        )}
       </div>
       <div className="post-body">
         <div className="reward">
           <img src={getRewardIcon(challenge.reward)} alt="Reward Icon" className="reward-icon" />
           <span className="reward-text">{challenge.reward}</span>
         </div>
-        <img src={getPrestigeIcon(challenge.prestige)} alt="Prestige Icon" className="points-icon" />
         <div className="post-title">
           <span>{challenge.title}</span>
         </div>
-        <div className="post-likes">
+        {/* <div className="post-likes">
           <button className="likes-button">
             <img src={smiley_face} alt="Likes Icon" className="likes-icon" />
           </button>
           {post.likes > 0 && <span>{post.likes}</span>}
-        </div>
+        </div> */}
       </div>
       <div className="post-description">
         <p>{post.description}</p>
       </div>
       <div className="post-footer">
         <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>
-        {(user._id === postUser._id || (user.isAdmin && !post.isValidated) )&& (
-          <button className="delete-button" onClick={handleDeleteClick}>Delete</button>
-        )}
+        {(user._id === postUser._id || (user.isAdmin && !post.isValidated)) && (
+  <button className="delete-button" onClick={handleDeleteClick}>
+    <span className="delete-cross">✕</span>
+  </button>
+)}
         {user.isAdmin && (
           <button className="validate-button" onClick={handleValidateClick}>
-            {post.isValidated ? 'Unvalidate Participation' : 'Validate Participation'}
+            {post.isValidated ? 'Invalider' : 'Valider'}
           </button>
         )}
       </div>
