@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom'; 
+import { UserProvider, useUser } from '../../hooks/commonHooks/UserContext';
 
 function SignupPage() {
   const [name, setFirstName] = useState("");
+  const [email, setEmail] = useState("@insa-lyon.fr")
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -10,6 +13,8 @@ function SignupPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [classYear, setClassYear] = useState("3TC");
   const [isApprentice, setIsApprentice] = useState(false);
+  const { user, setUser, updateUserTeamName } = useUser();
+  const navigate = useNavigate(); 
 
   const handleSignup = async () => {
     if (password !== confirmPassword) {
@@ -25,11 +30,13 @@ function SignupPage() {
       password,
       isAdmin,
       classYear: year,
+      email
     };
 
     try {
       const response = await axios.post("http://localhost:5000/api/user/register", payload);
       console.log("Signup success:", response.data);
+      navigate('/profil')
       // Handle successful signup
     } catch (error) {
       console.error("Signup failed:", error);
@@ -38,6 +45,7 @@ function SignupPage() {
   };
 
   return (
+    <UserProvider>
     <div style={styles.container}>
       <h2 style={styles.header}>Inscription</h2>
       <div style={styles.inputGroup}>
@@ -55,6 +63,14 @@ function SignupPage() {
           type="text"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
+          style={styles.input}
+        />
+      </div><div style={styles.inputGroup}>
+        <label style={styles.label}>Email INSA</label>
+        <input
+          type="text"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           style={styles.input}
         />
       </div>
@@ -87,7 +103,7 @@ function SignupPage() {
           Afficher le mot de passe
         </label>
       </div>
-      <div style={styles.inputGroupCheckbox}>
+      {user?.isAdmin && <div style={styles.inputGroupCheckbox}>
         <label style={styles.label}>
           <input
             type="checkbox"
@@ -97,7 +113,7 @@ function SignupPage() {
           />
           Admin
         </label>
-      </div>
+      </div>}
       <div style={styles.inputGroup}>
         <label style={styles.label}>Année de classe:</label>
         <select
@@ -126,7 +142,7 @@ function SignupPage() {
           S'inscrire
         </button>
       </div>
-    </div>
+    </div></UserProvider>
   );
 }
 
