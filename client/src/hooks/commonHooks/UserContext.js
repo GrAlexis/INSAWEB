@@ -21,7 +21,7 @@ export const UserProvider = ({ children }) => {
 
           // Fetch team details for each use
           try {
-            console.log(user.teamId)
+            console.log(user.teamId, 'To force the trigger')
             const teamResponse = await axios.get(`http://localhost:5000/teams/${user.teamId}`);
             user.teamName = teamResponse.data.name;
           }
