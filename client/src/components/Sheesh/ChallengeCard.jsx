@@ -185,12 +185,12 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
             alt={(post ? post.isValidated : collectivePost.isValidated) ? "Validated Icon" : "Waiting Icon"}
             className="status-icon-img"
           />
-        {user && (
+        </div>
+      )}
+      {user && (
           <button onClick={handlePinClick} className="pin-button">
             <img src={user.pinnedChallenges.includes(challenge.id) ? unpinIcon : pinIcon} alt="Pin/Unpin Icon" />
           </button>
-        )}
-        </div>
       )}
       {collectivePost && (
         <div className="team-post-notification">
