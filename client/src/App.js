@@ -21,13 +21,13 @@ function App() {
       <div className="app-container">
           <BrowserRouter>
               <Routes>
-                <Route index element={<Home />} />
-                <Route path="/home" element={<Home />} />
-                <Route path="/sheesh" element={<Sheesh />} />
-                <Route path="/ranking" element={<Ranking />} />
-                <Route path="/sheesh/:challengeId" element={<Sheesh />} />
-                <Route path="/register" element={<Register/>} />
-                <Route path="/login" element={<Login/>} />
+                <Route index element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                <Route path="/sheesh" element={<ProtectedRoute><Sheesh /></ProtectedRoute>} />
+                <Route path="/ranking" element={<ProtectedRoute><Ranking /></ProtectedRoute>} />
+                <Route path="/sheesh/:challengeId" element={<ProtectedRoute><Sheesh /></ProtectedRoute>} />
+                <Route path="/register" element={<ProtectedRoute><Register/></ProtectedRoute>} />
+                <Route path="/login" element={<Login/>}/>
                 <Route
                   path="/admin"
                   element={
@@ -35,7 +35,7 @@ function App() {
                       <AdminPage />
                     </ProtectedRoute>
                   }
-                />   <Route
+                /><Route
                 path="/profil"
                 element={
                   <ProtectedRoute  >
