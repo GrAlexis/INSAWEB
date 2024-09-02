@@ -44,8 +44,7 @@ const getAllUsers = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, password, isAdmin, classYear, lastName } = req.body; // Include isAdmin in request body
-    const email = `${name}.${lastName}@insa-lyon.fr`.toLowerCase()
+    const { name, password, isAdmin, classYear, lastName, email } = req.body; // Include isAdmin in request body
     const userAlreadyExist = await User.findOne({ email });
     if (userAlreadyExist) {
       return res.status(401).json({ message: 'User already exists' });
