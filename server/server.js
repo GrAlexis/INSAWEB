@@ -5,6 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const cors = require('cors');
 const { GridFSBucket } = require('mongodb');
+const dotenv = require('dotenv');
 
 const Post = require('./models/post');
 const Challenge = require('./models/challenge');
@@ -16,6 +17,8 @@ const productRoutes = require("./routes/products.routes");
 const connexionRoutes = require("./routes/connexion.routes")
 const userRoutes = require("./routes/user.routes")
 const session = require('express-session')
+
+dotenv.config();
 
 const app = express();
 
@@ -33,7 +36,10 @@ app.use(session({
 
 
 //connection to mongoDB 
-mongoose.connect("mongodb://127.0.0.1:27017/test")
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
     .then(()=>{
         console.log("Connected to Database...");
     })
