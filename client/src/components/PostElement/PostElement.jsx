@@ -181,7 +181,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
       </div>
 
       {showConfirmDelete && (
-        <div className="confirm-delete-popup">
+        <div className="popup">
           <div className="confirm-delete-content">
             <p>Are you sure you want to delete this post?</p>
             <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>
