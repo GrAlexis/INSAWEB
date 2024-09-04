@@ -23,7 +23,7 @@ dotenv.config();
 const app = express();
 
 //listen on port 5000
-app.listen(5000, "92.243.24.55",() => {
+app.listen(5000, "localhost",() => {
     console.log("Backend is running on port 5000...");
 });
 
@@ -37,15 +37,12 @@ app.use(session({
 
 //connection to mongoDB 
 
-mongoose.connect(process.env.MONGO_URI, { 
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-    .then(()=>{
+mongoose.connect("mongodb://172.16.52.69:27017/test")
+    .then(() => {
         console.log("Connected to Database...");
     })
-    .catch(()=>{
-        console.log("Connection failed :/");
+    .catch((error) => {
+        console.error("Connection failed :/", error);
     });
 
 const conn = mongoose.connection;
@@ -62,8 +59,14 @@ app.use(cors());
 app.use(express.json())
 app.use(express.urlencoded({extended : false}));
 
-// Multer setup
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/');  // Dossier temporaire
+    },
+    filename: function (req, file, cb) {
+        cb(null, crypto.randomBytes(20).toString('hex') + path.extname(file.originalname));
+    }
+});
 const upload = multer({ storage });
 
 //routes

@@ -30,7 +30,7 @@ function SignupPage() {
     };
 
     try {
-      const response = await axios.post("http://92.243.24.55:5000/api/user/register", payload);
+      const response = await axios.post("http://localhost:5000/api/user/register", payload);
       console.log("Signup success:", response.data);
       // Handle successful signup
     } catch (error) {

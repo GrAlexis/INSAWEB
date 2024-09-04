@@ -12,10 +12,10 @@ const EventCard = ({ event }) => {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await axios.get(`http://92.243.24.55:5000/events/${event.id}/teams`);
+        const response = await axios.get(`http://localhost:5000/events/${event.id}/teams`);
         const teamsWithMembersCount = await Promise.all(
           response.data.map(async (team) => {
-            const membersResponse = await axios.get(`http://92.243.24.55:5000/teams/${team.id}/members`);
+            const membersResponse = await axios.get(`http://localhost:5000/teams/${team.id}/members`);
             return {
               ...team,
               membersCount: membersResponse.data.length,
@@ -53,7 +53,7 @@ const EventCard = ({ event }) => {
       {
         previousTeamId = ""
       }
-      const response = await axios.post('http://92.243.24.55:5000/assignTeam', {
+      const response = await axios.post('http://localhost:5000/assignTeam', {
         userId: user._id,
         teamId: teamId,
         eventId: event.id,

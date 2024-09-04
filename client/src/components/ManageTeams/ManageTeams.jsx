@@ -19,16 +19,16 @@ const ManageTeams = ({ eventId }) => {
     const fetchTeamsAndUsers = async () => {
       try {
         // Fetch teams and their members
-        const teamsResponse = await axios.get(`http://92.243.24.55:5000/events/${eventId}/teams`);
+        const teamsResponse = await axios.get(`http://localhost:5000/events/${eventId}/teams`);
         const teamsWithPoints = await Promise.all(teamsResponse.data.map(async team => {
-          const membersResponse = await axios.get(`http://92.243.24.55:5000/teams/${team.id}/members`);
+          const membersResponse = await axios.get(`http://localhost:5000/teams/${team.id}/members`);
           const points = membersResponse.data.reduce((acc, member) => acc + (member.points || 0), 0);
           return { ...team, members: membersResponse.data, points };
         }));
         setTeams(teamsWithPoints);
 
         // Fetch users without a team
-        const usersResponse = await axios.get(`http://92.243.24.55:5000/users`);
+        const usersResponse = await axios.get(`http://localhost:5000/users`);
         const usersWithoutTeam = usersResponse.data.filter(user => !user.teamId || user.teamId === '');
         setUsersWithoutTeam(usersWithoutTeam);
 
@@ -47,18 +47,18 @@ const ManageTeams = ({ eventId }) => {
 
     try {
       if (isEditing) {
-        const response = await axios.put(`http://92.243.24.55:5000/teams/${isEditing}`, {
+        const response = await axios.put(`http://localhost:5000/teams/${isEditing}`, {
           name: teamName,
           maxMembers: maxMembers !== '' ? parseInt(maxMembers, 10) : undefined
         });
 
         setTeams(teams.map(team => team.id === isEditing ? response.data : team));
       } else {
-        const allTeamIdsResponse = await axios.get('http://92.243.24.55:5000/teams/ids');
+        const allTeamIdsResponse = await axios.get('http://localhost:5000/teams/ids');
         const allTeamIds = allTeamIdsResponse.data.map(team => parseInt(team.id, 10));
         const newId = Math.max(...allTeamIds) + 1;
 
-        const response = await axios.post('http://92.243.24.55:5000/teams', {
+        const response = await axios.post('http://localhost:5000/teams', {
           id: newId,
           name: teamName,
           eventId: eventId,
@@ -89,7 +89,7 @@ const ManageTeams = ({ eventId }) => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://92.243.24.55:5000/teams/${teamToDelete}`);
+      await axios.delete(`http://localhost:5000/teams/${teamToDelete}`);
       setTeams(teams.filter(team => team.id !== teamToDelete));
       setShowConfirmDelete(false);
       setTeamToDelete(null);
@@ -107,7 +107,7 @@ const ManageTeams = ({ eventId }) => {
     try {
       const previousTeamId = selectedUser.teamId;
 
-      await axios.post('http://92.243.24.55:5000/assignTeam', {
+      await axios.post('http://localhost:5000/assignTeam', {
         userId: selectedUser._id,
         teamId: newTeamId,
         eventId: eventId,
