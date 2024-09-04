@@ -37,7 +37,7 @@
 
   .team-members{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: space-between;
     padding-left: 20px;
     padding-right: 13px;

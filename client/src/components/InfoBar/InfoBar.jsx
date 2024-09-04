@@ -13,6 +13,7 @@ const InfoBar = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [rankedUsers, setRankedUsers] = useState([]);
   const [userRank, setUserRank] = useState(null);
+
   useEffect(() => {
     if (user && user.teamId) {
       updateUserTeamName(user);

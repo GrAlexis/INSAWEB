@@ -64,7 +64,6 @@ const upload = multer({ storage });
 app.use("/api/products",productRoutes);
 app.use('/api/connexion/', connexionRoutes)
 app.use("/api/user/", userRoutes)
-app.use('/api/team/', teamRoutes)
 
 //upload image route
 app.post('/upload', upload.single('file'), async (req, res) => {
@@ -642,7 +641,27 @@ app.post('/unpinChallenge', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-
+// Route to get user points and ranks
+app.get('/getUsersTotalPoints', async (req, res) => {
+    try {
+      // Fetch all users
+      const users = await User.find();
+  
+      // Calculate total points for each user
+      const usersWithPoints = users.map(user => ({
+        ...user.toObject(),
+        totalPoints: Object.values(user.eventPoints).reduce((acc, points) => acc + points, 0),
+      }));
+  
+      // Sort users by total points descending
+      usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
+  
+      res.json(usersWithPoints);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching user rankings' });
+    }
+  });
+  
 
 app.get("/", (req,res) =>{
     res.send("Hello from Backend Server !");

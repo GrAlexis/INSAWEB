@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 
+
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,6 +43,7 @@ const Login = () => {
 
     } catch (error) {
       console.error('Erreur lors de la connexion:', error);
+      alert('Login failed')
       // Vous pouvez afficher un message d'erreur à l'utilisateur ici
     }
   };
@@ -50,7 +53,7 @@ const Login = () => {
       <form onSubmit={handleSubmit} className="login-form">
         <h2>Login</h2>
         <div className="input-group">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">Email INSA</label>
           <input
             type="email"
             id="email"
@@ -69,7 +72,13 @@ const Login = () => {
             required
           />
         </div>
-        <button type="submit" className="login-button">Login</button>
+        <button type="submit" className="login-button">Se connecter</button>
+        <button 
+      type="button" 
+      className="login-button" 
+      onClick={() => navigate('/register')}>
+       Ou s'inscrire
+    </button>
       </form>
     </div>
   );

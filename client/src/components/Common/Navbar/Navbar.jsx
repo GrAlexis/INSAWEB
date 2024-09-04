@@ -27,10 +27,10 @@ const Navbar = () => {
                 <img src={feedIcon} alt="Feed Icon" className="nav-icon" />
                 <span>Feed</span>
             </Link>
-            <Link to="/events" className={`nav-item ${location.pathname === '/events' ? 'active' : ''}`}>
+            {/* <Link to="/events" className={`nav-item ${location.pathname === '/events' ? 'active' : ''}`}>
                 <img src={eventsIcon} alt="Events Icon" className="nav-icon" />
                 <span>Events</span>
-            </Link>
+            </Link> */}
             <Link to="/sheesh" className={`nav-item ${location.pathname === '/sheesh' ? 'active' : ''}`}>
                 <img src={sheeshIcon} alt="Sheesh Icon" className="nav-icon" />
                 <span>Sheesh</span>

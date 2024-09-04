@@ -3,7 +3,7 @@ import Home from "./components/Feed/Feed"
 import Sheesh from "./components/Sheesh/Sheesh"
 import Profil from "./components/Profil/Profil"
 
-
+import Login from './components/Login/Login'
 import Register from './components/Register/Register'
 import Ranking from './components/Ranking/Ranking'
 import AdminPage from './components/AdminPage/AdminPage';
@@ -12,7 +12,6 @@ import { BrowserRouter, Routes, Route} from "react-router-dom"
 import Navbar from './components/Common/Navbar/Navbar'
 import { UserProvider } from './hooks/commonHooks/UserContext';
 import './App.css';
-import Login from './components/Login/Login'
 
 
 function App() {
@@ -31,7 +30,7 @@ function App() {
                 <Route
                   path="/admin"
                   element={
-                    <ProtectedRoute adminOnly={true} >
+                    <ProtectedRoute adminOnly={true}>
                       <AdminPage />
                     </ProtectedRoute>
                   }
@@ -52,3 +51,4 @@ function App() {
 }
 
 export default App
+

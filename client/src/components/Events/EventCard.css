@@ -27,18 +27,8 @@
     cursor: pointer;
 }
 
-.chevron-btn{
-    margin-right: 8px;
-    padding: 8px 16px;
-    border: none;
-    
-    background-color:white;
-    cursor: pointer;
-}
-
 .popup {
     position: fixed;
-    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
@@ -77,9 +67,6 @@ border-radius: 5px;
 cursor: pointer;
 }
 
-.popup-content button:hover {
-background-color: #0056b3;
-}
 .team-button-disabled {
     background-color: #ccc;
     cursor: not-allowed;
