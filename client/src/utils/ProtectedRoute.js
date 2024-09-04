@@ -3,7 +3,8 @@ import { Navigate } from 'react-router-dom';
 
 const fetchIsAuthenticated = async () => {
   const token = sessionStorage.getItem('token');
-  
+  const isAuthenticated = sessionStorage.getItem('isAuthenticated')
+ if (!isAuthenticated) {
   if (token) {
     try {
       const response = await fetch('http://localhost:5000/api/user/decode', {
@@ -30,6 +31,10 @@ const fetchIsAuthenticated = async () => {
   } else {
     return false;
   }
+}
+  else{
+    return true
+  }
 };
 
 const fetchIsAdmin = async () => {
@@ -50,8 +55,8 @@ const fetchIsAdmin = async () => {
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const [loading, setLoading] = useState(true);
-  const [authStatus, setAuthStatus] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [authStatus, setAuthStatus] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -60,7 +65,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 
       if (isAuthenticated && adminOnly) {
         const adminStatus = await fetchIsAdmin();
-        console.log(adminStatus)
+        console.log('isAdmin after fetch',adminStatus)
         setIsAdmin(adminStatus);
       }
 
@@ -75,10 +80,12 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   }
 
   if (!authStatus) {
+    //console.log('Redirecting to login from protocted route')
     return <Navigate to="/login" />;
   }
 
-  if (adminOnly && !isAdmin) {
+  if (adminOnly && isAdmin === false) {
+    console.log('Isadmin',isAdmin)
     alert("Page réservée aux administrateurs. Connectez-vous avec un compte admin.");
     return <Navigate to="/login" />;
   }

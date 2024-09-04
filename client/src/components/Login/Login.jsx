@@ -36,9 +36,11 @@ const Login = () => {
 
       // Stocker le token dans le sessionStorage
       sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('isAuthenticated', true)
       sessionStorage.setItem('email', email)
       
       // Rediriger après l'authentification réussie
+      console.log('Redirecting to home')
       navigate('/home');
 
     } catch (error) {
