@@ -192,6 +192,11 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
         )}
         </div>
       )}
+      {user && (
+          <button onClick={handlePinClick} className="pin-button">
+            <img src={user.pinnedChallenges.includes(challenge.id) ? unpinIcon : pinIcon} alt="Pin/Unpin Icon" />
+          </button>
+      )}
       {collectivePost && (
         <div className="team-post-notification">
           {`A member of your team (${teammateName}) has already posted for this collective challenge`}

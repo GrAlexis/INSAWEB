@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom'; 
 import { useNavigate } from 'react-router-dom';
 
 function SignupPage() {
+  const [name, setFirstName] = useState("");
   const [name, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
@@ -11,6 +13,7 @@ function SignupPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [classYear, setClassYear] = useState("3TC");
   const [isApprentice, setIsApprentice] = useState(false);
+  const navigate = useNavigate(); 
 
   const navigate = useNavigate();
 
@@ -24,6 +27,7 @@ function SignupPage() {
     const year = `${classYear}${isApprentice ? 'A' : ''}`;
     
     const payload = {
+      name,
       name,
       lastName,
       password,
@@ -48,6 +52,7 @@ function SignupPage() {
         <label >Prénom:</label>
         <input
           type="text"
+          value={name}
           value={name}
           onChange={(e) => setFirstName(e.target.value)}
           
@@ -128,6 +133,15 @@ function SignupPage() {
       <div>
         <button onClick={handleSignup} >
           S'inscrire
+        </button>
+        <button 
+          type="button" 
+          onClick={() => navigate("/login")} 
+          className="login-button" 
+          style={styles.button}
+        >
+          Se connecter ?
+        </button>
         </button>
         <button onClick={() => navigate('/login')}>
       Ou se connecter

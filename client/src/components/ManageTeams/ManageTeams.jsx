@@ -14,10 +14,15 @@ const ManageTeams = ({ eventId }) => {
   const [showUserTransferPanel, setShowUserTransferPanel] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [usersWithoutTeam, setUsersWithoutTeam] = useState([]);
+  const [usersWithoutTeam, setUsersWithoutTeam] = useState([]);
 
   useEffect(() => {
     const fetchTeamsAndUsers = async () => {
+    const fetchTeamsAndUsers = async () => {
       try {
+        // Fetch teams and their members
+        const teamsResponse = await axios.get(`http://localhost:5000/events/${eventId}/teams`);
+        const teamsWithPoints = await Promise.all(teamsResponse.data.map(async team => {
         // Fetch teams and their members
         const teamsResponse = await axios.get(`http://localhost:5000/events/${eventId}/teams`);
         const teamsWithPoints = await Promise.all(teamsResponse.data.map(async team => {
@@ -32,13 +37,21 @@ const ManageTeams = ({ eventId }) => {
         const usersWithoutTeam = usersResponse.data.filter(user => !user.teamId || user.teamId === '');
         setUsersWithoutTeam(usersWithoutTeam);
 
+
+        // Fetch users without a team
+        const usersResponse = await axios.get(`http://localhost:5000/users`);
+        const usersWithoutTeam = usersResponse.data.filter(user => !user.teamId || user.teamId === '');
+        setUsersWithoutTeam(usersWithoutTeam);
+
         setIsLoading(false);
       } catch (error) {
+        console.error('Error fetching data:', error);
         console.error('Error fetching data:', error);
         setIsLoading(false);
       }
     };
 
+    fetchTeamsAndUsers();
     fetchTeamsAndUsers();
   }, [eventId]);
 
@@ -115,6 +128,7 @@ const ManageTeams = ({ eventId }) => {
       });
 
       // Update team lists
+      // Update team lists
       const updatedTeams = teams.map(team => {
         if (team.id === previousTeamId) {
           return { ...team, members: team.members.filter(member => member._id !== selectedUser._id) };
@@ -125,6 +139,8 @@ const ManageTeams = ({ eventId }) => {
         return team;
       });
       setTeams(updatedTeams);
+
+      setUsersWithoutTeam(usersWithoutTeam.filter(user => user._id !== selectedUser._id));
 
       setUsersWithoutTeam(usersWithoutTeam.filter(user => user._id !== selectedUser._id));
       setShowUserTransferPanel(false);
@@ -143,6 +159,7 @@ const ManageTeams = ({ eventId }) => {
         <input
           type="text"
           placeholder="Nom de l'équipe"
+          placeholder="Nom de l'équipe"
           value={teamName}
           onChange={(e) => setTeamName(e.target.value)}
           required
@@ -150,10 +167,12 @@ const ManageTeams = ({ eventId }) => {
         <input
           type="number"
           placeholder="Joueurs Max"
+          placeholder="Joueurs Max"
           value={maxMembers}
           onChange={(e) => setMaxMembers(e.target.value)}
           min="1"
         />
+        <button type="submit">{isEditing ? 'Update Team' : 'Créer une équipe'}</button>
         <button type="submit">{isEditing ? 'Update Team' : 'Créer une équipe'}</button>
       </form>
 
@@ -168,7 +187,7 @@ const ManageTeams = ({ eventId }) => {
               <img src={modifyButtonIcon} alt="Modify" />
             </button>
             <button className='delete-button' onClick={() => handleDeleteClick(team.id)}>✕</button>
-            <div className="team-members">
+            <div className="team-members-list">
               {team.members.map(member => (
                 <div key={member._id} className="member-item">
                   <span>{member.name}</span>
@@ -206,10 +225,37 @@ const ManageTeams = ({ eventId }) => {
         )}
       </div>
 
+      {/* Card for Users Without a Team */}
+      <div className="no-team-users">
+        <h2>Sans chasubles</h2>
+        {usersWithoutTeam.length > 0 ? (
+          usersWithoutTeam.map(user => (
+            <div key={user._id} className="user-card">
+              <h3>{user.name}</h3>
+              <p>No Team</p>
+              <button className='change-team-button' onClick={() => {
+                setSelectedUser(user);
+                setShowUserTransferPanel(true);
+              }}>
+                Assigner
+              </button>
+            </div>
+          ))
+        ) : (
+          <p>No users without a team.</p>
+        )}
+      </div>
+
       {showUserTransferPanel && (
         <div className="user-transfer-panel">
           <h2>Transfer {selectedUser.name} to:</h2>
           {teams.map(team => (
+            <button
+              key={team.id}
+              className={`team-transfer-button ${team.maxMembers && team.members.length >= team.maxMembers ? 'disabled' : ''}`}
+              onClick={() => handleUserTransfer(team.id)}
+              disabled={team.maxMembers && team.members.length >= team.maxMembers}
+            >
             <button
               key={team.id}
               className={`team-transfer-button ${team.maxMembers && team.members.length >= team.maxMembers ? 'disabled' : ''}`}
@@ -231,8 +277,21 @@ const ManageTeams = ({ eventId }) => {
           >
             Cancel
           </button>
+          <button
+            className="no-team-button"
+            onClick={() => handleUserTransfer('')}
+          >
+            No Team
+          </button>
+          <button
+            className="cancel-transfer-button"
+            onClick={() => setShowUserTransferPanel(false)}
+          >
+            Cancel
+          </button>
         </div>
       )}
+
 
 
       {showConfirmDelete && (

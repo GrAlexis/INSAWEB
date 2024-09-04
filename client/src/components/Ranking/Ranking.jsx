@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Ranking.css'
 import Animation from '../Animation'
+import { useNavigate } from 'react-router-dom';
+
 
 const Ranking = () => {
   const [events, setEvents] = useState([]);
@@ -9,8 +11,18 @@ const Ranking = () => {
   const [ranking, setRanking] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const token = sessionStorage.getItem('token');
+
+        if (!token) {
+          // If no token, redirect to login page
+          navigate('/login');
+          return; // Exit useEffect early to prevent further code execution
+        }
+
+
     // Fetch events when the component mounts
     axios.get('http://localhost:5000/events')
       .then(response => setEvents(response.data))
@@ -62,15 +74,12 @@ const Ranking = () => {
               <span className="team-rank-points">{team.points} points</span>
             </div>
             {selectedTeam === team.id && (
-              <div className="team-members">
+              <div className="team-members-list">
                 {teamMembers.map(member => (
                   <>
                   <div key={member.id} className="member-name">
-                    {member.name}
+                    {member.name} {member.points} points
                   </div>
-                  <div key={member.id} className="member-points">
-                  {member.points} points
-                </div>
                 </>
                 ))}
               </div>

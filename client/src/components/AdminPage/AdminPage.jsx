@@ -2,12 +2,26 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import EventAdmin from '../EventAdmin/EventAdmin';
 import './AdminPage.css';
+import { useNavigate } from 'react-router-dom';
+
+
 
 const AdminPage = () => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const navigate = useNavigate();
+
 
   useEffect(() => {
+
+    const token = sessionStorage.getItem('token');
+
+        if (!token) {
+          // If no token, redirect to login page
+          navigate('/login');
+          return; // Exit useEffect early to prevent further code execution
+        }
+
     // Fetch events when the component mounts
     axios.get('http://localhost:5000/events')
       .then(response => setEvents(response.data))

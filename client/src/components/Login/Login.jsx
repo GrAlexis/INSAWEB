@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; 
+import './Login.css';
 
-
-
-const Login = () => {
+const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate(); 
 
   // Vérifiez si l'utilisateur est déjà authentifié
   useEffect(() => {
+    
     const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
     if (isAuthenticated) {
+      navigate('/home'); // Redirigez immédiatement si l'utilisateur est déjà authentifié
       navigate('/home'); // Redirigez immédiatement si l'utilisateur est déjà authentifié
     }
   }, [navigate]);
@@ -37,9 +38,11 @@ const Login = () => {
       // Stocker le token dans le sessionStorage
       sessionStorage.setItem('token', data.token);
 
-
+      // Call the function passed from App.js to trigger a state change
+      onLoginSuccess();
       
       // Rediriger après l'authentification réussie
+      navigate('/home');
       navigate('/home');
 
     } catch (error) {
@@ -72,13 +75,8 @@ const Login = () => {
             required
           />
         </div>
-        <button type="submit" className="login-button">Se connecter</button>
-        <button 
-      type="button" 
-      className="login-button" 
-      onClick={() => navigate('/register')}>
-       Ou s'inscrire
-    </button>
+        <button type="submit" className="login-button">Login</button>
+        <button  onClick={() => navigate('/register')} type="submit" className="login-button">S'inscire ? </button>
       </form>
     </div>
   );
