@@ -16,6 +16,9 @@ const Navbar = () => {
     if (location.pathname === '/login') {
         return <nav />;
     }
+    if (location.pathname === '/register') {
+        return <nav />;
+    }
 
     return (
         <nav className="navbar">

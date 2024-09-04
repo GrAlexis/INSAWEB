@@ -92,8 +92,6 @@ const decodeToken = (req,res) => {
   
 };
 
-
-
 const getUser = async (req, res) => {
     try{
       const userId = req.params.userId
@@ -123,6 +121,27 @@ const getUser = async (req, res) => {
     }
 }
 
+const isAdmin = async (req, res) => {
+  try{
+    const userId = req.params.email
+    userId.includes('@')
+      const email = userId
+      user  = await User.findOne({email: email})
+      //console.log('email',user)
+
+    if (!user ) {
+      return res.status(401).json({ message: 'User does not exist' });
+    }
+    else{
+      res.status(200).json(user.isAdmin)
+    }
+  }
+  catch (error){
+    //console.log(error)
+    res.status(500).json(error)
+  }
+}
+
 module.exports = {
   registerUser,
   deleteUser,
@@ -130,6 +149,7 @@ module.exports = {
   getAllUsers,
   decodeToken,
   updateUser,
-  getUser
+  getUser,
+  isAdmin
 };
 
