@@ -9,6 +9,8 @@ import {parseReward} from '../../utils/rewardParser'
 import { formatDate } from '../../utils/dateFormatter';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import LazyLoad from 'react-lazyload';
 
 import logo from '../../assets/logos/astus.png';
 import smiley_face from '../../assets/buttons/likes/thumbs-up.png';
@@ -130,13 +132,20 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
         </div>
       </div>
       <div className="post-media">
-        {isVideo(post.picture) ? (
-          <video controls className="post-video">
-            <source src={`http://92.243.24.55:5000/file/${post.picture}`} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+      {isVideo(post.picture) ? (
+          <LazyLoad height={200} offset={100}>
+            <video controls className="post-video">
+              <source src={`http://92.243.24.55:5000/file/${post.picture}`} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </LazyLoad>
         ) : (
-          <img src={`http://92.243.24.55:5000/file/${post.picture}`} alt={challenge.title} className="post-image" />
+          <LazyLoadImage
+            alt={challenge.title}
+            effect="blur"
+            src={`http://92.243.24.55:5000:5000/file/${post.picture}`} // use normal <img> attributes as props
+            className="post-image"
+          />
         )}
       </div>
       <div className="post-body">
@@ -172,7 +181,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
       </div>
 
       {showConfirmDelete && (
-        <div className="confirm-delete-popup">
+        <div className="popup">
           <div className="confirm-delete-content">
             <p>Are you sure you want to delete this post?</p>
             <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>

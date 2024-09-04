@@ -72,7 +72,9 @@ app.use("/api/products",productRoutes);
 app.use('/api/connexion/', connexionRoutes)
 app.use("/api/user/", userRoutes)
 
-//upload image route
+const sharp = require('sharp');
+
+// Upload image route
 app.post('/upload', upload.single('file'), async (req, res) => {
     if (!req.file) {
         return res.status(400).send('No file uploaded.');
@@ -86,11 +88,24 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             return res.status(400).send('A member of your team has already posted for this collective challenge.');
         }
     }
-    
-    const fileName = crypto.randomBytes(20).toString('hex') + path.extname(req.file.originalname);
-    const writeStream = gridfsBucket.openUploadStream(fileName);
 
-    writeStream.end(req.file.buffer);
+    let fileBuffer = req.file.buffer;
+    let fileName = crypto.randomBytes(20).toString('hex');
+    
+    // Convert HEIC to JPEG using sharp
+    if (req.file.mimetype === 'image/heic') {
+        try {
+            fileBuffer = await sharp(req.file.buffer).jpeg().toBuffer();
+            fileName += '.jpg';
+        } catch (error) {
+            return res.status(500).send('Error processing image.');
+        }
+    } else {
+        fileName += path.extname(req.file.originalname);
+    }
+
+    const writeStream = gridfsBucket.openUploadStream(fileName);
+    writeStream.end(fileBuffer);
 
     writeStream.on('finish', async () => {
         const newPost = new Post({
@@ -111,7 +126,12 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             res.status(500).send(error.message);
         }
     });
+
+    writeStream.on('error', (error) => {
+        res.status(500).send('Error uploading file.');
+    });
 });
+
 
 //get posts/publications route
 

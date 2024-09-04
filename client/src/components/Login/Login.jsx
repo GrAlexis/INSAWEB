@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 
-const Login = () => {
+const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate(); 
@@ -36,7 +36,8 @@ const Login = () => {
       // Stocker le token dans le sessionStorage
       sessionStorage.setItem('token', data.token);
 
-
+      // Call the function passed from App.js to trigger a state change
+      onLoginSuccess();
       
       // Rediriger après l'authentification réussie
       navigate('/home');

@@ -74,15 +74,12 @@ const Ranking = () => {
               <span className="team-rank-points">{team.points} points</span>
             </div>
             {selectedTeam === team.id && (
-              <div className="team-members">
+              <div className="team-members-list">
                 {teamMembers.map(member => (
                   <>
                   <div key={member.id} className="member-name">
-                    {member.name}
+                    {member.name} {member.points} points
                   </div>
-                  <div key={member.id} className="member-points">
-                  {member.points} points
-                </div>
                 </>
                 ))}
               </div>
