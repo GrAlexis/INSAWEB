@@ -37,9 +37,7 @@ const Login = ({ onLoginSuccess }) => {
 
       // Stocker le token dans le sessionStorage
       sessionStorage.setItem('token', data.token);
-
-      // Call the function passed from App.js to trigger a state change
-      onLoginSuccess();
+      sessionStorage.setItem('email', email)
       
       // Rediriger après l'authentification réussie
       navigate('/home');
@@ -47,6 +45,7 @@ const Login = ({ onLoginSuccess }) => {
 
     } catch (error) {
       console.error('Erreur lors de la connexion:', error);
+      alert('Login failed')
       // Vous pouvez afficher un message d'erreur à l'utilisateur ici
     }
   };

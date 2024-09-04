@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+//import { createSearchIndex } from '../../../../server/models/post';
 
 const UserContext = createContext(null);
 
@@ -10,24 +11,25 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/users');
-        const usersData = response.data;
+        const email = sessionStorage.getItem('email')
+        if (!email){
+          console.error('Not authenticated')
+        }
+        const response = await axios.get(`http://localhost:5000/api/user/${email}`);
+        const userData = response.data;
+        setUser(userData)
 
-        // Fetch team details for each user
-        for (const user of usersData) {
-          if (user.teamId) {
+          // Fetch team details for each use
+          try {
+            console.log(user.teamId, 'To force the trigger')
             const teamResponse = await axios.get(`http://localhost:5000/teams/${user.teamId}`);
             user.teamName = teamResponse.data.name;
-          } else {
-            user.teamName = 'No Team';
           }
-        }
+          catch (TypeError){
+            console.log("entering the catch")
+            user.teamName = 'No Team'
+          }
 
-        setUsers(usersData);
-        // Set the first user as the default user
-        if (usersData.length > 0) {
-          setUser(usersData[0]);
-        }
       } catch (error) {
         console.error('Error fetching users', error);
       }

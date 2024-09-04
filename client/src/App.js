@@ -44,23 +44,28 @@ function App() {
       <div className="app-container">
           <BrowserRouter>
               <Routes>
-                <Route index element={<Login onLoginSuccess={handleLogin} />} />
-                <Route path="/home" element={<Home />} />
-                <Route path="/sheesh" element={<Sheesh />} />
-                <Route path="/ranking" element={<Ranking />} />
-                <Route path="/sheesh/:challengeId" element={<Sheesh />} />
-                <Route path="/register" element={<Register/>} />
-                <Route path="/login" element={<Login onLoginSuccess={handleLogin} />} />
-                <Route path="/events" element={<EventPage/>} />
+                <Route index element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                <Route path="/sheesh" element={<ProtectedRoute><Sheesh /></ProtectedRoute>} />
+                <Route path="/ranking" element={<ProtectedRoute><Ranking /></ProtectedRoute>} />
+                <Route path="/sheesh/:challengeId" element={<ProtectedRoute><Sheesh /></ProtectedRoute>} />
+                <Route path="/register" element={<Register/>}/>
+                <Route path="/login" element={<Login/>}/>
                 <Route
                   path="/admin"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute adminOnly={true}>
                       <AdminPage />
                     </ProtectedRoute>
                   }
-                />              
-                <Route path="/profil" element={<Profil/>} />
+                /><Route
+                path="/profil"
+                element={
+                  <ProtectedRoute  >
+                    <Profil />
+                  </ProtectedRoute>
+                }
+              />            
               </Routes>
           {(showNavbar || isLoggedIn) && <Navbar />}
           </BrowserRouter>

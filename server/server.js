@@ -16,6 +16,7 @@ const Team = require('./models/team');
 const productRoutes = require("./routes/products.routes");
 const connexionRoutes = require("./routes/connexion.routes")
 const userRoutes = require("./routes/user.routes")
+const teamRoutes = require('./routes/team.routes')
 const session = require('express-session')
 
 dotenv.config();
@@ -72,7 +73,7 @@ const upload = multer({ storage });
 //routes
 app.use("/api/products",productRoutes);
 app.use('/api/connexion/', connexionRoutes)
-app.use('/api/user/', userRoutes)
+app.use("/api/user/", userRoutes)
 
 const sharp = require('sharp');
 
@@ -381,28 +382,7 @@ app.put('/challenges/:id', async (req, res) => {
   });
   
 
-//route to fetch all users
-app.get('/users', async (req, res) => {
-    try {
-        const users = await User.find();
-        res.status(200).json(users);
-    } catch (error) {
-        res.status(500).send(error.message);
-    }
-});
 
-// Route to fetch a user by _id
-app.get('/users/:id', async (req, res) => {
-    try {
-      const user = await User.findById(req.params.id);
-      if (!user) {
-        return res.status(404).send('User not found');
-      }
-      res.status(200).json(user);
-    } catch (error) {
-      res.status(500).send(error.message);
-    }
-  });
 
 //route to delete a post
 app.delete('/posts/:id', async (req, res) => {
