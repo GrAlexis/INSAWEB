@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 
-
-
-const Login = () => {
+const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate(); 
 
   // Vérifiez si l'utilisateur est déjà authentifié
   useEffect(() => {
+    
     const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
     if (isAuthenticated) {
       navigate('/home'); // Redirigez immédiatement si l'utilisateur est déjà authentifié
@@ -36,14 +35,15 @@ const Login = () => {
 
       // Stocker le token dans le sessionStorage
       sessionStorage.setItem('token', data.token);
-      sessionStorage.setItem('email', email)
+
+      // Call the function passed from App.js to trigger a state change
+      onLoginSuccess();
       
       // Rediriger après l'authentification réussie
       navigate('/home');
 
     } catch (error) {
       console.error('Erreur lors de la connexion:', error);
-      alert('Login failed')
       // Vous pouvez afficher un message d'erreur à l'utilisateur ici
     }
   };
@@ -53,7 +53,7 @@ const Login = () => {
       <form onSubmit={handleSubmit} className="login-form">
         <h2>Login</h2>
         <div className="input-group">
-          <label htmlFor="email">Email INSA</label>
+          <label htmlFor="email">Email</label>
           <input
             type="email"
             id="email"
@@ -72,13 +72,8 @@ const Login = () => {
             required
           />
         </div>
-        <button type="submit" className="login-button">Se connecter</button>
-        <button 
-      type="button" 
-      className="login-button" 
-      onClick={() => navigate('/register')}>
-       Ou s'inscrire
-    </button>
+        <button type="submit" className="login-button">Login</button>
+        <button  onClick={() => navigate('/register')} type="submit" className="login-button">S'inscire ? </button>
       </form>
     </div>
   );

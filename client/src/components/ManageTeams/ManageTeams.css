@@ -26,7 +26,20 @@
   display: flex;
   flex-wrap: wrap;
 }
+.team-members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Adjust the gap value as needed */
+}
 
+.member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+}
 .team-item {
   border: 1px solid #ccc;
   border-radius: 5px;

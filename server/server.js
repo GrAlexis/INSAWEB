@@ -5,6 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const cors = require('cors');
 const { GridFSBucket } = require('mongodb');
+const dotenv = require('dotenv');
 
 const Post = require('./models/post');
 const Challenge = require('./models/challenge');
@@ -18,10 +19,12 @@ const userRoutes = require("./routes/user.routes")
 const teamRoutes = require('./routes/team.routes')
 const session = require('express-session')
 
+dotenv.config();
+
 const app = express();
 
 //listen on port 5000
-app.listen(5000, () => {
+app.listen(5000, "localhost",() => {
     console.log("Backend is running on port 5000...");
 });
 
@@ -34,12 +37,13 @@ app.use(session({
 
 
 //connection to mongoDB 
+
 mongoose.connect("mongodb://172.16.52.69:27017/test")
-    .then(()=>{
+    .then(() => {
         console.log("Connected to Database...");
     })
-    .catch(()=>{
-        console.log("Connection failed :/");
+    .catch((error) => {
+        console.error("Connection failed :/", error);
     });
 
 const conn = mongoose.connection;
@@ -55,9 +59,15 @@ conn.once('open', () => {
 app.use(cors());
 app.use(express.json())
 app.use(express.urlencoded({extended : false}));
-
-// Multer setup
 const storage = multer.memoryStorage();
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//         cb(null, 'uploads/');  // Dossier temporaire
+//     },
+//     filename: function (req, file, cb) {
+//         cb(null, crypto.randomBytes(20).toString('hex') + path.extname(file.originalname));
+//     }
+// });
 const upload = multer({ storage });
 
 //routes
@@ -65,7 +75,9 @@ app.use("/api/products",productRoutes);
 app.use('/api/connexion/', connexionRoutes)
 app.use("/api/user/", userRoutes)
 
-//upload image route
+const sharp = require('sharp');
+
+// Upload image route
 app.post('/upload', upload.single('file'), async (req, res) => {
     if (!req.file) {
         return res.status(400).send('No file uploaded.');
@@ -79,11 +91,24 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             return res.status(400).send('A member of your team has already posted for this collective challenge.');
         }
     }
-    
-    const fileName = crypto.randomBytes(20).toString('hex') + path.extname(req.file.originalname);
-    const writeStream = gridfsBucket.openUploadStream(fileName);
 
-    writeStream.end(req.file.buffer);
+    let fileBuffer = req.file.buffer;
+    let fileName = crypto.randomBytes(20).toString('hex');
+    
+    // Convert HEIC to JPEG using sharp
+    if (req.file.mimetype === 'image/heic') {
+        try {
+            fileBuffer = await sharp(req.file.buffer).jpeg().toBuffer();
+            fileName += '.jpg';
+        } catch (error) {
+            return res.status(500).send('Error processing image.');
+        }
+    } else {
+        fileName += path.extname(req.file.originalname);
+    }
+
+    const writeStream = gridfsBucket.openUploadStream(fileName);
+    writeStream.end(fileBuffer);
 
     writeStream.on('finish', async () => {
         const newPost = new Post({
@@ -104,7 +129,12 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             res.status(500).send(error.message);
         }
     });
+
+    writeStream.on('error', (error) => {
+        res.status(500).send('Error uploading file.');
+    });
 });
+
 
 //get posts/publications route
 

@@ -168,7 +168,7 @@ const ManageTeams = ({ eventId }) => {
               <img src={modifyButtonIcon} alt="Modify" />
             </button>
             <button className='delete-button' onClick={() => handleDeleteClick(team.id)}>✕</button>
-            <div className="team-members">
+            <div className="team-members-list">
               {team.members.map(member => (
                 <div key={member._id} className="member-item">
                   <span>{member.name}</span>
