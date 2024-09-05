@@ -1,0 +1,54 @@
+ .login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .login-box {
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  .sheeeshTag{
+    font-size: 36px;
+    margin-bottom: 40px;
+    font-weight: bold;
+  }
+  
+  .input-group {
+    margin-bottom: 20px;
+  }
+  
+  input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    box-sizing: border-box;
+    border: 1px solid #34495e;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: #ecf0f1;
+  }
+  
+  .login-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #6a8a87; 
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .forgot-password {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #95a5a6;
+    cursor: pointer;
+  }
+  

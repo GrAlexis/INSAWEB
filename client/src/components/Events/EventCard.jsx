@@ -104,8 +104,8 @@ const EventCard = ({ event }) => {
             <button className="close-button" onClick={() => setIsPopupOpen(false)}>
               &times;
             </button>
-            <h2>Join a team</h2>
-            <p>You are currently in: {currentTeamName}</p>
+            <h2>Rejoindre une équipe</h2>
+            <p>Vous êtes dans : {currentTeamName}</p>
             {teams.map((team) => {
               const isTeamFull = team.maxMembers && team.membersCount >= team.maxMembers;
               return (
@@ -115,13 +115,13 @@ const EventCard = ({ event }) => {
                     disabled={isTeamFull}
                     className={isTeamFull ? 'team-button-disabled' : 'team-button'}
                   >
-                    Join {team.name}
+                    Rejoindre {team.name}
                   </button>
                   <p>
                     {team.membersCount} joueur{team.membersCount !== 1 ? 's' : ''}
                     {team.maxMembers ? ` / ${team.maxMembers}` : ''}
                   </p>
-                  {isTeamFull && <p className="team-full-warning">Max player number reached</p>}
+                  {isTeamFull && <p className="team-full-warning">Nombre max de joueurs atteint</p>}
                 </div>
               );
             })}

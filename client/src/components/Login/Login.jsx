@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
+import './Login.css'; // Assurez-vous d'importer le fichier CSS
 
 const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
@@ -8,7 +9,6 @@ const Login = ({ onLoginSuccess }) => {
 
   // Vérifiez si l'utilisateur est déjà authentifié
   useEffect(() => {
-    
     const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
     if (isAuthenticated) {
       navigate('/home'); // Redirigez immédiatement si l'utilisateur est déjà authentifié
@@ -50,31 +50,39 @@ const Login = ({ onLoginSuccess }) => {
 
   return (
     <div className="login-container">
-      <form onSubmit={handleSubmit} className="login-form">
-        <h2>Login</h2>
-        <div className="input-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="input-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="login-button">Login</button>
-        <button  onClick={() => navigate('/register')} type="submit" className="login-button">S'inscire ? </button>
-      </form>
+      <div className="login-box">
+        <h1 className="sheeeshTag">Sheeesh</h1> {/* Titre principal */}
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="input-group">
+            {/* Champ pour l'adresse email */}
+            <input
+              type="text"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email" 
+              required
+            />
+          </div>
+          <div className="input-group">
+            {/* Champ pour le mot de passe */}
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="*********" // Placeholder pour le mot de passe masqué
+              required
+            />
+          </div>
+          <button type="submit" className="login-button">
+            Se connecter / S'inscrire {/* Bouton de connexion */}
+          </button>
+          <p className="forgot-password" onClick={() => navigate('/forgot-password')}>
+            Mot de passe oublié ? {/* Lien pour mot de passe oublié */}
+          </p>
+        </form>
+      </div>
     </div>
   );
 };
