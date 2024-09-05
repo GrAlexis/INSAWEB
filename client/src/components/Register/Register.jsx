@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom'; 
 
-function SignupPage() {
+function SignupPage({ onLoginSuccess }) {
   const [name, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
@@ -32,7 +32,14 @@ function SignupPage() {
     try {
       const response = await axios.post("http://localhost:5000/api/user/register", payload);
       console.log("Signup success:", response.data);
-      // Handle successful signup
+      // Log the user in after successful signup
+      
+      // Call the function passed from App.js to trigger a state change
+      onLoginSuccess();
+
+      // Redirect to the home page after signup
+      navigate('/home');
+
     } catch (error) {
       console.error("Signup failed:", error);
       // Handle signup error
