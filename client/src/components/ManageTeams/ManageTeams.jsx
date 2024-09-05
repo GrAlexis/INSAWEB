@@ -85,6 +85,7 @@ const ManageTeams = ({ eventId }) => {
   const handleDeleteClick = (teamId) => {
     setTeamToDelete(teamId);
     setShowConfirmDelete(true);
+    console.log("showconfirmdelete "+showConfirmDelete)
   };
 
   const confirmDelete = async () => {
@@ -205,6 +206,15 @@ const ManageTeams = ({ eventId }) => {
           <p>No users without a team.</p>
         )}
       </div>
+      {showConfirmDelete && (
+        <div className="user-transfer-panel">
+          <div className="confirm-delete-content">
+            <p>Are you sure you want to delete this team?</p>
+            <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>
+            <button className="cancel-delete-button" onClick={cancelDelete}>No</button>
+          </div>
+        </div>
+      )}
 
       {showUserTransferPanel && (
         <div className="user-transfer-panel">
@@ -234,16 +244,6 @@ const ManageTeams = ({ eventId }) => {
         </div>
       )}
 
-
-      {showConfirmDelete && (
-        <div className="confirm-delete-popup">
-          <div className="confirm-delete-content">
-            <p>Are you sure you want to delete this team?</p>
-            <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>
-            <button className="cancel-delete-button" onClick={cancelDelete}>No</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -93,3 +93,11 @@
   font-size: 12px;
   margin-top: 5px
   }
+  .join-team-warning {
+    color: #d9534f; /* Red color for warning */
+    font-size: 14px;
+    margin-top: 8px;
+    text-align: center;
+    font-weight: bold;
+  }
+  
