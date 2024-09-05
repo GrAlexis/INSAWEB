@@ -1,0 +1,90 @@
+    .auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .auth-box {
+    border-radius: 10px;
+    text-align: center;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out; /* Transition sur l'opacité */
+  }
+  
+  .fade-in {
+    opacity: 1; /* Effet de fondu */
+  }
+  
+  .fade-out {
+    opacity: 0; /* Disparaît lors du changement de formulaire */
+  }
+  
+  .auth-toggle {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .auth-toggle button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #aaa;
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .auth-toggle button.active {
+    border-bottom: 2px solid #f32c62;
+  }
+  
+  .auth-form {
+    margin-top: 20px;
+  }
+  
+  .input-group {
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  
+  label {
+    color: #888;
+    font-size: 12px;
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    background-color: #3e425c;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    outline: none;
+  }
+  
+  .auth-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #f32c62;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .auth-button:hover {
+    background-color: #e02050;
+  }
+  
+  .forgot-password {
+    color: #888;
+    font-size: 12px;
+    margin-top: 10px;
+  }
+  

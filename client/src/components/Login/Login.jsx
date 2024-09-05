@@ -3,8 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import './Login.css'; // Assurez-vous d'importer le fichier CSS
 
 const Login = ({ onLoginSuccess }) => {
+  const [isSignIn, setIsSignIn] = useState(true); // Gérer l'affichage Sign In / Sign Up
+  const [fade, setFade] = useState(true); // Gérer l'animation de transition
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [classYear, setClassYear] = useState("3TC");
+  const [isApprentice, setIsApprentice] = useState(false);
   const navigate = useNavigate(); 
 
   // Vérifiez si l'utilisateur est déjà authentifié
@@ -15,8 +24,17 @@ const Login = ({ onLoginSuccess }) => {
     }
   }, [navigate]);
 
+  const toggleForm = () => {
+    setFade(false); // Démarrer l'effet de fondu
+    setTimeout(() => {
+      setIsSignIn(!isSignIn); // Bascule entre Sign In et Sign Up après la transition
+      setFade(true); // Réactive l'opacité après la transition
+    }, 300); // Temps de la transition en millisecondes
+  };
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
+      e.preventDefault();
+      console.log(isSignIn ? "Sign In" : "Sign Up");
 
     try {
       const response = await fetch('http://localhost:5000/api/user/login', {
@@ -52,34 +70,122 @@ const Login = ({ onLoginSuccess }) => {
     <div className="login-container">
       <div className="login-box">
         <h1 className="sheeeshTag">Sheeesh</h1> {/* Titre principal */}
+        <div className="auth-toggle">
+          <button
+            className={isSignIn ? 'active' : ''}
+            onClick={toggleForm}
+          >
+            SIGN IN
+          </button>
+          <button
+            className={!isSignIn ? 'active' : ''}
+            onClick={toggleForm}
+          >
+            SIGN UP
+          </button>
+        </div>
         <form onSubmit={handleSubmit} className="login-form">
+
+        {!isSignIn && (
+          <>
+            <div className="input-group">
+              <label htmlFor="name">Prénom</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Luc à l'envers [:"
+                required
+              />
+            </div>
+
+            <div className="input-group">
+            <label htmlFor="name">Nom</label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Nick"
+              required
+            />
+            </div>
+            </>
+          )}
+          
+
           <div className="input-group">
+          <label htmlFor="username">Email</label>
             {/* Champ pour l'adresse email */}
             <input
               type="text"
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email" 
+              placeholder={isSignIn ? "Email" : "Entrer votre email insa :)"}
               required
             />
           </div>
           <div className="input-group">
             {/* Champ pour le mot de passe */}
+            <label htmlFor="password">Mot de passe</label>
             <input
               type="password"
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="*********" // Placeholder pour le mot de passe masqué
+              placeholder="●●●●●●●●" // Placeholder pour le mot de passe masqué
               required
             />
           </div>
+          {!isSignIn && (
+            <>
+            <div className="input-group">
+              <label htmlFor="confirm-password">Confirmez votre mot de passe</label>
+              <input
+                type="password"
+                id="confirm-password"
+                placeholder="●●●●●●●●"
+                required
+              />
+            </div>
+
+            <div className="input-group">
+            <label htmlFor="name">Afficher le mot de passe</label>
+            <input
+              type="checkbox"
+              checked={showPassword}
+              onChange={(e) => setShowPassword(e.target.checked)}
+              required
+            />
+            </div>
+
+            <div className="input-group">
+            <label htmlFor="name">Année scolaire</label>
+            <select
+              value={classYear}
+              onChange={(e) => setClassYear(e.target.value)}
+            >
+              <option value="3TC">3TC</option>
+              <option value="4TC">4TC</option>
+              <option value="5TC">5TC</option>
+            </select>
+            </div>
+
+            <div className="input-group">
+            <label htmlFor="name">Alternant</label>
+            <input
+              type="checkbox"
+              checked={isApprentice}
+              onChange={(e) => setIsApprentice(e.target.checked)}
+            />
+            </div>
+            </>
+          )}
           <button type="submit" className="login-button">
-            Se connecter / S'inscrire {/* Bouton de connexion */}
+            {isSignIn ? 'Se connecter' : 'S\'inscrire'}
           </button>
           <p className="forgot-password" onClick={() => navigate('/forgot-password')}>
-            Mot de passe oublié ? {/* Lien pour mot de passe oublié */}
+            {isSignIn ? 'Mot de passe oublié ?' : ''}
           </p>
         </form>
       </div>

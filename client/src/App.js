@@ -5,6 +5,7 @@ import Profil from "./components/Profil/Profil"
 
 
 import Register from './components/Register/Register'
+import Auth from './components/Register/Auth'
 import Ranking from './components/Ranking/Ranking'
 import AdminPage from './components/AdminPage/AdminPage';
 import ProtectedRoute from './utils/ProtectedRoute'
@@ -50,6 +51,7 @@ function App() {
                 <Route path="/ranking" element={<Ranking />} />
                 <Route path="/sheesh/:challengeId" element={<Sheesh />} />
                 <Route path="/register" element={<Register onLoginSuccess={handleLogin}/>} />
+                <Route path="/register2" element={<Auth onLoginSuccess={handleLogin}/>} />
                 <Route path="/login" element={<Login onLoginSuccess={handleLogin} />} />
                 <Route path="/events" element={<EventPage/>} />
                 <Route
