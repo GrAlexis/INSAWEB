@@ -3,6 +3,7 @@ import './ChallengeCard.css';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
+import { useNavigate } from 'react-router-dom';
 import validatedIcon from '../../assets/icons/sheesh/validated.webp';
 import waitingIcon from '../../assets/icons/sheesh/waiting.png';
 import collectiveIcon from '../../assets/icons/sheesh/together.png';
@@ -20,6 +21,8 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
   const [collectivePost, setCollectivePost] = useState(null);
   const [teammateName, setTeammateName] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [userNeedsToJoinTeam, setUserNeedsToJoinTeam] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (challenge.id === challengeId) {
@@ -32,6 +35,10 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
       if (!user) return; // Ensure user is not null before making requests
 
       try {
+        // Check if event has teams and user is not in a team
+        const eventResponse = await axios.get(`http://localhost:5000/events/${challenge.eventId}`);
+        const event = eventResponse.data;
+        setUserNeedsToJoinTeam(event?.teams.length > 0 && !user.teamId);
         const response = await axios.get(`http://localhost:5000/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
         if (response.data.length > 0) {
           setPost(response.data[0]);
@@ -95,6 +102,7 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    setIsProcessing(true)
 
     try {
       const eventResponse = await axios.get(`http://localhost:5000/events/${challenge.eventId}`);
@@ -125,10 +133,11 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
       if (user.teamId) {
         formData.append('teamId', user.teamId);
       }
-
       const response = await axios.post('http://localhost:5000/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+      setIsProcessing(false)
+
 
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 2000);
@@ -137,8 +146,10 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
       setFile(null);
       setOpenChallengeId(null);
       setPost(response.data);
+      navigate('/home');
     } catch (error) {
       console.error('Error uploading file', error);
+      setIsProcessing(false)
     }
   };
 
@@ -156,9 +167,12 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
 
 
         {!isOpen ? (
-          <button className="sheesh-button" onClick={handleButtonClick} disabled={post || collectivePost}>
+          <div>
+          <button className="sheesh-button" onClick={handleButtonClick} disabled={post || collectivePost || userNeedsToJoinTeam}>
             {post ? "Déjà participé" : "Je sheesh !"}
           </button>
+          {userNeedsToJoinTeam && <p className="join-team-warning">Rejoignez une équipe pour participer</p>}
+        </div>
         ) : (
           <div>
             <form onSubmit={handleFormSubmit} className="upload-form">

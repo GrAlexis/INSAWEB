@@ -175,7 +175,7 @@ const ManageChallenges = ({ eventId }) => {
       </div>
 
       {showConfirmationModal && (
-        <div className="confirm-delete-popup">
+        <div className="user-transfer-panel">
           <div className="confirm-delete-content">
             <p>Are you sure you want to delete this challenge?</p>
             <button className="confirm-delete-button" onClick={handleDeleteConfirm}>Yes</button>
