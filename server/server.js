@@ -58,15 +58,15 @@ conn.once('open', () => {
 app.use(cors());
 app.use(express.json())
 app.use(express.urlencoded({extended : false}));
-
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/');  // Dossier temporaire
-    },
-    filename: function (req, file, cb) {
-        cb(null, crypto.randomBytes(20).toString('hex') + path.extname(file.originalname));
-    }
-});
+const storage = multer.memoryStorage();
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//         cb(null, 'uploads/');  // Dossier temporaire
+//     },
+//     filename: function (req, file, cb) {
+//         cb(null, crypto.randomBytes(20).toString('hex') + path.extname(file.originalname));
+//     }
+// });
 const upload = multer({ storage });
 
 //routes

@@ -143,7 +143,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           <LazyLoadImage
             alt={challenge.title}
             effect="blur"
-            src={`http://localhost:5000:5000/file/${post.picture}`} // use normal <img> attributes as props
+            src={`http://localhost:5000/file/${post.picture}`} // use normal <img> attributes as props
             className="post-image"
           />
         )}
