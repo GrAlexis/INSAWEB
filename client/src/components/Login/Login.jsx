@@ -140,7 +140,7 @@ const Login = ({ onLoginSuccess }) => {
           {!isSignIn && (
             <>
             <div className="input-group">
-              <label htmlFor="confirm-password">Confirmez votre mot de passe</label>
+              <label htmlFor="confirm-password">Confirmer votre mot de passe</label>
               <input
                 type={showPassword ? "text" : "password"}
                 value={confirmPassword}
