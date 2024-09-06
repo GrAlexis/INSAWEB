@@ -1,19 +1,22 @@
  .login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Aligne le contenu en haut pour laisser de l'espace en bas */
+  height: 100vh;
+  overflow-y: auto; /* Ajoute un défilement vertical lorsque nécessaire */
+  padding: 20px;
   }
   
   .login-box {
     padding: 40px;
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-    border-radius: 10px;
-    text-align: center;
-    opacity: 1;
-    transition: opacity 0.3s ease-in-out;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  border-radius: 10px;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+  margin-top: 20px;
   }
 
   .fade-in {
@@ -26,8 +29,9 @@
   
   .sheeeshTag{
     font-size: 36px;
-    margin-bottom: 40px;
-    font-weight: bold;
+  margin-bottom: 40px;
+  font-weight: bold;
+  margin-top: 20px;
   }
   
   .input-group {
@@ -87,13 +91,85 @@
   }
   
   label {
-    color: #888;
+    color: #6a8a87;
     font-size: 12px;
     display: block;
     margin-bottom: 5px;
   }
 
-.checkbox{
-    display: flex;
-    flex-direction: row;
+input[type="checkbox"] {
+  appearance: none; 
+  width: 20px;
+  height: 20px;
+  background-color: #ecf0f1; 
+  border: 2px solid #34495e; 
+  border-radius: 4px; 
+  cursor: pointer;
+  position: relative;
+}
+
+
+input[type="checkbox"]:checked {
+  background-color: #6a8a87; 
+  border-color: #6a8a87;
+}
+
+input[type="checkbox"]:checked::after {
+  content: '✔'; 
+  position: absolute;
+  top: 0;
+  left: 3.5px;
+  font-size: 16px;
+  color: white; 
+}
+
+input[type="checkbox"] {
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.checkbox {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  
+}
+
+.checkbox label {
+  font-size: 14px; 
+  color: #6a8a87; 
+  cursor: pointer; 
+}
+
+select {
+  width: auto; 
+  padding: 6px 12px; 
+  margin: 8px 0;
+  box-sizing: border-box;
+  border: 1px solid #34495e;
+  border-radius: 5px;
+  font-size: 14px; 
+  color: #6a8a87;
+  background-color: #ecf0f1;
+  outline: none;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+
+}
+
+/* Style lors du focus */
+select:focus {
+  border-color: #6a8a87;
+}
+
+.select-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px; 
+}
+
+.select-group label {
+  color: #6a8a87;
+  font-size: 12px;
+  margin-bottom: 5px;
 }

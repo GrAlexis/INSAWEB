@@ -161,7 +161,7 @@ const Login = ({ onLoginSuccess }) => {
             />
             </div>
 
-            <div className="input-group">
+            <div className="input-group select-group">
             <label htmlFor="name">Année scolaire</label>
             <select
               value={classYear}
