@@ -10,6 +10,18 @@
     width: 100%;
     max-width: 400px;
     text-align: center;
+    border-radius: 10px;
+    text-align: center;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .fade-in {
+    opacity: 1; /* Effet de fondu */
+  }
+  
+  .fade-out {
+    opacity: 0; /* Disparaît lors du changement de formulaire */
   }
   
   .sheeeshTag{
@@ -20,8 +32,9 @@
   
   .input-group {
     margin-bottom: 20px;
+    text-align: left;
   }
-  
+    
   input {
     width: 100%;
     padding: 10px;
@@ -30,7 +43,10 @@
     border: 1px solid #34495e;
     border-radius: 5px;
     font-size: 16px;
+    color: #6a8a87;
     background-color: #ecf0f1;
+    outline: none;
+
   }
   
   .login-button {
@@ -46,9 +62,38 @@
   }
   
   .forgot-password {
-    margin-top: 20px;
+    margin-top: 15px;
     font-size: 14px;
     color: #95a5a6;
+  }
+  
+  .logSelect {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .logSelect button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #aaa;
+    padding: 10px;
     cursor: pointer;
   }
   
+  .logSelect button.active {
+    border-bottom: 2px solid #f32c62;
+  }
+  
+  label {
+    color: #888;
+    font-size: 12px;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+.checkbox{
+    display: flex;
+    flex-direction: row;
+}

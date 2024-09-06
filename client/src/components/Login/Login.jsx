@@ -11,9 +11,9 @@ const Login = ({ onLoginSuccess }) => {
   const [lastName, setLastName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [classYear, setClassYear] = useState("3TC");
   const [isApprentice, setIsApprentice] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false)
   const navigate = useNavigate(); 
 
   // Vérifiez si l'utilisateur est déjà authentifié
@@ -68,20 +68,20 @@ const Login = ({ onLoginSuccess }) => {
 
   return (
     <div className="login-container">
-      <div className="login-box">
+      <div className={`login-box ${fade ? 'fade-in' : 'fade-out'}`}>
         <h1 className="sheeeshTag">Sheeesh</h1> {/* Titre principal */}
-        <div className="auth-toggle">
+        <div className="logSelect">
           <button
             className={isSignIn ? 'active' : ''}
             onClick={toggleForm}
           >
-            SIGN IN
+            Connexion
           </button>
           <button
             className={!isSignIn ? 'active' : ''}
             onClick={toggleForm}
           >
-            SIGN UP
+            Inscription
           </button>
         </div>
         <form onSubmit={handleSubmit} className="login-form">
@@ -129,10 +129,10 @@ const Login = ({ onLoginSuccess }) => {
             {/* Champ pour le mot de passe */}
             <label htmlFor="password">Mot de passe</label>
             <input
-              type="password"
-              id="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              id="password"
               placeholder="●●●●●●●●" // Placeholder pour le mot de passe masqué
               required
             />
@@ -142,14 +142,16 @@ const Login = ({ onLoginSuccess }) => {
             <div className="input-group">
               <label htmlFor="confirm-password">Confirmez votre mot de passe</label>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 id="confirm-password"
                 placeholder="●●●●●●●●"
                 required
               />
             </div>
 
-            <div className="input-group">
+            <div className="input-group checkbox">
             <label htmlFor="name">Afficher le mot de passe</label>
             <input
               type="checkbox"
@@ -171,7 +173,7 @@ const Login = ({ onLoginSuccess }) => {
             </select>
             </div>
 
-            <div className="input-group">
+            <div className="input-group checkbox">
             <label htmlFor="name">Alternant</label>
             <input
               type="checkbox"
@@ -179,10 +181,20 @@ const Login = ({ onLoginSuccess }) => {
               onChange={(e) => setIsApprentice(e.target.checked)}
             />
             </div>
+
+            <div className="input-group checkbox">
+            <label htmlFor="name">Accepter les conditions d'utilisations</label>
+            <input
+              type="checkbox"
+              checked={acceptTerms}
+              onChange={(e) => setAcceptTerms(e.target.checked)}
+              required
+            />
+            </div>
             </>
           )}
           <button type="submit" className="login-button">
-            {isSignIn ? 'Se connecter' : 'S\'inscrire'}
+            {isSignIn ? 'je veux je veux' : 'Prêt à sheeesh ??'}
           </button>
           <p className="forgot-password" onClick={() => navigate('/forgot-password')}>
             {isSignIn ? 'Mot de passe oublié ?' : ''}
