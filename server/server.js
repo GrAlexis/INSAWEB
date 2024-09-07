@@ -158,16 +158,19 @@ app.post('/upload', upload.single('file'), async (req, res) => {
                     .on('end', resolve)
                     .on('error', reject);
             });
-            
-            // Read thumbnail and upload to GridFS
-            thumbnailBuffer = fs.readFileSync(thumbnailPath);
-            // Save the thumbnail to GridFS
-            const writeStreamThumbnail = gridfsBucket.openUploadStream(thumbnailName);
-            writeStreamThumbnail.end(thumbnailBuffer);
+
+
+            // Read the thumbnail and upload it to GridFS
+            const thumbnailBuffer = fs.readFileSync(thumbnailPath);
+            await new Promise((resolve, reject) => {
+                const writeStreamThumbnail = gridfsBucket.openUploadStream(thumbnailName);
+                writeStreamThumbnail.end(thumbnailBuffer);
+                writeStreamThumbnail.on('finish', resolve);
+                writeStreamThumbnail.on('error', reject);
+            });
 
             // Read the compressed video file
             const compressedVideoBuffer = fs.readFileSync(compressedVideoPath);
-
             // Save the compressed video to GridFS
             writeStream.end(compressedVideoBuffer);
 
@@ -181,7 +184,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         }
     } else {
         // Handle image uploads
-        // const writeStream = gridfsBucket.openUploadStream(fileName);
         writeStream.end(fileBuffer);
     }
 
