@@ -262,6 +262,11 @@ app.get('/file/:filename', async (req, res) => {
         }
 
         const readStream = gridfsBucket.openDownloadStreamByName(req.params.filename);
+
+        // Add cache headers to the response
+        res.set('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
+        res.set('Expires', new Date(Date.now() + 86400 * 1000).toUTCString());
+
         readStream.pipe(res);
     } catch (error) {
         res.status(500).send(error.message);
