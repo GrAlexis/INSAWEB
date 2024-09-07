@@ -77,7 +77,8 @@ app.use("/api/user/", userRoutes)
 
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs-extra');
-const sharp = require('sharp');
+const heicConvert = require('heic-convert');
+
 const { promisify } = require('util');
 const unlinkAsync = promisify(fs.unlink);
 
@@ -104,13 +105,19 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     let fileName = crypto.randomBytes(20).toString('hex');
     let thumbnailName = '';
 
-    // Convert HEIC to JPEG using sharp for image files
+    // Convert HEIC to JPEG using heic-convert for image files
     if (req.file.mimetype === 'image/heic') {
         try {
-            fileBuffer = await sharp(req.file.buffer).jpeg().toBuffer();
+            // Convert HEIC to JPEG using heic-convert
+            const heicBuffer = req.file.buffer;
+            fileBuffer = await heicConvert({
+                buffer: heicBuffer, // Input buffer (HEIC)
+                format: 'JPEG',     // Output format
+                quality: 0.5          // Set the quality (1 = max)
+            });
             fileName += '.jpg';
         } catch (error) {
-            return res.status(500).send('Error processing image.');
+            return res.status(500).send(error.message);
         }
     } else {
         fileName += path.extname(req.file.originalname);
