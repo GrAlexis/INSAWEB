@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import './Login.css'; // Assurez-vous d'importer le fichier CSS
 import axios from "axios";
 
-
 const Login = ({ onLoginSuccess }) => {
   const [isSignIn, setIsSignIn] = useState(true); // Gérer l'affichage Sign In / Sign Up
   const [fade, setFade] = useState(true); // Gérer l'animation de transition
@@ -15,9 +14,33 @@ const Login = ({ onLoginSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [classYear, setClassYear] = useState("3TC");
   const [isApprentice, setIsApprentice] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false)
-  const navigate = useNavigate(); 
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [termsText, setTermsText] = useState('');
 
+  // Fetch the terms of use when the modal is opened
+  useEffect(() => {
+    if (showTermsModal) {
+      fetch('./terms.txt')
+        .then((response) => response.text())
+        .then((data) => {
+          setTermsText(data);
+        })
+        .catch((error) => {
+          console.error('Error fetching terms:', error);
+        });
+    }
+  }, [showTermsModal]);
+
+  const navigate = useNavigate(); 
+  //this is to open/close terms of use pop up
+  const handleShowTerms = () => {
+    setShowTermsModal(true);
+  };
+
+  const handleCloseTerms = () => {
+    setShowTermsModal(false);
+  };
   // Vérifiez si l'utilisateur est déjà authentifié
   useEffect(() => {
     const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
@@ -219,6 +242,10 @@ const Login = ({ onLoginSuccess }) => {
             />
             </div>
 
+            <div className="terms-link">
+              <a href="#" onClick={handleShowTerms}>Lire les conditions</a>
+            </div>
+
             <div className="input-group checkbox">
             <label htmlFor="name">Accepter les conditions d'utilisations</label>
             <input
@@ -238,6 +265,21 @@ const Login = ({ onLoginSuccess }) => {
           </p>
         </form>
       </div>
+      {/* Terms of Use Modal */}
+      {showTermsModal && (
+        <div className={`terms-modal ${showTermsModal ? 'show' : ''}`}>
+          <div className="terms-modal-content">
+            <h2>Conditions d'utilisation</h2>
+            {/* Split the text by new lines and render each line */}
+            {termsText.split('\n').map((line, index) => (
+              <p key={index}>{line}</p>
+            ))}
+            <button onClick={handleCloseTerms} className="close-modal-button">
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
