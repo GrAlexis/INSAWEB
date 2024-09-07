@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css'; // Assurez-vous d'importer le fichier CSS
+import axios from "axios";
+
 
 const Login = ({ onLoginSuccess }) => {
   const [isSignIn, setIsSignIn] = useState(true); // Gérer l'affichage Sign In / Sign Up
@@ -35,35 +37,70 @@ const Login = ({ onLoginSuccess }) => {
   const handleSubmit = async (e) => {
       e.preventDefault();
       console.log(isSignIn ? "Sign In" : "Sign Up");
-
-    try {
-      const response = await fetch('http://localhost:5000/api/user/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
+      if (isSignIn)
+      {
+        try {
+          const response = await fetch('http://localhost:5000/api/user/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+          });
+    
+          if (!response.ok) {
+            throw new Error('Login failed');
+          }
+    
+          const data = await response.json();
+    
+          // Stocker le token dans le sessionStorage
+          sessionStorage.setItem('token', data.token);
+    
+          // Call the function passed from App.js to trigger a state change
+          onLoginSuccess();
+          
+          // Rediriger après l'authentification réussie
+          navigate('/home');
+    
+        } catch (error) {
+          console.error('Erreur lors de la connexion:', error);
+          // Vous pouvez afficher un message d'erreur à l'utilisateur ici
+        }
+      } else
+      {
+        if (password !== confirmPassword) {
+          alert("Les mots de passe ne correspondent pas !");
+          return;
+        }
+    
+        const year = `${classYear}${isApprentice ? 'A' : ''}`;
+        
+        const payload = {
+          name,
+          lastName,
+          password,
+          isAdmin : false,
+          classYear: year,
+        };
+    
+        try {
+          const response = await axios.post("http://localhost:5000/api/user/register", payload);
+          console.log("Signup success:", response.data);
+          // Log the user in after successful signup
+          
+          // Call the function passed from App.js to trigger a state change
+          onLoginSuccess();
+    
+          // Redirect to the home page after signup
+          navigate('/home');
+    
+        } catch (error) {
+          console.error("Signup failed:", error);
+          // Handle signup error
+        }
       }
 
-      const data = await response.json();
-
-      // Stocker le token dans le sessionStorage
-      sessionStorage.setItem('token', data.token);
-
-      // Call the function passed from App.js to trigger a state change
-      onLoginSuccess();
-      
-      // Rediriger après l'authentification réussie
-      navigate('/home');
-
-    } catch (error) {
-      console.error('Erreur lors de la connexion:', error);
-      // Vous pouvez afficher un message d'erreur à l'utilisateur ici
-    }
   };
 
   return (
