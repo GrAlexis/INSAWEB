@@ -122,8 +122,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             thumbnailName = `${fileName}.png`;
 
             fs.writeFileSync(videoPath, fs.readFileSync(filePath));
-            console.log("juste avant compression")
-            console.log("videopath "+ videoPath)
 
             // Check if the file exists
             if (!fs.existsSync(videoPath)) {
