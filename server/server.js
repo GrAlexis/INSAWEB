@@ -75,15 +75,15 @@ app.use("/api/products",productRoutes);
 app.use('/api/connexion/', connexionRoutes)
 app.use("/api/user/", userRoutes)
 
-const ffmpeg = require('fluent-ffmpeg');
+//const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs-extra');
 const sharp = require('sharp');
 const { promisify } = require('util');
 const unlinkAsync = promisify(fs.unlink);
 
 // Set the ffmpeg and ffprobe paths (for video processing)
-ffmpeg.setFfmpegPath(require('@ffmpeg-installer/ffmpeg').path);
-ffmpeg.setFfprobePath(require('@ffprobe-installer/ffprobe').path);
+//ffmpeg.setFfmpegPath(require('@ffmpeg-installer/ffmpeg').path);
+//ffmpeg.setFfprobePath(require('@ffprobe-installer/ffprobe').path);
 
 // Upload image/video route
 app.post('/upload', upload.single('file'), async (req, res) => {
