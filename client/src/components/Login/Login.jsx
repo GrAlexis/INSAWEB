@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css'; 
 import ForgotPasswordPopup from '../ForgotPasswordPopup/ForgotPasswordPopup';
+import axios from "axios";
 
 const Login = ({ onLoginSuccess }) => {
   const [isSignIn, setIsSignIn] = useState(true); // Gérer l'affichage Sign In / Sign Up
@@ -17,9 +18,33 @@ const Login = ({ onLoginSuccess }) => {
   const [secretAnswer, setSecretAnswer] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [isApprentice, setIsApprentice] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false)
-  const navigate = useNavigate(); 
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [termsText, setTermsText] = useState('');
 
+  // Fetch the terms of use when the modal is opened
+  useEffect(() => {
+    if (showTermsModal) {
+      fetch('./terms.txt')
+        .then((response) => response.text())
+        .then((data) => {
+          setTermsText(data);
+        })
+        .catch((error) => {
+          console.error('Error fetching terms:', error);
+        });
+    }
+  }, [showTermsModal]);
+
+  const navigate = useNavigate(); 
+  //this is to open/close terms of use pop up
+  const handleShowTerms = () => {
+    setShowTermsModal(true);
+  };
+
+  const handleCloseTerms = () => {
+    setShowTermsModal(false);
+  };
   // Vérifiez si l'utilisateur est déjà authentifié
   useEffect(() => {
     const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
@@ -55,35 +80,70 @@ const Login = ({ onLoginSuccess }) => {
   const handleSubmit = async (e) => {
       e.preventDefault();
       console.log(isSignIn ? "Sign In" : "Sign Up");
-
-    try {
-      const response = await fetch('http://localhost:5000/api/user/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
+      if (isSignIn)
+      {
+        try {
+          const response = await fetch('http://localhost:5000/api/user/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+          });
+    
+          if (!response.ok) {
+            throw new Error('Login failed');
+          }
+    
+          const data = await response.json();
+    
+          // Stocker le token dans le sessionStorage
+          sessionStorage.setItem('token', data.token);
+    
+          // Call the function passed from App.js to trigger a state change
+          onLoginSuccess();
+          
+          // Rediriger après l'authentification réussie
+          navigate('/home');
+    
+        } catch (error) {
+          console.error('Erreur lors de la connexion:', error);
+          // Vous pouvez afficher un message d'erreur à l'utilisateur ici
+        }
+      } else
+      {
+        if (password !== confirmPassword) {
+          alert("Les mots de passe ne correspondent pas !");
+          return;
+        }
+    
+        const year = `${classYear}${isApprentice ? 'A' : ''}`;
+        
+        const payload = {
+          name,
+          lastName,
+          password,
+          isAdmin : false,
+          classYear: year,
+        };
+    
+        try {
+          const response = await axios.post("http://localhost:5000/api/user/register", payload);
+          console.log("Signup success:", response.data);
+          // Log the user in after successful signup
+          
+          // Call the function passed from App.js to trigger a state change
+          onLoginSuccess();
+    
+          // Redirect to the home page after signup
+          navigate('/home');
+    
+        } catch (error) {
+          console.error("Signup failed:", error);
+          // Handle signup error
+        }
       }
 
-      const data = await response.json();
-
-      // Stocker le token dans le sessionStorage
-      sessionStorage.setItem('token', data.token);
-
-      // Call the function passed from App.js to trigger a state change
-      onLoginSuccess();
-      
-      // Rediriger après l'authentification réussie
-      navigate('/home');
-
-    } catch (error) {
-      console.error('Erreur lors de la connexion:', error);
-      // Vous pouvez afficher un message d'erreur à l'utilisateur ici
-    }
   };
 
   return (
@@ -227,6 +287,10 @@ const Login = ({ onLoginSuccess }) => {
             />
             </div>
 
+            <div className="terms-link">
+              <a href="#" onClick={handleShowTerms}>Lire les conditions</a>
+            </div>
+
             <div className="input-group checkbox">
             <label htmlFor="name">Accepter les conditions d'utilisations</label>
             <input
@@ -255,6 +319,21 @@ const Login = ({ onLoginSuccess }) => {
           
         </form>
       </div>
+      {/* Terms of Use Modal */}
+      {showTermsModal && (
+        <div className={`terms-modal ${showTermsModal ? 'show' : ''}`}>
+          <div className="terms-modal-content">
+            <h2>Conditions d'utilisation</h2>
+            {/* Split the text by new lines and render each line */}
+            {termsText.split('\n').map((line, index) => (
+              <p key={index}>{line}</p>
+            ))}
+            <button onClick={handleCloseTerms} className="close-modal-button">
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
