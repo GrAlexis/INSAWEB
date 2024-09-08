@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css'; 
-import ForgotPasswordPopup from './ForgotPasswordPopup/ForgotPasswordPopup';
+import ForgotPasswordPopup from '../ForgotPassword/ForgotPasswordPopup';
 import axios from "axios";
 
 const Login = ({ onLoginSuccess }) => {
-  const [isSignIn, setIsSignIn] = useState(true); // Gérer l'affichage Sign In / Sign Up
+  const [isSignIn, setIsSignIn] = useState(true); 
   const [fade, setFade] = useState(true); // Gérer l'animation de transition
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -174,7 +174,7 @@ const Login = ({ onLoginSuccess }) => {
                 type="text"
                 value={name}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Luc à l'envers [:"
+                placeholder="Jean"
                 required
               />
             </div>
@@ -185,7 +185,7 @@ const Login = ({ onLoginSuccess }) => {
               type="text"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              placeholder="Nick"
+              placeholder="Valjean"
               required
             />
             </div>
@@ -287,12 +287,8 @@ const Login = ({ onLoginSuccess }) => {
             />
             </div>
 
-            <div className="terms-link">
-              <a href="#" onClick={handleShowTerms}>Lire les conditions</a>
-            </div>
-
             <div className="input-group checkbox">
-            <label htmlFor="name">Accepter les conditions d'utilisations</label>
+            <label className="terms" htmlFor="name" onClick={handleShowTerms} >Accepter les conditions d'utilisations *</label>
             <input
               type="checkbox"
               checked={acceptTerms}
@@ -305,10 +301,11 @@ const Login = ({ onLoginSuccess }) => {
           <button type="submit" className="login-button">
             {isSignIn ? 'je veux je veux' : 'Prêt à sheeesh ??'}
           </button>
+          {isSignIn &&( 
           <p className="forgot-password" onClick={handleForgotPassword}>
             Mot de passe oublié ?
           </p>
-
+        )}
         {/* Pop-up pour la question secrète */}
         {showPopup && (
           <ForgotPasswordPopup

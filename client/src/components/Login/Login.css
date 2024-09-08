@@ -173,39 +173,7 @@ select:focus {
   font-size: 12px;
   margin-bottom: 5px;
 }
-<<<<<<< HEAD
 
-
-.popup-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.popup-box {
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  width: 300px;
-  text-align: center;
-}
-
- {
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #6a8a87;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-=======
 .terms-modal {
   position: fixed;
   top: 0;
@@ -234,13 +202,7 @@ select:focus {
   max-width: 600px;
   width: 100%;
 }
-.terms-link {
-  margin-bottom: 30px;
-}
-.terms-link a {
-  color: #6a8a87;
-  cursor: pointer;
-}
+
 .close-modal-button {
   background-color: #6a8a87;
   color: white;
@@ -250,4 +212,7 @@ select:focus {
   cursor: pointer;
   margin-top: 20px;
 }
->>>>>>> 3e66a3b99dbe9de4119e6c0dae15daf2c090f359
+
+.terms{
+  font-weight: bold;
+}
