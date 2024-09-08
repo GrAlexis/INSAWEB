@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Login.css'; // Assurez-vous d'importer le fichier CSS
+import './Login.css'; 
+import ForgotPasswordPopup from '../ForgotPasswordPopup/ForgotPasswordPopup';
 
 const Login = ({ onLoginSuccess }) => {
   const [isSignIn, setIsSignIn] = useState(true); // Gérer l'affichage Sign In / Sign Up
@@ -12,6 +13,9 @@ const Login = ({ onLoginSuccess }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [classYear, setClassYear] = useState("3TC");
+  const [secretQuestion, setSecretQuestion] = useState("");
+  const [secretAnswer, setSecretAnswer] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
   const [isApprentice, setIsApprentice] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false)
   const navigate = useNavigate(); 
@@ -31,6 +35,22 @@ const Login = ({ onLoginSuccess }) => {
       setFade(true); // Réactive l'opacité après la transition
     }, 300); // Temps de la transition en millisecondes
   };
+
+  const handleForgotPassword = () => {
+    setShowPopup(true);
+  };
+
+  const handlePopupClose = () => {
+    setShowPopup(false);
+  };
+
+  const handleSecretAnswerSubmit = (answer) => {
+    // Logique pour valider la réponse à la question secrète
+    console.log('Réponse soumise : ', answer);
+    setShowPopup(false);
+    // Ensuite, permettre la réinitialisation du mot de passe si la réponse est correcte
+  };
+
 
   const handleSubmit = async (e) => {
       e.preventDefault();
@@ -172,6 +192,31 @@ const Login = ({ onLoginSuccess }) => {
               <option value="5TC">5TC</option>
             </select>
             </div>
+            <div className="input-group select-group">
+              <label htmlFor="secret-question">Question secrète</label>
+              <select
+                id="secret-question"
+                value={secretQuestion}
+                onChange={(e) => setSecretQuestion(e.target.value)}
+              >
+                <option value="Quelle est votre couleur préférée ?">Quelle est votre couleur préférée ?</option>
+                <option value="Quel est le prénom de votre premier animal de compagnie ?">Quel est le prénom de votre premier animal de compagnie ?</option>
+                <option value="Dans quelle ville êtes-vous né(e) ?">Dans quelle ville êtes-vous né(e) ?</option>
+              </select>
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="secret-answer">Réponse à la question secrète</label>
+              <input
+                type="text"
+                id="secret-answer"
+                value={secretAnswer}
+                onChange={(e) => setSecretAnswer(e.target.value)}
+                placeholder="Entrez votre réponse"
+                required
+              />
+            </div>
+
 
             <div className="input-group checkbox">
             <label htmlFor="name">Alternant</label>
@@ -196,9 +241,18 @@ const Login = ({ onLoginSuccess }) => {
           <button type="submit" className="login-button">
             {isSignIn ? 'je veux je veux' : 'Prêt à sheeesh ??'}
           </button>
-          <p className="forgot-password" onClick={() => navigate('/forgot-password')}>
-            {isSignIn ? 'Mot de passe oublié ?' : ''}
+          <p className="forgot-password" onClick={handleForgotPassword}>
+            Mot de passe oublié ?
           </p>
+
+        {/* Pop-up pour la question secrète */}
+        {showPopup && (
+          <ForgotPasswordPopup
+            onSubmit={handleSecretAnswerSubmit}
+            onClose={handlePopupClose}
+          />
+        )}
+          
         </form>
       </div>
     </div>
