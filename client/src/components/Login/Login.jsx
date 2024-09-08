@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css'; 
-import ForgotPasswordPopup from '../ForgotPasswordPopup/ForgotPasswordPopup';
+import ForgotPasswordPopup from './ForgotPasswordPopup/ForgotPasswordPopup';
 import axios from "axios";
 
 const Login = ({ onLoginSuccess }) => {
