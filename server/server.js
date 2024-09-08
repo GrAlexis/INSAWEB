@@ -83,8 +83,8 @@ const { promisify } = require('util');
 const unlinkAsync = promisify(fs.unlink);
 
 // Set the ffmpeg and ffprobe paths (for video processing)
-//ffmpeg.setFfmpegPath(require('@ffmpeg-installer/ffmpeg').path);
-//ffmpeg.setFfprobePath(require('@ffprobe-installer/ffprobe').path);
+ffmpeg.setFfmpegPath(require('@ffmpeg-installer/ffmpeg').path);
+ffmpeg.setFfprobePath(require('@ffprobe-installer/ffprobe').path);
 
 // Upload image/video route
 app.post('/upload', upload.single('file'), async (req, res) => {
