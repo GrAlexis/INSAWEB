@@ -84,13 +84,32 @@ const decodeToken = (req,res) => {
     const { token } = req.body;
     const secretKey = 'your_secret_key'
     const decoded = jwt.verify(token, secretKey);
-    res.status(200).json({'username':decoded.username});
+    return res.status(200).json({'email':decoded.email});
   } catch (error) {
-    res.status(500).json('Token decoding failed');
-
+    return res.status(500).json('Token decoding failed');
   }
   
 };
+
+const isAdmin = async (req, res) => {
+  try{
+    const email = req.body.email
+    if (!email){
+      return res.status(500).json('Missing email')
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: 'User does not exist' });
+    }
+    return res.status(200).json(user.isAdmin)
+  }
+  catch (error){
+    console.log(error)
+    res.status(500).json(error)
+  }
+}
+
+
 
 
 
@@ -130,6 +149,7 @@ module.exports = {
   getAllUsers,
   decodeToken,
   updateUser,
-  getUser
+  getUser,
+  isAdmin
 };
 
