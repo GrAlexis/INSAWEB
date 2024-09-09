@@ -48,7 +48,7 @@ function App() {
                 <Route path="/sheesh" element={<Sheesh />} />
                 <Route path="/ranking" element={<Ranking />} />
                 <Route path="/sheesh/:challengeId" element={<Sheesh />} />
-                <Route path="/register" element={<Register/>} />
+                <Route path="/register" element={<Register onLoginSuccess={handleLogin}/>} />
                 <Route path="/login" element={<Login onLoginSuccess={handleLogin} />} />
                 <Route path="/events" element={<EventPage/>} />
                 <Route

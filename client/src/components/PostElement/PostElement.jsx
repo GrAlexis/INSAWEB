@@ -22,6 +22,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const [team, setTeam] = useState(null);
   const [postUser, setPostUser] = useState(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -108,7 +109,12 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const isVideo = (fileName) => {
     return /\.(mp4|mov|avi|wmv|flv|mkv)$/i.test(fileName);
   };
-
+ const handlePlayVideo = () => {
+    setIsVideoPlaying(true);
+  };
+  const handleVideoEnd = () => {
+    setIsVideoPlaying(false); // Go back to the thumbnail after the video finishes
+  };
 
   if (!challenge || !event || !postUser || !user) {
     return <div>Loading...</div>;
@@ -120,7 +126,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
         <img src={logo} alt="Logo" className="logo" />
         <div className="post-info">
           <span className="date">{event.title} - {formatDate(post.date)}</span>
-          <span className="user">{postUser.name}</span>
+          <span className="user">{postUser.name} {postUser.lastName}</span>
           {team && <span className="team">Team: {team.name}</span>}
         </div>
         <div className="status">
@@ -133,12 +139,25 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
       </div>
       <div className="post-media">
       {isVideo(post.picture) ? (
-          <LazyLoad height={200} offset={100}>
-            <video controls className="post-video">
-              <source src={`http://localhost:5000/file/${post.picture}`} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </LazyLoad>
+          !isVideoPlaying ? (
+            // Display the video thumbnail until the user clicks to play the video
+            <div className="video-thumbnail" onClick={handlePlayVideo}>
+              <LazyLoadImage
+                src={`http://localhost:5000/file/${post.thumbnail}`} // Assuming thumbnails are stored
+                alt="Video Thumbnail"
+                className="thumbnail-image"
+              />
+              <div className="play-button-overlay"></div>
+            </div>
+          ) : (
+            // Load the video after the user clicks on the thumbnail
+            <LazyLoad height={200} offset={100}>
+              <video controls className="post-video" autoPlay onEnded={handleVideoEnd}>
+                <source src={`http://localhost:5000/file/${post.picture}`} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </LazyLoad>
+          )
         ) : (
           <LazyLoadImage
             alt={challenge.title}
@@ -169,10 +188,22 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
       <div className="post-footer">
         <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>
         {(user._id === postUser._id || (user.isAdmin && !post.isValidated)) && (
-  <button className="delete-button" onClick={handleDeleteClick}>
-    <span className="delete-cross">✕</span>
-  </button>
-)}
+          <div className="delete-wrapper">
+            <button className="delete-button" onClick={handleDeleteClick}>
+              <span className="delete-cross">✕</span>
+            </button>
+
+            {showConfirmDelete && (
+              <div className="confirm-delete-popup">
+                <div className="confirm-delete-content">
+                  <p>Are you sure you want to delete this post?</p>
+                  <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>
+                  <button className="cancel-delete-button" onClick={cancelDelete}>No</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         {user.isAdmin && (
           <button className="validate-button" onClick={handleValidateClick}>
             {post.isValidated ? 'Invalider' : 'Valider'}
@@ -180,15 +211,15 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
         )}
       </div>
 
-      {showConfirmDelete && (
-        <div className="popup">
+      {/* {showConfirmDelete && (
+        <div className="confirm-delete-popup">
           <div className="confirm-delete-content">
             <p>Are you sure you want to delete this post?</p>
             <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>
             <button className="cancel-delete-button" onClick={cancelDelete}>No</button>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

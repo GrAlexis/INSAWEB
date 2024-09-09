@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from 'react-router-dom'; 
 import { UserProvider, useUser } from '../../hooks/commonHooks/UserContext';
 
-function SignupPage() {
+function SignupPage({ onLoginSuccess }) {
   const [name, setFirstName] = useState("");
   const [email, setEmail] = useState("@insa-lyon.fr")
   const [lastName, setLastName] = useState("");

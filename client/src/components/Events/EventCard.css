@@ -50,7 +50,7 @@
   } */
   .popup {
     position: absolute;
-    top: 0;
+    top: 60%;
     left: 50%;
     transform: translateX(-50%);
     width: auto;
@@ -62,7 +62,7 @@
 }
 .popup-content {
 background-color: #fff;
-padding: 20px;
+padding: 30%;
 border-radius: 5px;
 text-align: center;
 position: relative;
@@ -77,24 +77,22 @@ right: 10px;
 background: none;
 border: none;
 font-size: 20px;
-cursor: pointer;
 }
 
 .popup-content button {
-margin: 10px 0;
-padding: 10px 20px;
-background-color: #007bff;
+padding: 5px 10px;
+background-color: #B0B9A8;
 color: #fff;
 border: none;
 border-radius: 5px;
 cursor: pointer;
 }
 
+
 .team-button-disabled {
     background-color: #ccc;
-    cursor: not-allowed;
 }
-  
+
 .team-full-warning {
 color: red;
 font-size: 0.9em;

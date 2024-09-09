@@ -59,54 +59,126 @@ conn.once('open', () => {
 app.use(cors());
 app.use(express.json())
 app.use(express.urlencoded({extended : false}));
-const storage = multer.memoryStorage();
-// const storage = multer.diskStorage({
-//     destination: function (req, file, cb) {
-//         cb(null, 'uploads/');  // Dossier temporaire
-//     },
-//     filename: function (req, file, cb) {
-//         cb(null, crypto.randomBytes(20).toString('hex') + path.extname(file.originalname));
-//     }
-// });
+// Multer setup
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/');  // Dossier temporaire
+    },
+    filename: function (req, file, cb) {
+        cb(null, crypto.randomBytes(20).toString('hex') + path.extname(file.originalname));  // Unique file name
+      }
+});
 const upload = multer({ storage });
+
 
 //routes
 app.use("/api/products",productRoutes);
 app.use('/api/connexion/', connexionRoutes)
 app.use("/api/user/", userRoutes)
 
-const sharp = require('sharp');
+//const ffmpeg = require('fluent-ffmpeg');
+const fs = require('fs-extra');
+const heicConvert = require('heic-convert');
 
-// Upload image route
+const { promisify } = require('util');
+const unlinkAsync = promisify(fs.unlink);
+
+// Set the ffmpeg and ffprobe paths (for video processing)
+ffmpeg.setFfmpegPath(require('@ffmpeg-installer/ffmpeg').path);
+ffmpeg.setFfprobePath(require('@ffprobe-installer/ffprobe').path);
+
+// Upload image/video route
 app.post('/upload', upload.single('file'), async (req, res) => {
     if (!req.file) {
         return res.status(400).send('No file uploaded.');
     }
 
-    // Check if a member of the same team has already posted for the collective challenge
-    const challenge = await Challenge.findOne({ id: req.body.challengeId });
-    if (challenge.isCollective && req.body.teamId) {
-        const existingPost = await Post.findOne({ teamId: req.body.teamId, challengeId: req.body.challengeId });
-        if (existingPost) {
-            return res.status(400).send('A member of your team has already posted for this collective challenge.');
-        }
-    }
-
-    let fileBuffer = req.file.buffer;
+    const filePath = path.join(__dirname, 'uploads', req.file.filename); // Path to the saved file on disk
     let fileName = crypto.randomBytes(20).toString('hex');
-    
-    // Convert HEIC to JPEG using sharp
+    let thumbnailName = '';
+    let fileBuffer;
+    let isVideo = false;
+
+    // Convert HEIC to JPEG using heic-convert for image files
     if (req.file.mimetype === 'image/heic') {
         try {
-            fileBuffer = await sharp(req.file.buffer).jpeg().toBuffer();
+            const heicBuffer = fs.readFileSync(filePath);
+            fileBuffer = await heicConvert({
+                buffer: heicBuffer,  // Input buffer (HEIC)
+                format: 'JPEG',      // Output format
+                quality: 0.5         // Set the quality (1 = max)
+            });
             fileName += '.jpg';
         } catch (error) {
-            return res.status(500).send('Error processing image.');
+            return res.status(500).send(error.message);
+        }
+    } else if (/\.(mp4|mov|avi|wmv|flv|mkv)$/i.test(req.file.originalname)) {
+        // Handle video files and generate thumbnail using FFmpeg
+        isVideo = true;
+        try {
+            fileName += path.extname(req.file.originalname);
+            const videoPath = path.join(__dirname, 'uploads', fileName);
+            const compressedVideoPath = path.join(__dirname, 'uploads', `compressed_${fileName}`);
+            const thumbnailPath = path.join(__dirname, 'thumbnails', `${fileName}.png`);
+            thumbnailName = `${fileName}.png`;
+
+            fs.writeFileSync(videoPath, fs.readFileSync(filePath));
+
+            // Check if the file exists
+            if (!fs.existsSync(videoPath)) {
+                throw new Error('Video file does not exist');
+            }
+            // Compress the video using FFmpeg
+            await new Promise((resolve, reject) => {
+                ffmpeg(videoPath)
+                    .output(compressedVideoPath)
+                    .videoCodec('libx264')
+                    .videoBitrate('1000k') // Set the target video bitrate
+                    .outputOptions('-crf', '28') // Use CRF to control the quality (lower is higher quality)
+                    .on('end', resolve)
+                    .on('error', reject)
+                    .run();
+            });
+            console.log("apres compression")
+
+            const stats = await fs.stat(compressedVideoPath);
+            const fileSizeInMB = (stats.size / (1024 * 1024)).toFixed(2);  // Size in MB
+            console.log(`Compressed video size: ${fileSizeInMB} MB`);
+
+            // Generate a thumbnail from the video (using FFmpeg)
+            await new Promise((resolve, reject) => {
+                ffmpeg(videoPath)
+                    .screenshots({
+                        timestamps: ['00:00:01.000'], // 1 second into the video
+                        filename: thumbnailName,
+                        folder: path.join(__dirname, 'thumbnails')
+                    })
+                    .on('end', resolve)
+                    .on('error', reject);
+            });
+
+            // Read the thumbnail and upload it to GridFS
+            const thumbnailBuffer = fs.readFileSync(thumbnailPath);
+            const writeStreamThumbnail = gridfsBucket.openUploadStream(thumbnailName);
+            writeStreamThumbnail.end(thumbnailBuffer);
+
+            // Read the compressed video file
+            fileBuffer = fs.readFileSync(compressedVideoPath);
+
+            // Delete the temporary video and compressed video files
+            await unlinkAsync(thumbnailPath);
+            await unlinkAsync(videoPath);
+            await unlinkAsync(compressedVideoPath);
+        } catch (error) {
+            return res.status(500).send(error.message);
         }
     } else {
+        // Handle other image uploads (e.g., JPEG, PNG)
+        fileBuffer = fs.readFileSync(filePath);
         fileName += path.extname(req.file.originalname);
     }
 
+    // Upload the processed file (image or video) to GridFS
     const writeStream = gridfsBucket.openUploadStream(fileName);
     writeStream.end(fileBuffer);
 
@@ -117,6 +189,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             user: req.body.user,
             likes: 0,
             picture: fileName,
+            thumbnail: isVideo ? thumbnailName : '', // Save thumbnail reference
             description: req.body.description,
             teamId: req.body.teamId,
             isValidated: false
@@ -124,6 +197,15 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
         try {
             const savedPost = await newPost.save();
+
+            // Delete the temporary files in the 'uploads' folder
+            const uploadsPath = path.join(__dirname, 'uploads');
+            const files = await fs.readdir(uploadsPath);
+            for (const file of files) {
+                await unlinkAsync(path.join(uploadsPath, file));
+            }
+            console.log('Temporary files in uploads folder deleted.');
+
             res.status(201).send(savedPost);
         } catch (error) {
             res.status(500).send(error.message);
@@ -134,7 +216,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         res.status(500).send('Error uploading file.');
     });
 });
-
 
 //get posts/publications route
 
@@ -182,6 +263,11 @@ app.get('/file/:filename', async (req, res) => {
         }
 
         const readStream = gridfsBucket.openDownloadStreamByName(req.params.filename);
+
+        // Add cache headers to the response
+        res.set('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
+        res.set('Expires', new Date(Date.now() + 86400 * 1000).toUTCString());
+
         readStream.pipe(res);
     } catch (error) {
         res.status(500).send(error.message);
@@ -542,7 +628,6 @@ app.post('/assignTeam', async (req, res) => {
             const previousTeam = await Team.findOne({ id: previousTeamId });
             if (previousTeam && previousTeam.members.includes(userId)) {
                 previousTeam.members = previousTeam.members.filter(memberId => memberId.toString() !== userId.toString());
-                console.log("previousTeam.members "+previousTeam.members)
                 await previousTeam.save();
             }
         }
