@@ -12,8 +12,8 @@ const userSchema = new mongoose.Schema({
     eventPoints: { type: Map, of: Number, default: {} }, // Points par event_id
     isAdmin: { type: Boolean, default: false },
     pinnedChallenges: [{ type: String, default: [] }],
-    secretQuestion: { type: String, required: true }, // La question secrète sélectionnée
-    secretAnswer: { type: String, required: true }    // La réponse à la question secrète, idéalement hashée pour la sécurité
+    secretQuestion: { type: String, default: '' }, // La question secrète sélectionnée
+    secretAnswer: { type: String, default: '' }    // La réponse à la question secrète, idéalement hashée pour la sécurité
 });
 
 module.exports = mongoose.model('User', userSchema);
