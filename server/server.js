@@ -76,7 +76,7 @@ app.use("/api/products",productRoutes);
 app.use('/api/connexion/', connexionRoutes)
 app.use("/api/user/", userRoutes)
 
-//const ffmpeg = require('fluent-ffmpeg');
+const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs-extra');
 const heicConvert = require('heic-convert');
 
