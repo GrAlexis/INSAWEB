@@ -11,32 +11,35 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const email = sessionStorage.getItem('email')
-        if (!email){
-          console.error('Not authenticated')
+        const email = sessionStorage.getItem('email');
+        if (!email) {
+          console.error('Not authenticated');
+          return;
         }
+  
+        // Fetch user data
         const response = await axios.get(`http://localhost:5000/api/user/${email}`);
         const userData = response.data;
-        setUser(userData)
-
-          // Fetch team details for each use
-          try {
-            console.log(user.teamId, 'To force the trigger')
-            const teamResponse = await axios.get(`http://localhost:5000/teams/${user.teamId}`);
-            user.teamName = teamResponse.data.name;
-          }
-          catch (TypeError){
-            console.log("entering the catch")
-            user.teamName = 'No Team'
-          }
-
+  
+        // Check if the user has a teamId and fetch the team name
+        if (userData?.teamId) {
+          const teamResponse = await axios.get(`http://localhost:5000/teams/${userData.teamId}`);
+          userData.teamName = teamResponse.data.name; // Add teamName to userData
+        } else {
+          userData.teamName = 'No Team'; // Default value if no teamId exists
+        }
+  
+        // Update the user state with the modified userData (with teamName if applicable)
+        setUser(userData);
+  
       } catch (error) {
         console.error('Error fetching users', error);
       }
     };
-
+  
     fetchUsers();
   }, []);
+  
 
   // Method to update user team name
   const updateUserTeamName = async (currentUser) => {
