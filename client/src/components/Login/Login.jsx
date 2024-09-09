@@ -36,6 +36,34 @@ const Login = ({ onLoginSuccess }) => {
     }
   }, [showTermsModal]);
 
+  const  verify_token = async (token) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/user/decode', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Verify token failed');
+      }
+
+      const data = await response.json();
+      
+      if (data?.email !== sessionStorage.getItem('email')){
+        console.log("Tentative d\'usurpation de token", "email token", data.email, "email cookies", sessionStorage.getItem('email'))
+        return false
+      }
+      else{
+        return true
+      }
+    }
+    catch (error) {
+      console.log('Erreur lors de la vérification du token', error)
+    }
+  } 
   const navigate = useNavigate(); 
   //this is to open/close terms of use pop up
   const handleShowTerms = () => {
@@ -47,9 +75,10 @@ const Login = ({ onLoginSuccess }) => {
   };
   // Vérifiez si l'utilisateur est déjà authentifié
   useEffect(() => {
-    const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
-    if (isAuthenticated) {
-      navigate('/home'); // Redirigez immédiatement si l'utilisateur est déjà authentifié
+    const token = sessionStorage.getItem('token') ;
+    if (token) {
+      if (verify_token(token))
+      {navigate('/home')}; // Redirigez immédiatement si l'utilisateur est déjà authentifié
     }
   }, [navigate]);
 
@@ -99,6 +128,7 @@ const Login = ({ onLoginSuccess }) => {
     
           // Stocker le token dans le sessionStorage
           sessionStorage.setItem('token', data.token);
+          sessionStorage.setItem('email', email);
     
           // Call the function passed from App.js to trigger a state change
           onLoginSuccess();
@@ -333,6 +363,6 @@ const Login = ({ onLoginSuccess }) => {
       )}
     </div>
   );
-};
+}
 
 export default Login;
