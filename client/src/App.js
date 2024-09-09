@@ -39,38 +39,37 @@ function App() {
   );
 
   return (
-    <UserProvider>
+    
       <div className="app-container">
           <BrowserRouter>
               <Routes>
                 <Route index element={<Login onLoginSuccess={handleLogin} />} />
-                <Route path="/home" element={<Home />} />
-                <Route path="/sheesh" element={<Sheesh />} />
-                <Route path="/ranking" element={<Ranking />} />
-                <Route path="/sheesh/:challengeId" element={<Sheesh />} />
-                <Route path="/register" element={<Register onLoginSuccess={handleLogin}/>} />
+                <Route path="/home" element={<UserProvider><Home /></UserProvider>} />
+                <Route path="/sheesh" element={<UserProvider><Sheesh /></UserProvider>} />
+                <Route path="/ranking" element={<UserProvider><Ranking /></UserProvider>} />
+                <Route path="/sheesh/:challengeId" element={<UserProvider><Sheesh /></UserProvider>} />
+                <Route path="/register" element={<Register/>} />
                 <Route path="/login" element={<Login onLoginSuccess={handleLogin} />} />
-                <Route path="/events" element={<EventPage/>} />
+                <Route path="/events" element={<UserProvider><EventPage/></UserProvider>} />
                 <Route
                   path="/admin"
-                  element={
+                  element={<UserProvider>
                     <ProtectedRoute adminOnly={true}>
                       <AdminPage />
-                    </ProtectedRoute>
+                    </ProtectedRoute></UserProvider>
                   }
                 /><Route
                 path="/profil"
-                element={
+                element={<UserProvider>
                   <ProtectedRoute  >
                     <Profil />
-                  </ProtectedRoute>
+                  </ProtectedRoute></UserProvider>
                 }
               />            
               </Routes>
-          {(showNavbar || isLoggedIn) && <Navbar />}
+          {(showNavbar || isLoggedIn) && <UserProvider><Navbar /></UserProvider>}
           </BrowserRouter>
       </div>
-    </UserProvider>
   )
 }
 
