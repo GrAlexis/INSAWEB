@@ -18,7 +18,6 @@ const fetchIsAuthenticated = async () => {
       
       if (data.email) {
         sessionStorage.setItem('email', data.email);
-        sessionStorage.setItem('isAuthenticated', true);
         return true;
       } else {
         return false;
@@ -33,13 +32,31 @@ const fetchIsAuthenticated = async () => {
 };
 
 const fetchIsAdmin = async () => {
+  // Function that returns a promise resolved after a certain delay
+    function wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
   try {
-    const email = sessionStorage.getItem('email');
-    const response = await fetch(`http://localhost:5000/api/user/isAdmin/${email}`, {
-      method: 'GET',
+    const token = sessionStorage.getItem('token');
+    let response = await fetch(`http://localhost:5000/api/user/decode/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ token })
     });
 
-    const data = await response.json();
+    let data = await response.json();
+    const email = data.email
+    await wait(1000)
+    response = await fetch(`http://localhost:5000/api/user/isAdmin/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email })
+    });
+    data = await response.json()
     return data;
 
   } catch (error) {
@@ -87,3 +104,4 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 };
 
 export default ProtectedRoute;
+

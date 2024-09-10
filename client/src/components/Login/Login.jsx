@@ -39,6 +39,35 @@ const Login = ({ showNavBar }) => {
     }
   }, [showTermsModal]);
 
+  const  verify_token = async (token) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/user/decode', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Verify token failed');
+      }
+
+      const data = await response.json();
+      
+      if (data?.email !== sessionStorage.getItem('email')){
+        console.log("Tentative d\'usurpation de token", "email token", data.email, "email cookies", sessionStorage.getItem('email'))
+        return false
+      }
+      else{
+        return true
+      }
+    }
+    catch (error) {
+      console.log('Erreur lors de la vérification du token', error)
+    }
+  } 
+  
   useEffect(() => {
     if (showConfidentialTerms) {
       fetch('./confidential.txt')
@@ -72,9 +101,10 @@ const Login = ({ showNavBar }) => {
 
   // Vérifiez si l'utilisateur est déjà authentifié
   useEffect(() => {
-    const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
-    if (isAuthenticated) {
-      navigate('/home'); // Redirigez immédiatement si l'utilisateur est déjà authentifié
+    const token = sessionStorage.getItem('token') ;
+    if (token) {
+      if (verify_token(token))
+      {navigate('/home')}; // Redirigez immédiatement si l'utilisateur est déjà authentifié
     }
   }, [navigate]);
 
@@ -101,7 +131,6 @@ const Login = ({ showNavBar }) => {
     // Ensuite, permettre la réinitialisation du mot de passe si la réponse est correcte
   };
 
-
   const handleSubmit = async (e) => {
       e.preventDefault();
       console.log(isSignIn ? "Sign In" : "Sign Up");
@@ -124,6 +153,7 @@ const Login = ({ showNavBar }) => {
     
           // Stocker le token dans le sessionStorage
           sessionStorage.setItem('token', data.token);
+          sessionStorage.setItem('email', email);
     
           // Call the function passed from App.js to trigger a state change
           showNavBar();
@@ -383,6 +413,6 @@ const Login = ({ showNavBar }) => {
         )}
     </div>
   );
-};
+}
 
 export default Login;

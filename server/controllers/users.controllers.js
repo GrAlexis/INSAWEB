@@ -44,8 +44,7 @@ const getAllUsers = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, password, isAdmin, classYear, lastName } = req.body; // Include isAdmin in request body
-    const email = `${name}.${lastName}@insa-lyon.fr`.toLowerCase()
+    const { name, password, isAdmin, classYear, lastName, email } = req.body; // Include isAdmin in request body
     const userAlreadyExist = await User.findOne({ email });
     if (userAlreadyExist) {
       return res.status(401).json({ message: 'User already exists' });
@@ -85,32 +84,62 @@ const decodeToken = (req,res) => {
     const { token } = req.body;
     const secretKey = 'your_secret_key'
     const decoded = jwt.verify(token, secretKey);
-    res.status(200).json({'email':decoded.email});
+    return res.status(200).json({'email':decoded.email});
   } catch (error) {
-    res.status(500).json('Token decoding failed');
-
+    return res.status(500).json('Token decoding failed');
   }
   
 };
 
 const isAdmin = async (req, res) => {
   try{
-    const email = req.params.email
+    const email = req.body.email
     if (!email){
-      res.status(500).json('Missing url parameter email')
+      return res.status(500).json('Missing email')
     }
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'User does not exist' });
     }
-    else{
-      res.status(200).json(user.isAdmin)
-    }
+    return res.status(200).json(user.isAdmin)
   }
   catch (error){
+    console.log(error)
     res.status(500).json(error)
   }
+}
 
+
+
+
+
+const getUser = async (req, res) => {
+    try{
+      const userId = req.params.userId
+      let user
+      if (!userId){
+        res.status(500).json('Missing url parameter userId')
+      }
+      if (userId.includes('@')){
+        const email = userId
+        user  = await User.findOne({email: email})
+        //console.log('email',user)
+      }
+      else{
+        user = await User.findById({_id: userId });
+       // console.log('USerId', user)
+      }
+      if (!user ) {
+        return res.status(401).json({ message: 'User does not exist' });
+      }
+      else{
+        res.status(200).json(user)
+      }
+    }
+    catch (error){
+      //console.log(error)
+      res.status(500).json(error)
+    }
 }
 
 module.exports = {
@@ -120,5 +149,7 @@ module.exports = {
   getAllUsers,
   decodeToken,
   updateUser,
+  getUser,
   isAdmin
 };
+

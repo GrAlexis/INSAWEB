@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom'; 
+import { UserProvider, useUser } from '../../hooks/commonHooks/UserContext';
 
 function SignupPage({ showNavBar }) {
   const [name, setFirstName] = useState("");
+  const [email, setEmail] = useState("@insa-lyon.fr")
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -11,6 +13,7 @@ function SignupPage({ showNavBar }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [classYear, setClassYear] = useState("3TC");
   const [isApprentice, setIsApprentice] = useState(false);
+  const { user, setUser, updateUserTeamName } = useUser();
   const navigate = useNavigate(); 
 
   const handleSignup = async () => {
@@ -27,26 +30,28 @@ function SignupPage({ showNavBar }) {
       password,
       isAdmin,
       classYear: year,
+      email
     };
 
     try {
       const response = await axios.post("http://localhost:5000/api/user/register", payload);
       console.log("Signup success:", response.data);
-      // Log the user in after successful signup
       
       // Call the function passed from App.js to trigger a state change
       showNavBar();
 
       // Redirect to the home page after signup
       navigate('/home');
-
+      
     } catch (error) {
       console.error("Signup failed:", error);
+      alert('Creation du compte non réussie')
       // Handle signup error
     }
   };
 
   return (
+    <UserProvider>
     <div style={styles.container}>
       <h2 style={styles.header}>Inscription</h2>
       <div style={styles.inputGroup}>
@@ -55,95 +60,98 @@ function SignupPage({ showNavBar }) {
           type="text"
           value={name}
           onChange={(e) => setFirstName(e.target.value)}
-          style={styles.input}
+          
         />
       </div>
-      <div style={styles.inputGroup}>
-        <label style={styles.label}>Nom:</label>
+      <div>
+        <label >Nom:</label>
         <input
           type="text"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
           style={styles.input}
         />
+      </div><div style={styles.inputGroup}>
+        <label style={styles.label}>Email INSA</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={styles.input}
+        />
       </div>
-      <div style={styles.inputGroup}>
-        <label style={styles.label}>Mot de passe:</label>
+      <div >
+        <label >Mot de passe:</label>
         <input
           type={showPassword ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={styles.input}
+          
         />
       </div>
-      <div style={styles.inputGroup}>
-        <label style={styles.label}>Confirmer le mot de passe:</label>
+      <div >
+        <label >Confirmer le mot de passe:</label>
         <input
           type={showPassword ? "text" : "password"}
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          style={styles.input}
+          
         />
       </div>
-      <div style={styles.inputGroupCheckbox}>
-        <label style={styles.label}>
+      <div >
+        <label >
           <input
             type="checkbox"
             checked={showPassword}
             onChange={(e) => setShowPassword(e.target.checked)}
-            style={styles.checkbox}
+            
           />
           Afficher le mot de passe
         </label>
       </div>
-      <div style={styles.inputGroupCheckbox}>
+      {user?.isAdmin && <div style={styles.inputGroupCheckbox}>
         <label style={styles.label}>
           <input
             type="checkbox"
             checked={isAdmin}
             onChange={(e) => setIsAdmin(e.target.checked)}
-            style={styles.checkbox}
+            
           />
           Admin
         </label>
-      </div>
+      </div>}
       <div style={styles.inputGroup}>
         <label style={styles.label}>Année de classe:</label>
         <select
           value={classYear}
           onChange={(e) => setClassYear(e.target.value)}
-          style={styles.select}
+          
         >
           <option value="3TC">3TC</option>
           <option value="4TC">4TC</option>
           <option value="5TC">5TC</option>
         </select>
       </div>
-      <div style={styles.inputGroupCheckbox}>
-        <label style={styles.label}>
+      <div >
+        <label >
           <input
             type="checkbox"
             checked={isApprentice}
             onChange={(e) => setIsApprentice(e.target.checked)}
-            style={styles.checkbox}
+            
           />
           En apprentissage
         </label>
       </div>
       <div>
-        <button onClick={handleSignup} style={styles.button}>
+        <button onClick={handleSignup} >
           S'inscrire
         </button>
-        <button 
-          type="button" 
-          onClick={() => navigate("/login")} 
-          className="login-button" 
-          style={styles.button}
-        >
-          Se connecter ?
-        </button>
+        <button onClick={() => navigate('/login')}>
+      Ou se connecter
+    </button>
       </div>
-    </div>
+    </div></UserProvider>
   );
 }
 

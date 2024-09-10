@@ -16,6 +16,7 @@ const Team = require('./models/team');
 const productRoutes = require("./routes/products.routes");
 const connexionRoutes = require("./routes/connexion.routes")
 const userRoutes = require("./routes/user.routes")
+const teamRoutes = require('./routes/team.routes')
 const session = require('express-session')
 
 dotenv.config();
@@ -465,7 +466,6 @@ app.put('/challenges/:id', async (req, res) => {
       res.status(500).send('Error updating challenge: ' + error.message);
     }
   });
-  
 
 //route to fetch all users
 app.get('/users', async (req, res) => {
@@ -476,19 +476,9 @@ app.get('/users', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+  
 
-// Route to fetch a user by _id
-app.get('/users/:id', async (req, res) => {
-    try {
-      const user = await User.findById(req.params.id);
-      if (!user) {
-        return res.status(404).send('User not found');
-      }
-      res.status(200).json(user);
-    } catch (error) {
-      res.status(500).send(error.message);
-    }
-  });
+
 
 //route to delete a post
 app.delete('/posts/:id', async (req, res) => {
@@ -776,7 +766,27 @@ app.post('/unpinChallenge', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-
+// Route to get user points and ranks
+app.get('/getUsersTotalPoints', async (req, res) => {
+    try {
+      // Fetch all users
+      const users = await User.find();
+  
+      // Calculate total points for each user
+      const usersWithPoints = users.map(user => ({
+        ...user.toObject(),
+        totalPoints: Object.values(user.eventPoints).reduce((acc, points) => acc + points, 0),
+      }));
+  
+      // Sort users by total points descending
+      usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
+  
+      res.json(usersWithPoints);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching user rankings' });
+    }
+  });
+  
 
 app.get("/", (req,res) =>{
     res.send("Hello from Backend Server !");
