@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom'; 
 
-function SignupPage({ onLoginSuccess }) {
+function SignupPage({ showNavBar }) {
   const [name, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +35,7 @@ function SignupPage({ onLoginSuccess }) {
       // Log the user in after successful signup
       
       // Call the function passed from App.js to trigger a state change
-      onLoginSuccess();
+      showNavBar();
 
       // Redirect to the home page after signup
       navigate('/home');

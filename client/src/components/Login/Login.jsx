@@ -4,7 +4,7 @@ import './Login.css';
 import ForgotPasswordPopup from '../ForgotPassword/ForgotPasswordPopup';
 import axios from "axios";
 
-const Login = ({ onLoginSuccess }) => {
+const Login = ({ showNavBar }) => {
   const [isSignIn, setIsSignIn] = useState(true); 
   const [fade, setFade] = useState(true); // Gérer l'animation de transition
   const [email, setEmail] = useState('');
@@ -126,7 +126,7 @@ const Login = ({ onLoginSuccess }) => {
           sessionStorage.setItem('token', data.token);
     
           // Call the function passed from App.js to trigger a state change
-          onLoginSuccess();
+          showNavBar();
           
           // Rediriger après l'authentification réussie
           navigate('/home');
@@ -158,7 +158,7 @@ const Login = ({ onLoginSuccess }) => {
           // Log the user in after successful signup
           
           // Call the function passed from App.js to trigger a state change
-          onLoginSuccess();
+          showNavBar();
     
           // Redirect to the home page after signup
           navigate('/home');

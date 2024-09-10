@@ -5,7 +5,7 @@ import Animation from '../Animation'
 import { useNavigate } from 'react-router-dom';
 
 
-const Ranking = () => {
+const Ranking = ({ showNavBar }) => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [ranking, setRanking] = useState([]);
@@ -22,7 +22,7 @@ const Ranking = () => {
           return; // Exit useEffect early to prevent further code execution
         }
 
-
+        showNavBar()
     // Fetch events when the component mounts
     axios.get('http://localhost:5000/events')
       .then(response => setEvents(response.data))

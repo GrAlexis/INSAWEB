@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 
 
-const AdminPage = () => {
+const AdminPage = ({ showNavBar }) => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const navigate = useNavigate();
@@ -16,12 +16,13 @@ const AdminPage = () => {
 
     const token = sessionStorage.getItem('token');
 
-        if (!token) {
-          // If no token, redirect to login page
-          navigate('/login');
-          return; // Exit useEffect early to prevent further code execution
-        }
-
+    if (!token) {
+      // If no token, redirect to login page
+      navigate('/login');
+      return; // Exit useEffect early to prevent further code execution
+    }
+    //this is to ensure navbar mounts when refreshing
+    showNavBar()
     // Fetch events when the component mounts
     axios.get('http://localhost:5000/events')
       .then(response => setEvents(response.data))
