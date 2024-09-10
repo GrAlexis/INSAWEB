@@ -9,7 +9,7 @@ import { getImageByKey } from '../../utils/imageMapper';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import { useNavigate } from 'react-router-dom';
 
-const Sheesh = () => {
+const Sheesh = ({ showNavBar }) => {
   const { challengeId } = useParams();
   const { user, setUser } = useUser(); // Assuming you have a setUser function to update the user context
   const [events, setEvents] = useState([]);
@@ -26,7 +26,7 @@ const Sheesh = () => {
           return; // Exit useEffect early to prevent further code execution
         }
 
-    
+    showNavBar()
     const fetchEvents = async () => {
       try {
         const eventResponse = await axios.get('http://localhost:5000/events');

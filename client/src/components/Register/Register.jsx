@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from 'react-router-dom'; 
 import { UserProvider, useUser } from '../../hooks/commonHooks/UserContext';
 
-function SignupPage({ onLoginSuccess }) {
+function SignupPage({ showNavBar }) {
   const [name, setFirstName] = useState("");
   const [email, setEmail] = useState("@insa-lyon.fr")
   const [lastName, setLastName] = useState("");
@@ -36,8 +36,13 @@ function SignupPage({ onLoginSuccess }) {
     try {
       const response = await axios.post("http://localhost:5000/api/user/register", payload);
       console.log("Signup success:", response.data);
-      navigate('/profil')
-      // Handle successful signup
+      
+      // Call the function passed from App.js to trigger a state change
+      showNavBar();
+
+      // Redirect to the home page after signup
+      navigate('/home');
+      
     } catch (error) {
       console.error("Signup failed:", error);
       alert('Creation du compte non réussie')

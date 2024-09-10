@@ -4,7 +4,7 @@ import './Login.css';
 import ForgotPasswordPopup from '../ForgotPassword/ForgotPasswordPopup';
 import axios from "axios";
 
-const Login = ({ onLoginSuccess }) => {
+const Login = ({ showNavBar }) => {
   const [isSignIn, setIsSignIn] = useState(true); 
   const [fade, setFade] = useState(true); // Gérer l'animation de transition
   const [email, setEmail] = useState('');
@@ -21,6 +21,9 @@ const Login = ({ onLoginSuccess }) => {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [termsText, setTermsText] = useState('');
+  const [acceptConfidential, setAcceptConfidential] = useState(false);
+  const [showConfidentialTerms, setShowConfidentialTerms] = useState(false);
+  const [confidentialText, setConfidentialText] = useState('');
 
   // Fetch the terms of use when the modal is opened
   useEffect(() => {
@@ -64,6 +67,20 @@ const Login = ({ onLoginSuccess }) => {
       console.log('Erreur lors de la vérification du token', error)
     }
   } 
+  
+  useEffect(() => {
+    if (showConfidentialTerms) {
+      fetch('./confidential.txt')
+        .then((response) => response.text())
+        .then((data) => {
+          setConfidentialText(data);
+        })
+        .catch((error) => {
+          console.error('Error fetching terms:', error);
+        });
+    }
+  }, [showConfidentialTerms]);
+
   const navigate = useNavigate(); 
   //this is to open/close terms of use pop up
   const handleShowTerms = () => {
@@ -73,6 +90,15 @@ const Login = ({ onLoginSuccess }) => {
   const handleCloseTerms = () => {
     setShowTermsModal(false);
   };
+
+  const handleShowConfidential = () => {
+    setShowConfidentialTerms(true);
+  };
+
+  const handleCloseConfidential = () => {
+    setShowConfidentialTerms(false);
+  };
+
   // Vérifiez si l'utilisateur est déjà authentifié
   useEffect(() => {
     const token = sessionStorage.getItem('token') ;
@@ -105,7 +131,6 @@ const Login = ({ onLoginSuccess }) => {
     // Ensuite, permettre la réinitialisation du mot de passe si la réponse est correcte
   };
 
-
   const handleSubmit = async (e) => {
       e.preventDefault();
       console.log(isSignIn ? "Sign In" : "Sign Up");
@@ -131,7 +156,7 @@ const Login = ({ onLoginSuccess }) => {
           sessionStorage.setItem('email', email);
     
           // Call the function passed from App.js to trigger a state change
-          onLoginSuccess();
+          showNavBar();
           
           // Rediriger après l'authentification réussie
           navigate('/home');
@@ -163,7 +188,7 @@ const Login = ({ onLoginSuccess }) => {
           // Log the user in after successful signup
           
           // Call the function passed from App.js to trigger a state change
-          onLoginSuccess();
+          showNavBar();
     
           // Redirect to the home page after signup
           navigate('/home');
@@ -326,6 +351,16 @@ const Login = ({ onLoginSuccess }) => {
               required
             />
             </div>
+
+            <div className="input-group checkbox">
+            <label className="terms" htmlFor="name" onClick={handleShowConfidential} >Accepter notre politique de confidentialité *</label>
+            <input
+              type="checkbox"
+              checked={acceptConfidential}
+              onChange={(e) => setAcceptConfidential(e.target.checked)}
+              required
+            />
+            </div>
             </>
           )}
           <button type="submit" className="login-button">
@@ -361,6 +396,21 @@ const Login = ({ onLoginSuccess }) => {
           </div>
         </div>
       )}
+
+      {showConfidentialTerms && (
+          <div className={`terms-modal ${showConfidentialTerms ? 'show' : ''}`}>
+            <div className="terms-modal-content">
+              <h2>Politique de confidentialité et conformité RGPD</h2>
+              {/* Split the text by new lines and render each line */}
+              {confidentialText.split('\n').map((line, index) => (
+                <p key={index}>{line}</p>
+              ))}
+              <button onClick={handleCloseConfidential} className="close-modal-button">
+                Fermer
+              </button>
+            </div>
+          </div>
+        )}
     </div>
   );
 }

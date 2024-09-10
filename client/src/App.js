@@ -30,11 +30,11 @@ function App() {
     };
   }, []);
 
-  const handleLogin = () => {
+  const refreshPath = () => {
     setIsLoggedIn(true);
     setPath(window.location.pathname); // Update the path state after login
   };
-  const showNavbar = ['/home', '/sheesh', '/ranking', '/profil'].some(p =>
+  const isComponentWithNavbar = ['/home', '/sheesh', '/ranking', '/profil'].some(p =>
     path.startsWith(p)
   );
 
@@ -43,31 +43,31 @@ function App() {
       <div className="app-container">
           <BrowserRouter>
               <Routes>
-                <Route index element={<Login onLoginSuccess={handleLogin} />} />
-                <Route path="/home" element={<UserProvider><Home /></UserProvider>} />
-                <Route path="/sheesh" element={<UserProvider><Sheesh /></UserProvider>} />
-                <Route path="/ranking" element={<UserProvider><Ranking /></UserProvider>} />
-                <Route path="/sheesh/:challengeId" element={<UserProvider><Sheesh /></UserProvider>} />
-                <Route path="/register" element={<Register/>} />
-                <Route path="/login" element={<Login onLoginSuccess={handleLogin} />} />
+                <Route index element={<Login showNavBar={refreshPath} />} />
+                <Route path="/home" element={<UserProvider><Home showNavBar={refreshPath}/></UserProvider>} />
+                <Route path="/sheesh" element={<UserProvider><Sheesh showNavBar={refreshPath}/></UserProvider>} />
+                <Route path="/ranking" element={<UserProvider><Ranking showNavBar={refreshPath}/></UserProvider>} />
+                <Route path="/sheesh/:challengeId" element={<UserProvider><Sheesh showNavBar={refreshPath}/></UserProvider>} />
+                <Route path="/register" element={<Register showNavBar={refreshPath}/>} />
+                <Route path="/login" element={<Login showNavBar={refreshPath} />} />
                 <Route path="/events" element={<UserProvider><EventPage/></UserProvider>} />
                 <Route
                   path="/admin"
                   element={<UserProvider>
                     <ProtectedRoute adminOnly={true}>
-                      <AdminPage />
+                      <AdminPage showNavBar={refreshPath}/>
                     </ProtectedRoute></UserProvider>
                   }
                 /><Route
                 path="/profil"
                 element={<UserProvider>
                   <ProtectedRoute  >
-                    <Profil />
+                    <Profil showNavBar={refreshPath}/>
                   </ProtectedRoute></UserProvider>
                 }
               />            
               </Routes>
-          {(showNavbar || isLoggedIn) && <UserProvider><Navbar /></UserProvider>}
+          {(isComponentWithNavbar || isLoggedIn) && <UserProvider><Navbar /></UserProvider>}
           </BrowserRouter>
       </div>
   )

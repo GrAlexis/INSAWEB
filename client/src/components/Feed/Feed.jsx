@@ -8,10 +8,11 @@ import Post3 from '../../assets/pictures/post/kayak1.jpeg'
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 
-const Feed = () => {
+const Feed = ({ showNavBar }) => {
     const [posts, setPosts] = useState([]);
     const navigate = useNavigate();
     useEffect(() => {
+        showNavBar()
 
         const token = sessionStorage.getItem('token');
 
