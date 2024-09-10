@@ -10,8 +10,6 @@ import rankThreeIcon from '../../assets/icons/ranks/3_v1.svg';
 
 const InfoBar = () => {
   const { user, setUser, updateUserTeamName } = useUser();
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [rankedUsers, setRankedUsers] = useState([]);
   const [userRank, setUserRank] = useState(null);
 
   useEffect(() => {
@@ -25,8 +23,7 @@ const InfoBar = () => {
       try {
         const response = await axios.get('http://localhost:5000/getUsersTotalPoints');
         const users = response.data;
-        
-        setRankedUsers(users);
+        //fetch total points of all users to calculate the global rank of the user
         const rank = users.findIndex(u => u._id === user._id) + 1;
         setUserRank(rank);
       } catch (error) {
@@ -73,19 +70,10 @@ const InfoBar = () => {
         <img src={logo} alt="Association Logo" className="astuce-logo" />
       </div>
       <div className="section user-info">
-        <h2 onClick={() => setIsPanelOpen(!isPanelOpen)}>{user.name.charAt(0).toUpperCase() + user.name.slice(1)} ({user.teamName ?? 'No team'})</h2>
+        <h2>{user.name.charAt(0).toUpperCase() + user.name.slice(1)}</h2>
+        <span>{user.teamName ?? 'No team'}</span> {/* Team name below the username */}
         <h2>{user.balance} Sh</h2>
       </div>
-      {isPanelOpen && (
-        <div className="user-panel">
-          {/* User selection panel */}
-          {rankedUsers.map((u) => (
-            <div key={u._id} onClick={() => setUser(u)} className="user-item">
-              <p>{u.name}</p>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };
