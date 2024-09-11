@@ -302,7 +302,7 @@ const Login = ({ showNavBar }) => {
               type="checkbox"
               checked={showPassword}
               onChange={(e) => setShowPassword(e.target.checked)}
-              required
+              
             />
             </div>
 
