@@ -60,12 +60,14 @@ const InfoBar = () => {
         ) : (
           <div>Loading Rank...</div>
         )}
-      </div>
 
       <div className="section badge-container">
         {/* Badges */}
         {/* Map through badges if necessary */}
       </div>
+      </div>
+
+      
       <div className="section astus-logo-container">
         <img src={logo} alt="Association Logo" className="astuce-logo" />
       </div>
