@@ -216,3 +216,22 @@ select:focus {
 .terms{
   font-weight: bold;
 }
+.error-message {
+  display: flex;
+  align-items: center;
+  background-color: #fff5f5; /* Light red background (optional) */
+  border-radius: 5px;
+  color: red; /* Text color red */
+  font-size: 16px;
+}
+
+.error-icon {
+  margin-right: 10px; /* Add space between the icon and text */
+  font-size: 20px;
+  color: red; /* Icon color red */
+}
+
+.error-text {
+  font-size: 16px;
+  color: red; /* Text color red */
+}
