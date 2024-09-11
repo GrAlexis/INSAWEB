@@ -101,14 +101,26 @@
     display: block;
     object-fit: cover;
   }
+  
+  @keyframes shake {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(10deg); }
+    50% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
+    100% { transform: rotate(0deg); }
+  }
+  
+  .likes-button.shake {
+    animation: shake 0.5s ease-in-out;
+  }
 
-.post-likes {
+  .post-likes {
     display: flex;
     align-items: center;
-    margin-left: 10px;
-    flex-direction: column;
-    align-items: flex-start;
-    color : gray;
+    color: gray;
+  }
+  .liked .likes-icon {
+    filter: brightness(1.5); /* Highlight the icon when liked */
   }
 
 .likes-button {

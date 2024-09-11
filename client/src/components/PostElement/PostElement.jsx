@@ -5,6 +5,7 @@ import axios from 'axios';
 import { getRewardIcon } from '../../utils/imageMapper';
 import validatedIcon from '../../assets/icons/sheesh/validated.webp'
 import waitingIcon from '../../assets/icons/sheesh/waiting.png'
+import chokbarButton from '../../assets/buttons/chokbar.png'
 import {parseReward} from '../../utils/rewardParser'
 import { formatDate } from '../../utils/dateFormatter';
 import { useNavigate } from 'react-router-dom';
@@ -13,19 +14,41 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import LazyLoad from 'react-lazyload';
 
 import logo from '../../assets/logos/astus.png';
-import smiley_face from '../../assets/buttons/likes/thumbs-up.png';
 
 const PostElement = ({ post, onDelete, fetchPosts }) => {
   const { user } = useUser();
+  const [likes, setLikes] = useState(post.likes);
+  const [liked, setLiked] = useState();
   const [challenge, setChallenge] = useState(null);
   const [event, setEvent] = useState(null);
   const [team, setTeam] = useState(null);
   const [postUser, setPostUser] = useState(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
   const navigate = useNavigate();
 
+  const handleLikeClick = async () => {
+    try {
+      if (liked) {
+        // Unlike the post
+        await axios.post(`http://localhost:5000/posts/${post._id}/unlike`, { userId: user._id });
+        setLikes(likes - 1);
+      } else {
+        // Like the post
+        await axios.post(`http://localhost:5000/posts/${post._id}/like`, { userId: user._id });
+        setLikes(likes + 1);
+      }
+      setLiked(!liked); // Toggle the liked state
+    } catch (error) {
+      console.error('Error liking/unliking the post', error);
+    }
+    setIsAnimating(true); // Trigger the animation
+  };
+
   useEffect(() => {
+
     const fetchChallengeAndEvent = async () => {
       try {
         const challengeResponse = await axios.get(`http://localhost:5000/challenges/${post.challengeId}`);
@@ -64,6 +87,13 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     fetchUser();
   }, [post.challengeId, post.teamId, post.user]);
 
+  // A separate useEffect for the user-related logic
+  useEffect(() => {
+    if (user) {
+      setLiked(post.likedBy.includes(user._id));
+    }
+  }, [user, post.likedBy]);  // Dependencies: user and post.likedBy
+
   const handleSheeshClick = () => {
     navigate(`/sheesh/${post.challengeId}`);
   };
@@ -90,8 +120,6 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
   const handleValidateClick = async () => {
     try {
-      console.log('parsereward',parseReward(challenge.reward))
-      console.log('eventId',event.id)
         const response = await axios.post(`http://localhost:5000/admin/validatePost/${post._id}`, {
             isAdmin: user.isAdmin,
             rewardPoints : parseReward(challenge.reward),
@@ -175,12 +203,18 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
         <div className="post-title">
           <span>{challenge.title}</span>
         </div>
-        {/* <div className="post-likes">
-          <button className="likes-button">
-            <img src={smiley_face} alt="Likes Icon" className="likes-icon" />
+
+        <div className="post-likes">
+          <button 
+            className={`likes-button ${liked ? 'liked' : ''} ${isAnimating ? 'shake' : ''}`} 
+            onClick={handleLikeClick}
+            onAnimationEnd={() => setIsAnimating(false)} // Remove animation class after animation completes
+          >
+            <img src={chokbarButton} alt="Likes Icon" className="likes-icon" />
           </button>
-          {post.likes > 0 && <span>{post.likes}</span>}
-        </div> */}
+          {likes > 0 && <span>{likes}</span>} {/* Only show the number of likes if greater than 0 */}
+        </div>
+
       </div>
       <div className="post-description">
         <p>{post.description}</p>

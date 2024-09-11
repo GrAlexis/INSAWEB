@@ -14,6 +14,7 @@ const Sheesh = ({ showNavBar }) => {
   const { user, setUser } = useUser(); // Assuming you have a setUser function to update the user context
   const [events, setEvents] = useState([]);
   const [challenges, setChallenges] = useState([]);
+  const [pinnedChallenges, setPinnedChallenges] = useState([]); // Add state to store pinned challenges
   const [openChallengeId, setOpenChallengeId] = useState(null);
   const challengeRefs = useRef({});
   const navigate = useNavigate();
@@ -53,9 +54,18 @@ const Sheesh = ({ showNavBar }) => {
       }
     };
 
+    // Calculate pinned challenges when both user and challenges are available
+    const calculatePinnedChallenges = () => {
+      if (user && challenges.length > 0) {
+        const userPinnedChallenges = challenges.filter(challenge => user.pinnedChallenges.includes(challenge.id));
+        setPinnedChallenges(userPinnedChallenges);
+      }
+    };
+
     fetchEvents();
     fetchChallenges();
-  }, []);
+    calculatePinnedChallenges();
+  }, [user, challenges]);
 
   useEffect(() => {
     if (challengeId && challengeRefs.current[challengeId]) {
@@ -67,11 +77,6 @@ const Sheesh = ({ showNavBar }) => {
     const challengeIds = eventChallenges.split(',').map(id => id.trim());
     return challenges.filter(challenge => challengeIds.includes(challenge.id));
   };
-
-  // Get the pinned challenges of the user
-  const pinnedChallenges = challenges.filter(challenge => user.pinnedChallenges.includes(challenge.id));
-  // Get the rest of the challenges
-  const otherChallenges = challenges.filter(challenge => !user.pinnedChallenges.includes(challenge.id));
 
   return (
     <Animation>
