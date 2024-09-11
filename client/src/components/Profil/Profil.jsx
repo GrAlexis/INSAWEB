@@ -9,26 +9,36 @@ import axios from 'axios';
 function Profil() {
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState('');
+  const [message, setMessage] = useState('');
+  const [updatingMdp, setUpdatingMdp] = useState(false)
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const email = sessionStorage.getItem('email');
+  const token = sessionStorage.getItem('token');
+  
 
   const handleLogout = () => {
     // Clear the token from local storage
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('email');
-    sessionStorage.removeItem('isAuthenticated');
-    navigate("/login")
-    
-  };
-  useEffect(() => {
-    const token = sessionStorage.getItem('token');
 
+    navigate("/login") 
+  };
+
+  const enableUpdateMdp = () => {
+    if (!updatingMdp){
+      setUpdatingMdp(true)
+    }
+    else{
+      setUpdatingMdp(false)
+    }
+  }
+  useEffect(() => {
     if (!token) {
       // If no token, redirect to login page
       navigate('/login');
       return; // Exit useEffect early to prevent further code execution
     }
-    
-
     if (email) {
       // Extract the first name from the email
       const firstNameFromEmail = email.split('@')[0].split('.')[0]; // Split email to get the first name
@@ -39,8 +49,47 @@ function Profil() {
     }
   }, [navigate]);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Empêche le rechargement de la page par défaut
 
+    // Vérifier que le nouveau mot de passe et la confirmation correspondent
+    if (newPassword !== confirmPassword) {
+      console.log("Les nouveaux mots de passe ne correspondent pas");
+      return;
+    }
 
+    // Créer le payload à envoyer à l'endpoint
+    const payload = {
+      token,
+      newMdp:newPassword,
+    };
+
+    try {
+      // Faire la requête POST à l'endpoint MY_ENDPOINT
+      const response = await fetch('http://localhost:5000/api/user/updateMdp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Réponse réussie
+        setMessage('Mot de passe changé avec succès !');
+        setUpdatingMdp(false)
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        // Gérer les erreurs renvoyées par le serveur
+        console.log(data || 'Erreur lors du changement de mot de passe');
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
+  }
   return (
     <Animation>
       <div className="profil">
@@ -50,7 +99,34 @@ function Profil() {
           Se déconnecter
         </button>
         </header>
-        
+        <button onClick={enableUpdateMdp}>
+            Modifier votre mot de passe
+        </button>
+      {updatingMdp && <div className="password-change-form">
+      <h3>Changer le mot de passe</h3>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Nouveau mot de passe:</label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Confirmer le nouveau mot de passe:</label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit">Changer le mot de passe</button>
+      </form>
+      
+      </div> }<p>{message}</p>
       </div>
     </Animation>
   );
