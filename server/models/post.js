@@ -9,7 +9,9 @@ const postSchema = new mongoose.Schema({
     thumbnail: { type: String},
     description : { type: String},
     teamId : {type: String, required: false},
-    isValidated: { type: Boolean, default: false }
+    isValidated: { type: Boolean, default: false },
+    likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],  // Store users who liked the post
+    likes: { type: Number, default: 0 }
 });
 
 module.exports = mongoose.model('Post', postSchema);

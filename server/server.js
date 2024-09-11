@@ -786,7 +786,61 @@ app.get('/getUsersTotalPoints', async (req, res) => {
       res.status(500).json({ error: 'Error fetching user rankings' });
     }
   });
-  
+
+// Like a post
+app.post('/posts/:id/like', async (req, res) => {
+    const postId = req.params.id;
+    const userId = req.body.userId; // Pass user ID in the request body
+
+    try {
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+
+        // Check if the user already liked the post
+        if (post.likedBy.includes(userId)) {
+            return res.status(400).send('User already liked this post');
+        }
+
+        // Increment likes and add the user to likedBy
+        post.likes += 1;
+        post.likedBy.push(userId);
+        await post.save();
+
+        res.status(200).json({ likes: post.likes, likedBy: post.likedBy });
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+// Unlike a post
+app.post('/posts/:id/unlike', async (req, res) => {
+    const postId = req.params.id;
+    const userId = req.body.userId;
+
+    try {
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+
+        // Check if the user has liked the post
+        if (!post.likedBy.includes(userId)) {
+            return res.status(400).send('User has not liked this post');
+        }
+
+        // Decrement likes and remove the user from likedBy
+        post.likes -= 1;
+        post.likedBy = post.likedBy.filter((id) => id.toString() !== userId);
+        await post.save();
+
+        res.status(200).json({ likes: post.likes, likedBy: post.likedBy });
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
 
 app.get("/", (req,res) =>{
     res.send("Hello from Backend Server !");
