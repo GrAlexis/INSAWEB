@@ -36,7 +36,7 @@ const EventCard = ({ event }) => {
     };
 
     fetchTeams();
-  }, [event.id, user.teamId]);
+  }, [event.id, user]);
 
   const handleJoinTeam = async (teamId) => {
     if (user.teamId === teamId) {

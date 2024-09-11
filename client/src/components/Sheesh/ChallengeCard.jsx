@@ -183,8 +183,8 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
                 onChange={handleDescriptionChange}
                 disabled={post || collectivePost}
               />
-              <button type="submit" className='sheesh-button' disabled={post || collectivePost || isProcessing}>
-                {isProcessing ? 'Uploading...' : 'Sheeeeeesh!'}
+              <button type="submit" className='sheesh-button' disabled={post || collectivePost || isProcessing || userNeedsToJoinTeam}>
+              {userNeedsToJoinTeam ? 'Pas d\'équipe, pas de sheesh' : (isProcessing ? 'Uploading...' : 'Sheeeeeesh!')}
               </button>         
             </form>
             <button className='delete-button' onClick={handleCloseForm}>✕</button>
