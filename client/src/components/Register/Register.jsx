@@ -51,7 +51,6 @@ function SignupPage({ showNavBar }) {
   };
 
   return (
-    <UserProvider>
     <div style={styles.container}>
       <h2 style={styles.header}>Inscription</h2>
       <div style={styles.inputGroup}>
@@ -151,7 +150,7 @@ function SignupPage({ showNavBar }) {
       Ou se connecter
     </button>
       </div>
-    </div></UserProvider>
+    </div>
   );
 }
 

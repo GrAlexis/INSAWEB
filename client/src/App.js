@@ -48,7 +48,7 @@ function App() {
                 <Route path="/sheesh" element={<UserProvider><Sheesh showNavBar={refreshPath}/></UserProvider>} />
                 <Route path="/ranking" element={<UserProvider><Ranking showNavBar={refreshPath}/></UserProvider>} />
                 <Route path="/sheesh/:challengeId" element={<UserProvider><Sheesh showNavBar={refreshPath}/></UserProvider>} />
-                <Route path="/register" element={<Register showNavBar={refreshPath}/>} />
+                <Route path="/register" element={<UserProvider><ProtectedRoute adminOnly={true}><Register showNavBar={refreshPath}/></ProtectedRoute></UserProvider>} />
                 <Route path="/login" element={<Login showNavBar={refreshPath} />} />
                 <Route path="/events" element={<UserProvider><EventPage/></UserProvider>} />
                 <Route
