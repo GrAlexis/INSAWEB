@@ -318,7 +318,7 @@ const Login = ({ showNavBar }) => {
               <option value="5TC">5TC</option>
             </select>
             </div>
-            <div className="input-group select-group">
+            {/*<div className="input-group select-group">
               <label htmlFor="secret-question">Question secrète</label>
               <select
                 id="secret-question"
@@ -341,7 +341,7 @@ const Login = ({ showNavBar }) => {
                 placeholder="Entrez votre réponse"
                 required
               />
-            </div>
+          </div>*/}
 
 
             <div className="input-group checkbox">
@@ -377,18 +377,18 @@ const Login = ({ showNavBar }) => {
           <button type="submit" className="login-button">
             {isSignIn ? 'je veux je veux' : 'Prêt à sheeesh ??'}
           </button>
-          {isSignIn &&( 
+          {/*isSignIn &&( 
           <p className="forgot-password" onClick={handleForgotPassword}>
             Mot de passe oublié ?
           </p>
-        )}
+        )*/}
         {/* Pop-up pour la question secrète */}
-        {showPopup && (
+        {/*{showPopup && (
           <ForgotPasswordPopup
             onSubmit={handleSecretAnswerSubmit}
             onClose={handlePopupClose}
           />
-        )}
+        )}*/}
           
         </form>
       </div>
