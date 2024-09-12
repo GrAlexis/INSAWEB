@@ -60,6 +60,35 @@ const registerUser = async (req, res) => {
   }
 };
 
+const updateMdp = async (req,res) => {
+  try{
+    const {token, newMdp} = req.body
+    const decoded = jwt.verify(token, 'your_secret_key')
+    const newHashedPassword = await bcrypt.hash(newMdp, 10)
+    if (decoded){
+      const updatedUser = await User.findOneAndUpdate(
+        { email: decoded.email },                  // Condition: trouver l'utilisateur par son nom d'utilisateur
+        { hashedPassword:newHashedPassword },          // Champ à mettre à jour
+        { new: true, runValidators: true }       // Options: retourner le document mis à jour et valider les schémas
+      );
+      if (updatedUser){
+        return res.status(202).json('Successfully updated password')
+      }
+      else{
+        console.error('User not found')
+        return res.status(404).json('User not found')
+      }
+    }
+    else{
+      return res.status(401).json('Wrong token')
+    }
+  }
+  catch (error){
+    console.log(error)
+    return res.status(500).json('Erreur de bz')
+  }
+}
+
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -150,6 +179,7 @@ module.exports = {
   decodeToken,
   updateUser,
   getUser,
-  isAdmin
+  isAdmin,
+  updateMdp
 };
 

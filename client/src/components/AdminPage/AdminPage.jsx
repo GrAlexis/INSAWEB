@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import EventAdmin from '../EventAdmin/EventAdmin';
 import './AdminPage.css';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 
 
@@ -16,11 +16,6 @@ const AdminPage = ({ showNavBar }) => {
 
     const token = sessionStorage.getItem('token');
 
-    if (!token) {
-      // If no token, redirect to login page
-      navigate('/login');
-      return; // Exit useEffect early to prevent further code execution
-    }
     //this is to ensure navbar mounts when refreshing
     showNavBar()
     // Fetch events when the component mounts
@@ -46,6 +41,7 @@ const AdminPage = ({ showNavBar }) => {
           <p>Please select an event to administrate.</p>
         )}
       </div>
+      <Link to='/register'>Inscrire des admins</Link>
     </div>
   );
 };
