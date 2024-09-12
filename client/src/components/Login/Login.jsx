@@ -181,8 +181,9 @@ const Login = ({ showNavBar }) => {
         
         const payload = {
           name,
-          lastName,
           password,
+          lastName,
+          email,
           isAdmin : false,
           classYear: year,
         };
