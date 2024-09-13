@@ -1,5 +1,6 @@
 import WEI_TC from '../assets/events/WEI_TC.png';
 import WEC_TC from '../assets/events/WEC_TC.png';
+import RALLYE from '../assets/events/RALLYE.jpg'
 import Pigeon from '../assets/icons/sheesh/pigeon.jpg';
 import Cup from '../assets/icons/sheesh/cup.png';
 import Pied from '../assets/icons/sheesh/pied.jpg';
@@ -15,6 +16,7 @@ import silver_prestige_icon from '../assets/icons/prestige/silver.webp';
 import bronze_prestige_icon from '../assets/icons/prestige/bronze.png';
 
 export const imageMapper = {
+  'RALLYE': RALLYE,
   'WEI_TC': WEI_TC,
   'WEC_TC': WEC_TC,
   'pigeon': Pigeon,
