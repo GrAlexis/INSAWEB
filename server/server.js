@@ -98,6 +98,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     let thumbnailName = '';
     let fileBuffer;
     let isVideo = false;
+    let videoPath, compressedVideoPath, thumbnailPath;
 
     // Convert HEIC to JPEG using heic-convert for image files
     if (req.file.mimetype === 'image/heic') {
@@ -117,9 +118,9 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         isVideo = true;
         try {
             fileName += path.extname(req.file.originalname);
-            const videoPath = path.join(__dirname, 'uploads', fileName);
-            const compressedVideoPath = path.join(__dirname, 'uploads', `compressed_${fileName}`);
-            const thumbnailPath = path.join(__dirname, 'thumbnails', `${fileName}.png`);
+            videoPath = path.join(__dirname, 'uploads', fileName);
+            compressedVideoPath = path.join(__dirname, 'uploads', `compressed_${fileName}`);
+            thumbnailPath = path.join(__dirname, 'thumbnails', `${fileName}.png`);
             thumbnailName = `${fileName}.png`;
 
             fs.writeFileSync(videoPath, fs.readFileSync(filePath));
@@ -199,11 +200,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             const savedPost = await newPost.save();
 
             // Delete the temporary files in the 'uploads' folder
-            const uploadsPath = path.join(__dirname, 'uploads');
-            const files = await fs.readdir(uploadsPath);
-            for (const file of files) {
-                await unlinkAsync(path.join(uploadsPath, file));
-            }
+            await unlinkAsync(filePath);
+
             console.log('Temporary files in uploads folder deleted.');
 
             res.status(201).send(savedPost);
