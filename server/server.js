@@ -93,34 +93,31 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         return res.status(400).send('No file uploaded.');
     }
 
-    const filePath = path.join(__dirname, 'uploads', req.file.filename); // Path to the saved file on disk
+    const filePath = path.join(__dirname, 'uploads', req.file.filename);
     let fileName = crypto.randomBytes(20).toString('hex');
     let thumbnailName = '';
     let fileBuffer;
     let isVideo = false;
-    let videoPath, compressedVideoPath, thumbnailPath;
 
-    // Convert HEIC to JPEG using heic-convert for image files
     if (req.file.mimetype === 'image/heic') {
         try {
             const heicBuffer = fs.readFileSync(filePath);
             fileBuffer = await heicConvert({
-                buffer: heicBuffer,  // Input buffer (HEIC)
-                format: 'JPEG',      // Output format
-                quality: 0.5         // Set the quality (1 = max)
+                buffer: heicBuffer,
+                format: 'JPEG',
+                quality: 0.5
             });
             fileName += '.jpg';
         } catch (error) {
-            return res.status(500).send(error.message);
+            return res.status(500).send(`HEIC conversion error: ${error.message}`);
         }
     } else if (/\.(mp4|mov|avi|wmv|flv|mkv)$/i.test(req.file.originalname)) {
-        // Handle video files and generate thumbnail using FFmpeg
         isVideo = true;
         try {
-            fileName += '.mp4'; // Always set the compressed video extension to .mp4
-            videoPath = path.join(__dirname, 'uploads', fileName);
-            compressedVideoPath = path.join(__dirname, 'uploads', `compressed_${fileName}`);
-            thumbnailPath = path.join(__dirname, 'thumbnails', `${fileName}.png`);
+            fileName += '.mp4';
+            const videoPath = path.join(__dirname, 'uploads', fileName);
+            const compressedVideoPath = path.join(__dirname, 'uploads', `compressed_${fileName}`);
+            const thumbnailPath = path.join(__dirname, 'thumbnails', `${fileName}.png`);
             thumbnailName = `${fileName}.png`;
 
             fs.writeFileSync(videoPath, fs.readFileSync(filePath));
@@ -129,33 +126,50 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             if (!fs.existsSync(videoPath)) {
                 throw new Error('Video file does not exist');
             }
+
             // Compress the video using FFmpeg
             await new Promise((resolve, reject) => {
                 ffmpeg(videoPath)
                     .output(compressedVideoPath)
                     .videoCodec('libx264')
-                    .videoBitrate('1000k') // Set the target video bitrate
-                    .outputOptions('-crf', '28') // Use CRF to control the quality (lower is higher quality)
-                    .on('end', resolve)
-                    .on('error', reject)
+                    .videoBitrate('1000k')
+                    .outputOptions('-crf', '28')
+                    .on('end', () => {
+                        console.log('Video compression completed.');
+                        resolve();
+                    })
+                    .on('error', (err) => {
+                        console.error('FFmpeg compression error:', err);
+                        reject(err);
+                    })
                     .run();
             });
-            console.log("apres compression")
 
-            const stats = await fs.stat(compressedVideoPath);
-            const fileSizeInMB = (stats.size / (1024 * 1024)).toFixed(2);  // Size in MB
+            // Check if compressed video file was created
+            if (!fs.existsSync(compressedVideoPath)) {
+                throw new Error('Compressed video file does not exist');
+            }
+
+            const stats = await fs.promises.stat(compressedVideoPath);
+            const fileSizeInMB = (stats.size / (1024 * 1024)).toFixed(2);
             console.log(`Compressed video size: ${fileSizeInMB} MB`);
 
             // Generate a thumbnail from the video (using FFmpeg)
             await new Promise((resolve, reject) => {
                 ffmpeg(videoPath)
                     .screenshots({
-                        timestamps: ['00:00:01.000'], // 1 second into the video
+                        timestamps: ['00:00:01.000'],
                         filename: thumbnailName,
                         folder: path.join(__dirname, 'thumbnails')
                     })
-                    .on('end', resolve)
-                    .on('error', reject);
+                    .on('end', () => {
+                        console.log('Thumbnail generation completed.');
+                        resolve();
+                    })
+                    .on('error', (err) => {
+                        console.error('FFmpeg thumbnail error:', err);
+                        reject(err);
+                    });
             });
 
             // Read the thumbnail and upload it to GridFS
@@ -167,14 +181,13 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             fileBuffer = fs.readFileSync(compressedVideoPath);
 
             // Delete the temporary video and compressed video files
-            await unlinkAsync(thumbnailPath);
-            await unlinkAsync(videoPath);
-            await unlinkAsync(compressedVideoPath);
+            await fs.promises.unlink(thumbnailPath);
+            await fs.promises.unlink(videoPath);
+            await fs.promises.unlink(compressedVideoPath);
         } catch (error) {
-            return res.status(500).send(error.message);
+            return res.status(500).send(`Video processing error: ${error.message}`);
         }
     } else {
-        // Handle other image uploads (e.g., JPEG, PNG)
         fileBuffer = fs.readFileSync(filePath);
         fileName += path.extname(req.file.originalname);
     }
@@ -190,7 +203,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             user: req.body.user,
             likes: 0,
             picture: fileName,
-            thumbnail: isVideo ? thumbnailName : '', // Save thumbnail reference
+            thumbnail: isVideo ? thumbnailName : '',
             description: req.body.description,
             teamId: req.body.teamId,
             isValidated: false
@@ -200,13 +213,13 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             const savedPost = await newPost.save();
 
             // Delete the temporary files in the 'uploads' folder
+            // Delete the temporary files in the 'uploads' folder
             await unlinkAsync(filePath);
-
             console.log('Temporary files in uploads folder deleted.');
 
             res.status(201).send(savedPost);
         } catch (error) {
-            res.status(500).send(error.message);
+            res.status(500).send(`Post saving error: ${error.message}`);
         }
     });
 
@@ -214,6 +227,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         res.status(500).send('Error uploading file.');
     });
 });
+
 
 //get posts/publications route
 
