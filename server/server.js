@@ -117,7 +117,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         // Handle video files and generate thumbnail using FFmpeg
         isVideo = true;
         try {
-            fileName += path.extname(req.file.originalname);
+            fileName += '.mp4'; // Always set the compressed video extension to .mp4
             videoPath = path.join(__dirname, 'uploads', fileName);
             compressedVideoPath = path.join(__dirname, 'uploads', `compressed_${fileName}`);
             thumbnailPath = path.join(__dirname, 'thumbnails', `${fileName}.png`);
