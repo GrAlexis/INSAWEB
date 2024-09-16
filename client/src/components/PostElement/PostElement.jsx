@@ -180,7 +180,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           ) : (
             // Load the video after the user clicks on the thumbnail
             <LazyLoad height={200} offset={100}>
-              <video controls className="post-video" autoPlay onEnded={handleVideoEnd}>
+              <video controls="controls" className="post-video" autoPlay onEnded={handleVideoEnd}>
                 <source src={`http://localhost:5000/file/${post.picture}`} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
