@@ -202,7 +202,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
             </div>
           ) : (
             // Load the video after the user clicks on the thumbnail
-              <video controls="true" className="post-video" autoPlay muted playsInline onEnded={handleVideoEnd}>
+              <video controls="controls" className="post-video" autoPlay playsInline onEnded={handleVideoEnd}>
                 <source src={videoUrl} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
@@ -211,7 +211,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           <LazyLoadImage
             alt={challenge.title}
             effect="blur"
-            src={`http://192.168.1.100:5001/file/${post.picture}`} // use normal <img> attributes as props
+            src={`http://localhost:5000/file/${post.picture}`} // use normal <img> attributes as props
             className="post-image"
           />
         )}
