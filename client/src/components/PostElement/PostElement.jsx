@@ -24,6 +24,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const [team, setTeam] = useState(null);
   const [postUser, setPostUser] = useState(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [videoUrl, setVideoUrl] = useState(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -137,9 +138,31 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const isVideo = (fileName) => {
     return /\.(mp4|mov|avi|wmv|flv|mkv)$/i.test(fileName);
   };
- const handlePlayVideo = () => {
-    setIsVideoPlaying(true);
+  
+  const handlePlayVideo = async () => {
+    try {
+      // Fetch the video file from the server
+      const response = await fetch(`http://localhost:5000/file/${post.picture}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch video');
+      }
+
+      // Create a blob from the video response
+      const videoBlob = await response.blob();
+
+      // Create a local URL for the video using the Blob
+      const localVideoUrl = URL.createObjectURL(videoBlob);
+
+      // Set the video URL and start playing
+      setVideoUrl(localVideoUrl);
+      setIsVideoPlaying(true);
+
+    } catch (error) {
+      console.error('Error fetching the video:', error);
+    }
   };
+
   const handleVideoEnd = () => {
     setIsVideoPlaying(false); // Go back to the thumbnail after the video finishes
   };
@@ -179,18 +202,16 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
             </div>
           ) : (
             // Load the video after the user clicks on the thumbnail
-            <LazyLoad height={200} offset={100}>
-              <video controls="controls" className="post-video" autoPlay onEnded={handleVideoEnd}>
-                <source src={`http://localhost:5000/file/${post.picture}`} type="video/mp4" />
+              <video controls="true" className="post-video" autoPlay muted playsInline onEnded={handleVideoEnd}>
+                <source src={videoUrl} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
-            </LazyLoad>
           )
         ) : (
           <LazyLoadImage
             alt={challenge.title}
             effect="blur"
-            src={`http://localhost:5000/file/${post.picture}`} // use normal <img> attributes as props
+            src={`http://192.168.1.100:5001/file/${post.picture}`} // use normal <img> attributes as props
             className="post-image"
           />
         )}
