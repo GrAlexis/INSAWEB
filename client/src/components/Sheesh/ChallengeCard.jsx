@@ -91,10 +91,31 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
     setFile(null);
     setDescription('');
   };
-
+  
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    
+    // Expanded list of allowed image file types, including HEIC
+    const allowedFileTypes = [
+      'image/jpeg', 
+      'image/png', 
+      'image/gif', 
+      'image/jpg', 
+      'image/webp', 
+      'image/bmp', 
+      'image/tiff',
+      'image/heic'  // Added HEIC support
+    ];
+  
+    if (selectedFile && allowedFileTypes.includes(selectedFile.type)) {
+      setFile(selectedFile); // Set the file if it's an image
+    } else {
+      alert('Only image files (JPEG, PNG, GIF, JPG, WEBP, BMP, TIFF, HEIC) are allowed');
+      setFile(null); // Reset the file if it's not an image
+    }
   };
+  
+  
 
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
