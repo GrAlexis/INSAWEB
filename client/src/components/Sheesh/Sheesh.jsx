@@ -65,7 +65,7 @@ const Sheesh = ({ showNavBar }) => {
     fetchEvents();
     fetchChallenges();
     calculatePinnedChallenges();
-  }, [user, challenges]);
+  }, [user]);
 
   useEffect(() => {
     if (challengeId && challengeRefs.current[challengeId]) {
