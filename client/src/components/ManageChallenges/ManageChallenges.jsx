@@ -42,7 +42,7 @@ const ManageChallenges = ({ eventId }) => {
         const allChallengeIds = allChallengeIdsResponse.data.map(challenge => parseInt(challenge.id, 10));
 
         // Generate a unique ID for the new challenge
-        const newId = Math.max(...allChallengeIds) + 1;
+        const newId = (allChallengeIds.length > 0 ? Math.max(...allChallengeIds) + 1 : 10) || 10;
 
         const response = await axios.post('http://localhost:5000/challenges', {
           id: newId,
