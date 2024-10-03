@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import config from "./config";
 import Home from "./components/Feed/Feed"
 import Sheesh from "./components/Sheesh/Sheesh"
 import Profil from "./components/Profil/Profil"

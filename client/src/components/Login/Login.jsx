@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import config from '../../config';
 import { useNavigate } from 'react-router-dom';
 import Icon from '@mdi/react'
 import {mdiCloseCircle} from '@mdi/js'
@@ -44,7 +45,7 @@ const Login = ({ showNavBar }) => {
 
   const  verify_token = async (token) => {
     try {
-      const response = await fetch('http://localhost:5000/api/user/decode', {
+      const response = await fetch(config.backendAPI+'/api/user/decode', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,7 +141,7 @@ const Login = ({ showNavBar }) => {
       if (isSignIn)
       {
         try {
-          const response = await fetch('http://localhost:5000/api/user/login', {
+          const response = await fetch(config.backendAPI+'/api/user/login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -189,7 +190,7 @@ const Login = ({ showNavBar }) => {
         };
     
         try {
-          const response = await axios.post("http://localhost:5000/api/user/registerGlobal", payload);
+          const response = await axios.post(config.backendAPI+"/api/user/registerGlobal", payload);
           console.log("Signup success:", response.data);
           // Log the user in after successful signup
           

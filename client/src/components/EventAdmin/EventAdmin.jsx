@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import config from '../../config';
 import ManageChallenges from '../ManageChallenges/ManageChallenges';
 import ManageTeams from '../ManageTeams/ManageTeams';
 import './EventAdmin.css';

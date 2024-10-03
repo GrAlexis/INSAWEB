@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import config from '../../config';
 import axios from 'axios';
 import './ManageChallenges.css';
 import { imageMapper } from '../../utils/imageMapper';
@@ -31,20 +32,20 @@ const ManageChallenges = ({ eventId }) => {
     try {
       if (editChallenge) {
         // If editing an existing challenge, update it
-        const response = await axios.put(`http://localhost:5000/challenges/${editChallenge.id}`, {
+        const response = await axios.put(config.backendAPI+`/challenges/${editChallenge.id}`, {
           ...newChallenge,
           eventId,
         });
         setChallenges(challenges.map(challenge => challenge.id === editChallenge.id ? response.data : challenge));
       } else {
         // Fetch all challenges to generate a unique ID
-        const allChallengeIdsResponse = await axios.get('http://localhost:5000/challenges/ids');
+        const allChallengeIdsResponse = await axios.get(config.backendAPI+'/challenges/ids');
         const allChallengeIds = allChallengeIdsResponse.data.map(challenge => parseInt(challenge.id, 10));
 
         // Generate a unique ID for the new challenge
         const newId = (allChallengeIds.length > 0 ? Math.max(...allChallengeIds) + 1 : 10) || 10;
 
-        const response = await axios.post('http://localhost:5000/challenges', {
+        const response = await axios.post(config.backendAPI+'/challenges', {
           id: newId,
           eventId,
           ...newChallenge,
@@ -73,7 +74,7 @@ const ManageChallenges = ({ eventId }) => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:5000/challenges/${challengeToDelete.id}`);
+      await axios.delete(config.backendAPI+`/challenges/${challengeToDelete.id}`);
       setChallenges(challenges.filter(challenge => challenge.id !== challengeToDelete.id));
       setShowConfirmationModal(false);
       setChallengeToDelete(null);
@@ -99,7 +100,7 @@ const ManageChallenges = ({ eventId }) => {
   };
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/challenges?eventId=${eventId}`)
+    axios.get(config.backendAPI+`/challenges?eventId=${eventId}`)
       .then(response => setChallenges(response.data))
       .catch(error => console.error('Error fetching challenges:', error));
   }, [eventId]);

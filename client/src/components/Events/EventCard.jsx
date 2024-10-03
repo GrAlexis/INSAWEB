@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import config from '../../config';
 import './EventCard.css';
 import axios from 'axios';
 import { useUser } from '../../hooks/commonHooks/UserContext';
@@ -12,10 +13,10 @@ const EventCard = ({ event }) => {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/events/${event.id}/teams`);
+        const response = await axios.get(config.backendAPI+`/events/${event.id}/teams`);
         const teamsWithMembersCount = await Promise.all(
           response.data.map(async (team) => {
-            const membersResponse = await axios.get(`http://localhost:5000/teams/${team.id}/members`);
+            const membersResponse = await axios.get(config.backendAPI+`/teams/${team.id}/members`);
             return {
               ...team,
               membersCount: membersResponse.data.length,
@@ -53,7 +54,7 @@ const EventCard = ({ event }) => {
       {
         previousTeamId = ""
       }
-      const response = await axios.post('http://localhost:5000/assignTeam', {
+      const response = await axios.post(config.backendAPI+'/assignTeam', {
         userId: user._id,
         teamId: teamId,
         eventId: event.id,

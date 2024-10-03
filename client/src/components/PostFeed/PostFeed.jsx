@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import config from '../../config';
 import axios from 'axios';
 import PostElement from '../PostElement/PostElement';
 import './PostFeed.css';
@@ -8,7 +9,7 @@ const PostFeed = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/posts');
+      const response = await axios.get(config.backendAPI+'/posts');
       setPosts(response.data);
     } catch (error) {
       console.error('Error fetching posts', error);

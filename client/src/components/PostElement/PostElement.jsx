@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import config from '../../config';
 import './PostElement.css';
 import axios from 'axios';
 
@@ -34,11 +35,11 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     try {
       if (liked) {
         // Unlike the post
-        await axios.post(`http://localhost:5000/posts/${post._id}/unlike`, { userId: user._id });
+        await axios.post(config.backendAPI+`/posts/${post._id}/unlike`, { userId: user._id });
         setLikes(likes - 1);
       } else {
         // Like the post
-        await axios.post(`http://localhost:5000/posts/${post._id}/like`, { userId: user._id });
+        await axios.post(config.backendAPI+`/posts/${post._id}/like`, { userId: user._id });
         setLikes(likes + 1);
       }
       setLiked(!liked); // Toggle the liked state
@@ -52,11 +53,11 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
     const fetchChallengeAndEvent = async () => {
       try {
-        const challengeResponse = await axios.get(`http://localhost:5000/challenges/${post.challengeId}`);
+        const challengeResponse = await axios.get(config.backendAPI+`/challenges/${post.challengeId}`);
         const fetchedChallenge = challengeResponse.data;
         setChallenge(fetchedChallenge);
 
-        const eventResponse = await axios.get(`http://localhost:5000/events/${fetchedChallenge.eventId}`);
+        const eventResponse = await axios.get(config.backendAPI+`/events/${fetchedChallenge.eventId}`);
         setEvent(eventResponse.data);
       } catch (error) {
         console.error('Error fetching challenge or event', error);
@@ -66,7 +67,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     const fetchTeam = async () => {
       if (post.teamId) {
         try {
-          const teamResponse = await axios.get(`http://localhost:5000/teams/${post.teamId}`);
+          const teamResponse = await axios.get(config.backendAPI+`/teams/${post.teamId}`);
           setTeam(teamResponse.data);
         } catch (error) {
           console.error('Error fetching team', error);
@@ -76,7 +77,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
     const fetchUser = async () => {
       try {
-        const userResponse = await axios.get(`http://localhost:5000/api/user/${post.user}`);
+        const userResponse = await axios.get(config.backendAPI+`/api/user/${post.user}`);
         setPostUser(userResponse.data);
       } catch (error) {
         console.error('Error fetching post user', error);
@@ -105,7 +106,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:5000/posts/${post._id}`);
+      await axios.delete(config.backendAPI+`/posts/${post._id}`);
       if (onDelete) {
         onDelete(post._id);
       }
@@ -121,7 +122,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
   const handleValidateClick = async () => {
     try {
-        const response = await axios.post(`http://localhost:5000/admin/validatePost/${post._id}`, {
+        const response = await axios.post(config.backendAPI+`/admin/validatePost/${post._id}`, {
             isAdmin: user.isAdmin,
             rewardPoints : parseReward(challenge.reward),
             eventId : event.id
@@ -142,7 +143,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const handlePlayVideo = async () => {
     try {
       // Fetch the video file from the server
-      const response = await fetch(`http://localhost:5000/file/${post.picture}`);
+      const response = await fetch(config.backendAPI+`/file/${post.picture}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch video');
@@ -194,7 +195,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
             // Display the video thumbnail until the user clicks to play the video
             <div className="video-thumbnail" onClick={handlePlayVideo}>
               <LazyLoadImage
-                src={`http://localhost:5000/file/${post.thumbnail}`} // Assuming thumbnails are stored
+                src={config.backendAPI+`/file/${post.thumbnail}`} // Assuming thumbnails are stored
                 alt="Video Thumbnail"
                 className="thumbnail-image"
               />
@@ -211,7 +212,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           <LazyLoadImage
             alt={challenge.title}
             effect="blur"
-            src={`http://localhost:5000/file/${post.picture}`} // use normal <img> attributes as props
+            src={config.backendAPI+`/file/${post.picture}`} // use normal <img> attributes as props
             className="post-image"
           />
         )}

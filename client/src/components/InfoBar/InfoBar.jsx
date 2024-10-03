@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import config from '../../config';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import axios from 'axios';
 import './InfoBar.css';
@@ -23,7 +24,7 @@ const InfoBar = () => {
     const fetchRankings = async () => {
       try {
         setLoading(true); // Set loading to true before fetching
-        const response = await axios.get('http://localhost:5000/getUsersTotalPoints');
+        const response = await axios.get(config.backendAPI+'/getUsersTotalPoints');
         const users = response.data;
 
         // Find the current user and set their rank and total points

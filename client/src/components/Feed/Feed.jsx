@@ -1,4 +1,5 @@
 import './Feed.css';
+import config from '../../config';
 import PostFeed from '../PostFeed/PostFeed'
 import InfoBar from '../InfoBar/InfoBar';
 import Animation from '../Animation';

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import config from '../../config';
 import axios from 'axios';
 import EventAdmin from '../EventAdmin/EventAdmin';
 import './AdminPage.css';
@@ -19,7 +20,7 @@ const AdminPage = ({ showNavBar }) => {
     //this is to ensure navbar mounts when refreshing
     showNavBar()
     // Fetch events when the component mounts
-    axios.get('http://localhost:5000/events')
+    axios.get(config.backendAPI+'/events')
       .then(response => setEvents(response.data))
       .catch(error => console.error('Error fetching events:', error));
   }, []);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import config from '../config';
 import { Navigate } from 'react-router-dom';
 
 const fetchIsAuthenticated = async () => {
@@ -6,7 +7,7 @@ const fetchIsAuthenticated = async () => {
   
   if (token) {
     try {
-      const response = await fetch('http://localhost:5000/api/user/decode', {
+      const response = await fetch(config.backendAPI+'/api/user/decode', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -38,7 +39,7 @@ const fetchIsAdmin = async () => {
     }
   try {
     const token = sessionStorage.getItem('token');
-    let response = await fetch(`http://localhost:5000/api/user/decode/`, {
+    let response = await fetch(config.backendAPI+`/api/user/decode/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -49,7 +50,7 @@ const fetchIsAdmin = async () => {
     let data = await response.json();
     const email = data.email
     await wait(1000)
-    response = await fetch(`http://localhost:5000/api/user/isAdmin/`, {
+    response = await fetch(config.backendAPI+`/api/user/isAdmin/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

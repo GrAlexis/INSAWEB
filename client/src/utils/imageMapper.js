@@ -1,4 +1,5 @@
 import WEI_TC from '../assets/events/WEI_TC.png';
+import config from "../config";
 import WEC_TC from '../assets/events/WEC_TC.png';
 import RALLYE from '../assets/events/RALLYE.jpg'
 import Pigeon from '../assets/icons/sheesh/pigeon.jpg';

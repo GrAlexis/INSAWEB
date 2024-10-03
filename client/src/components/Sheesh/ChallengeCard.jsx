@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import config from '../../config';
 import './ChallengeCard.css';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
@@ -36,21 +37,21 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
 
       try {
         // Check if event has teams and user is not in a team
-        const eventResponse = await axios.get(`http://localhost:5000/events/${challenge.eventId}`);
+        const eventResponse = await axios.get(config.backendAPI+`/events/${challenge.eventId}`);
         const event = eventResponse.data;
         setUserNeedsToJoinTeam(event?.teams.length > 0 && !user.teamId);
-        const response = await axios.get(`http://localhost:5000/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
+        const response = await axios.get(config.backendAPI+`/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
         if (response.data.length > 0) {
           setPost(response.data[0]);
         }
 
         if (challenge.isCollective && user.teamId) {
-          const teamPostsResponse = await axios.get(`http://localhost:5000/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+          const teamPostsResponse = await axios.get(config.backendAPI+`/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
           if (teamPostsResponse.data.length > 0) {
             const teamPost = teamPostsResponse.data[0];
             if (teamPost.user !== user._id) {
               setCollectivePost(teamPost);
-              const userResponse = await axios.get(`http://localhost:5000/users/${teamPost.user}`);
+              const userResponse = await axios.get(config.backendAPI+`/users/${teamPost.user}`);
               setTeammateName(userResponse.data.name);
             } else {
               setPost(teamPost); // If the user posted the collective challenge
@@ -70,8 +71,8 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
 
     try {
       const response = user.pinnedChallenges.includes(challenge.id)
-        ? await axios.post('http://localhost:5000/unpinChallenge', { userId: user._id, challengeId: challenge.id })
-        : await axios.post('http://localhost:5000/pinChallenge', { userId: user._id, challengeId: challenge.id });
+        ? await axios.post(config.backendAPI+'/unpinChallenge', { userId: user._id, challengeId: challenge.id })
+        : await axios.post(config.backendAPI+'/pinChallenge', { userId: user._id, challengeId: challenge.id });
 
       setUser(prevUser => ({
         ...prevUser,
@@ -124,7 +125,7 @@ const handleFileChange = (e) => {
     setIsProcessing(true)
 
     try {
-      const eventResponse = await axios.get(`http://localhost:5000/events/${challenge.eventId}`);
+      const eventResponse = await axios.get(config.backendAPI+`/events/${challenge.eventId}`);
       const event = eventResponse.data;
 
       if (event.teams.length > 0 && (!user.teamId || !event.teams.includes(user.teamId))) {
@@ -134,7 +135,7 @@ const handleFileChange = (e) => {
       }
 
       if (challenge.isCollective &&user.teamId) {
-        const teamPostsResponse = await axios.get(`http://localhost:5000/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+        const teamPostsResponse = await axios.get(config.backendAPI+`/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
         if (teamPostsResponse.data.length > 0 && teamPostsResponse.data[0].user !== user._id) {
           setCollectivePost(teamPostsResponse.data[0]);
           const userResponse = await axios.get(`/users/${teamPostsResponse.data[0].user}`);
@@ -152,7 +153,7 @@ const handleFileChange = (e) => {
       if (user.teamId) {
         formData.append('teamId', user.teamId);
       }
-      const response = await axios.post('http://localhost:5000/upload', formData, {
+      const response = await axios.post(config.backendAPI+'/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setIsProcessing(false)

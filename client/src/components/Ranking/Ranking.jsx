@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import config from '../../config';
 import axios from 'axios';
 import './Ranking.css'
 import Animation from '../Animation'
@@ -24,7 +25,7 @@ const Ranking = ({ showNavBar }) => {
 
         showNavBar()
     // Fetch events when the component mounts
-    axios.get('http://localhost:5000/events')
+    axios.get(config.backendAPI+'/events')
       .then(response => setEvents(response.data))
       .catch(error => console.error('Error fetching events:', error));
   }, []);
@@ -32,7 +33,7 @@ const Ranking = ({ showNavBar }) => {
   useEffect(() => {
     if (selectedEvent) {
       // Fetch ranking for the selected event
-      axios.get(`http://localhost:5000/ranking/${selectedEvent.id}`)
+      axios.get(config.backendAPI+`/ranking/${selectedEvent.id}`)
         .then(response => setRanking(response.data))
         .catch(error => console.error('Error fetching ranking:', error));
     }
@@ -44,7 +45,7 @@ const Ranking = ({ showNavBar }) => {
       setTeamMembers([]);
     } else {
       setSelectedTeam(teamId);
-      axios.get(`http://localhost:5000/teams/${teamId}/members`)
+      axios.get(config.backendAPI+`/teams/${teamId}/members`)
         .then(response => setTeamMembers(response.data))
         .catch(error => console.error('Error fetching team members:', error));
     }

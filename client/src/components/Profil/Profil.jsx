@@ -1,4 +1,5 @@
 import React from 'react';
+import config from '../../config';
 import './Profil.css';
 import Animation from '../Animation';
 import { useNavigate } from 'react-router-dom';
@@ -66,7 +67,7 @@ function Profil() {
 
     try {
       // Faire la requête POST à l'endpoint MY_ENDPOINT
-      const response = await fetch('http://localhost:5000/api/user/updateMdp', {
+      const response = await fetch(config.backendAPI+'/api/user/updateMdp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

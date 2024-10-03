@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import config from '../../config';
 import axios from "axios";
 import { useNavigate } from 'react-router-dom'; 
 import { UserProvider, useUser } from '../../hooks/commonHooks/UserContext';
@@ -34,7 +35,7 @@ function SignupPage({ showNavBar }) {
     };
 
     try {
-      const response = await axios.post("http://localhost:5000/api/user/registerAdminUser", payload);
+      const response = await axios.post(config.backendAPI+"/api/user/registerAdminUser", payload);
       console.log("Signup success:", response.data);
       
       // Call the function passed from App.js to trigger a state change

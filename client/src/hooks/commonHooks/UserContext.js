@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import config from '../../config';
 import axios from 'axios';
 //import { createSearchIndex } from '../../../../server/models/post';
 
@@ -18,12 +19,12 @@ export const UserProvider = ({ children }) => {
         }
   
         // Fetch user data
-        const response = await axios.get(`http://localhost:5000/api/user/${email}`);
+        const response = await axios.get(config.backendAPI+`/api/user/${email}`);
         const userData = response.data;
   
         // Check if the user has a teamId and fetch the team name
         if (userData?.teamId) {
-          const teamResponse = await axios.get(`http://localhost:5000/teams/${userData.teamId}`);
+          const teamResponse = await axios.get(config.backendAPI+`/teams/${userData.teamId}`);
           userData.teamName = teamResponse.data.name; // Add teamName to userData
         } else {
           userData.teamName = 'No Team'; // Default value if no teamId exists
@@ -45,7 +46,7 @@ export const UserProvider = ({ children }) => {
   const updateUserTeamName = async (currentUser) => {
     if (currentUser.teamId) {
       try {
-        const teamResponse = await axios.get(`http://localhost:5000/teams/${currentUser.teamId}`);
+        const teamResponse = await axios.get(config.backendAPI+`/teams/${currentUser.teamId}`);
         const teamName = teamResponse.data.name;
         if (currentUser.teamName !== teamName) {
           setUser({ ...currentUser, teamName });

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import config from '../../config';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import './Sheesh.css';
@@ -30,7 +31,7 @@ const Sheesh = ({ showNavBar }) => {
     showNavBar()
     const fetchEvents = async () => {
       try {
-        const eventResponse = await axios.get('http://localhost:5000/events');
+        const eventResponse = await axios.get(config.backendAPI+'/events');
         const eventsWithImages = eventResponse.data.map(event => ({
           ...event,
           image: getImageByKey(event.image)
@@ -43,7 +44,7 @@ const Sheesh = ({ showNavBar }) => {
 
     const fetchChallenges = async () => {
       try {
-        const challengeResponse = await axios.get('http://localhost:5000/challenges');
+        const challengeResponse = await axios.get(config.backendAPI+'/challenges');
         const challengesWithIcons = challengeResponse.data.map(challenge => ({
           ...challenge,
           icon: getImageByKey(challenge.icon)

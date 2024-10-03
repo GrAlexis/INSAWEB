@@ -15,8 +15,6 @@ const Event = require('./models/event');
 const User = require('./models/user');
 const Team = require('./models/team');
 
-const productRoutes = require("./routes/products.routes");
-const connexionRoutes = require("./routes/connexion.routes")
 const userRoutes = require("./routes/user.routes")
 const teamRoutes = require('./routes/team.routes')
 const session = require('express-session')
@@ -35,8 +33,8 @@ const app = express();
 //sslServer.listen(5000, "92.243.24.55", () => {
 //    console.log("Backend is running on port 5000 over HTTPS...");
 //});
-
-app.listen(5000, "localhost",() => {
+const DEVPROD = process.env.DEVPROD;
+app.listen(5000, DEVPROD,() => {
     console.log("Backend is running on port 5000...");
 });
 
@@ -84,8 +82,7 @@ const upload = multer({ storage });
 
 
 //routes
-app.use("/api/products",productRoutes);
-app.use('/api/connexion/', connexionRoutes)
+
 app.use("/api/user/", userRoutes)
 
 const ffmpeg = require('fluent-ffmpeg');
