@@ -34,6 +34,8 @@ const app = express();
 //    console.log("Backend is running on port 5000 over HTTPS...");
 //});
 const DEVPROD = process.env.DEVPROD;
+
+
 app.listen(5000, DEVPROD,() => {
     console.log("Backend is running on port 5000...");
 });
@@ -41,7 +43,7 @@ app.listen(5000, DEVPROD,() => {
 
 // Setting up session management
 app.use(session({
-    secret: 'cléTC2024*SheeshDev',
+    secret: "cléTC2024*SheeshDev",
     resave: false,
     saveUninitialized: true
   }))

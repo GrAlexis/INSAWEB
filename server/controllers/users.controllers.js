@@ -44,7 +44,7 @@ const getAllUsers = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    // Vérifiez si le token est présent dans l'en-tête de la requête
+
     
     const { name, password, isAdmin, classYear, lastName, email } = req.body;
     const userAlreadyExist = await User.findOne({ email });
@@ -66,9 +66,7 @@ const registerUser = async (req, res) => {
       res.status(201).json({ message: 'User created successfully' });
     }
   } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(403).json({ message: 'Invalid token' });
-    }
+    
     res.status(500).json({ message: error.message });
   }
 };
