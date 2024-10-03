@@ -12,7 +12,7 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const email = sessionStorage.getItem('email');
+        const email = localStorage.getItem('email');
         if (!email) {
           console.error('Not authenticated');
           return;

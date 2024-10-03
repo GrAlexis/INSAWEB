@@ -3,7 +3,7 @@ import config from '../config';
 import { Navigate } from 'react-router-dom';
 
 const fetchIsAuthenticated = async () => {
-  const token = sessionStorage.getItem('token');
+  const token = localStorage.getItem('token');
   
   if (token) {
     try {
@@ -18,7 +18,7 @@ const fetchIsAuthenticated = async () => {
       const data = await response.json();
       
       if (data.email) {
-        sessionStorage.setItem('email', data.email);
+        localStorage.setItem('email', data.email);
         return true;
       } else {
         return false;
@@ -38,7 +38,7 @@ const fetchIsAdmin = async () => {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
   try {
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
     let response = await fetch(config.backendAPI+`/api/user/decode/`, {
       method: 'POST',
       headers: {

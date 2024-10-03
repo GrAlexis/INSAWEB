@@ -15,7 +15,7 @@ const Ranking = ({ showNavBar }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
         if (!token) {
           // If no token, redirect to login page

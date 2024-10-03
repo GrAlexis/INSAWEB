@@ -59,8 +59,8 @@ const Login = ({ showNavBar }) => {
 
       const data = await response.json();
       
-      if (data?.email !== sessionStorage.getItem('email')){
-        console.log("Tentative d\'usurpation de token", "email token", data.email, "email cookies", sessionStorage.getItem('email'))
+      if (data?.email !== localStorage.getItem('email')){
+        console.log("Tentative d\'usurpation de token", "email token", data.email, "email cookies", localStorage.getItem('email'))
         return false
       }
       else{
@@ -105,7 +105,7 @@ const Login = ({ showNavBar }) => {
 
   // Vérifiez si l'utilisateur est déjà authentifié
   useEffect(() => {
-    const token = sessionStorage.getItem('token') ;
+    const token = localStorage.getItem('token') ;
     if (token) {
       if (verify_token(token))
       {navigate('/home')}; // Redirigez immédiatement si l'utilisateur est déjà authentifié
@@ -157,9 +157,9 @@ const Login = ({ showNavBar }) => {
     
           const data = await response.json();
     
-          // Stocker le token dans le sessionStorage
-          sessionStorage.setItem('token', data.token);
-          sessionStorage.setItem('email', email);
+          // Stocker le token dans le localStorage
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('email', email);
     
           // Call the function passed from App.js to trigger a state change
           showNavBar();

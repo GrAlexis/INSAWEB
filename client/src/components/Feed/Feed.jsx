@@ -15,7 +15,7 @@ const Feed = ({ showNavBar }) => {
     useEffect(() => {
         showNavBar()
 
-        const token = sessionStorage.getItem('token');
+        const token = localStorage.getItem('token');
 
         if (!token) {
           // If no token, redirect to login page

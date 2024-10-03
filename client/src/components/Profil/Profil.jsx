@@ -14,14 +14,14 @@ function Profil() {
   const [updatingMdp, setUpdatingMdp] = useState(false)
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const email = sessionStorage.getItem('email');
-  const token = sessionStorage.getItem('token');
+  const email = localStorage.getItem('email');
+  const token = localStorage.getItem('token');
   
 
   const handleLogout = () => {
     // Clear the token from local storage
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('email');
+    localStorage.removeItem('token');
+    localStorage.removeItem('email');
 
     navigate("/login") 
   };

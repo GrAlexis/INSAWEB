@@ -15,7 +15,7 @@ const AdminPage = ({ showNavBar }) => {
 
   useEffect(() => {
 
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
     //this is to ensure navbar mounts when refreshing
     showNavBar()
