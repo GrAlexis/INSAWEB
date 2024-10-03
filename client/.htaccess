@@ -1,0 +1,14 @@
+  GNU nano 7.2                                                  .htaccess                                                            <IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Rediriger toutes les requêtes vers index.html, sauf si le fichier existe
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.html [L]
+</IfModule>
+
+
+
+
+

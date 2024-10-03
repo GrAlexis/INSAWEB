@@ -1,0 +1,40 @@
+.navbar {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color:  #A4C0A5 ;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+  }
+  
+ .nav-item {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 15px;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .nav-icon {
+    width: 24px;  
+    height: 24px; 
+  }
+  
+  .nav-item span {
+    margin-top: 5px;
+    font-size: 12px;
+  }
+  .nav-item.active {
+    font-weight: 750;
+    color: #6a8a87;
+    border-radius: 5px;
+    text-shadow: 
+      0 0 .20em #c8fffa,
+      0 0 .30em #82a8a4;
+  }
+  

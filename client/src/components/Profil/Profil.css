@@ -1,0 +1,34 @@
+.profil {
+    text-align: center;
+  }
+  
+  .profil-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: var(--text-color);
+  }
+  .password-change-form {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  .password-change-form div {
+    margin-bottom: 15px;
+  }
+  
+  .password-change-form label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .password-change-form input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+  }
+  
+
+  

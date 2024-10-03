@@ -1,0 +1,282 @@
+import React, { useEffect, useState } from 'react';
+import './PostElement.css';
+import axios from 'axios';
+
+import { getRewardIcon } from '../../utils/imageMapper';
+import validatedIcon from '../../assets/icons/sheesh/validated.webp'
+import waitingIcon from '../../assets/icons/sheesh/waiting.png'
+import chokbarButton from '../../assets/buttons/chokbar.png'
+import {parseReward} from '../../utils/rewardParser'
+import { formatDate } from '../../utils/dateFormatter';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../../hooks/commonHooks/UserContext';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import LazyLoad from 'react-lazyload';
+
+import logo from '../../assets/logos/astus.png';
+
+const PostElement = ({ post, onDelete, fetchPosts }) => {
+  const { user } = useUser();
+  const [likes, setLikes] = useState(post.likes);
+  const [liked, setLiked] = useState();
+  const [challenge, setChallenge] = useState(null);
+  const [event, setEvent] = useState(null);
+  const [team, setTeam] = useState(null);
+  const [postUser, setPostUser] = useState(null);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [videoUrl, setVideoUrl] = useState(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleLikeClick = async () => {
+    try {
+      if (liked) {
+        // Unlike the post
+        await axios.post(`http://localhost:5000/posts/${post._id}/unlike`, { userId: user._id });
+        setLikes(likes - 1);
+      } else {
+        // Like the post
+        await axios.post(`http://localhost:5000/posts/${post._id}/like`, { userId: user._id });
+        setLikes(likes + 1);
+      }
+      setLiked(!liked); // Toggle the liked state
+    } catch (error) {
+      console.error('Error liking/unliking the post', error);
+    }
+    setIsAnimating(true); // Trigger the animation
+  };
+
+  useEffect(() => {
+
+    const fetchChallengeAndEvent = async () => {
+      try {
+        const challengeResponse = await axios.get(`http://localhost:5000/challenges/${post.challengeId}`);
+        const fetchedChallenge = challengeResponse.data;
+        setChallenge(fetchedChallenge);
+
+        const eventResponse = await axios.get(`http://localhost:5000/events/${fetchedChallenge.eventId}`);
+        setEvent(eventResponse.data);
+      } catch (error) {
+        console.error('Error fetching challenge or event', error);
+      }
+    };
+
+    const fetchTeam = async () => {
+      if (post.teamId) {
+        try {
+          const teamResponse = await axios.get(`http://localhost:5000/teams/${post.teamId}`);
+          setTeam(teamResponse.data);
+        } catch (error) {
+          console.error('Error fetching team', error);
+        }
+      }
+    };
+
+    const fetchUser = async () => {
+      try {
+        const userResponse = await axios.get(`http://localhost:5000/api/user/${post.user}`);
+        setPostUser(userResponse.data);
+      } catch (error) {
+        console.error('Error fetching post user', error);
+      }
+    };
+
+    fetchChallengeAndEvent();
+    fetchTeam();
+    fetchUser();
+  }, [post.challengeId, post.teamId, post.user]);
+
+  // A separate useEffect for the user-related logic
+  useEffect(() => {
+    if (user) {
+      setLiked(post.likedBy.includes(user._id));
+    }
+  }, [user, post.likedBy]);  // Dependencies: user and post.likedBy
+
+  const handleSheeshClick = () => {
+    navigate(`/sheesh/${post.challengeId}`);
+  };
+
+  const handleDeleteClick = () => {
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:5000/posts/${post._id}`);
+      if (onDelete) {
+        onDelete(post._id);
+      }
+      setShowConfirmDelete(false);
+    } catch (error) {
+      console.error('Error deleting post', error);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmDelete(false);
+  };
+
+  const handleValidateClick = async () => {
+    try {
+        const response = await axios.post(`http://localhost:5000/admin/validatePost/${post._id}`, {
+            isAdmin: user.isAdmin,
+            rewardPoints : parseReward(challenge.reward),
+            eventId : event.id
+        });
+        if (response.status === 200) {
+          fetchPosts(); // Refresh posts after validation
+        }
+    } catch (error) {
+        console.error('Error validating post', error);
+    }
+  };
+
+  // Helper function to check if the file is a video
+  const isVideo = (fileName) => {
+    return /\.(mp4|mov|avi|wmv|flv|mkv)$/i.test(fileName);
+  };
+  
+  const handlePlayVideo = async () => {
+    try {
+      // Fetch the video file from the server
+      const response = await fetch(`http://localhost:5000/file/${post.picture}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch video');
+      }
+
+      // Create a blob from the video response
+      const videoBlob = await response.blob();
+
+      // Create a local URL for the video using the Blob
+      const localVideoUrl = URL.createObjectURL(videoBlob);
+
+      // Set the video URL and start playing
+      setVideoUrl(localVideoUrl);
+      setIsVideoPlaying(true);
+
+    } catch (error) {
+      console.error('Error fetching the video:', error);
+    }
+  };
+
+  const handleVideoEnd = () => {
+    setIsVideoPlaying(false); // Go back to the thumbnail after the video finishes
+  };
+
+  if (!challenge || !event || !postUser || !user) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div className="post">
+      <div className="post-header">
+        <img src={logo} alt="Logo" className="logo" />
+        <div className="post-info">
+          <span className="date">{event.title} - {formatDate(post.date)}</span>
+          <span className="user">{postUser.name} {postUser.lastName}</span>
+          {team && <span className="team">Team: {team.name}</span>}
+        </div>
+        <div className="status">
+          <img 
+            src={post.isValidated ? validatedIcon : waitingIcon} 
+            alt={post.isValidated ? "Validated Icon" : "Waiting Icon"} 
+            className="status-icon" 
+          />
+        </div>
+      </div>
+      <div className="post-media">
+      {isVideo(post.picture) ? (
+          !isVideoPlaying ? (
+            // Display the video thumbnail until the user clicks to play the video
+            <div className="video-thumbnail" onClick={handlePlayVideo}>
+              <LazyLoadImage
+                src={`http://localhost:5000/file/${post.thumbnail}`} // Assuming thumbnails are stored
+                alt="Video Thumbnail"
+                className="thumbnail-image"
+              />
+              <div className="play-button-overlay"></div>
+            </div>
+          ) : (
+            // Load the video after the user clicks on the thumbnail
+              <video controls="controls" className="post-video" autoPlay playsInline onEnded={handleVideoEnd}>
+                <source src={videoUrl} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+          )
+        ) : (
+          <LazyLoadImage
+            alt={challenge.title}
+            effect="blur"
+            src={`http://localhost:5000/file/${post.picture}`} // use normal <img> attributes as props
+            className="post-image"
+          />
+        )}
+      </div>
+      <div className="post-body">
+        <div className="reward">
+          <img src={getRewardIcon(challenge.reward)} alt="Reward Icon" className="reward-icon" />
+          <span className="reward-text">{challenge.reward}</span>
+        </div>
+        <div className="post-title">
+          <span>{challenge.title}</span>
+        </div>
+
+        <div className="post-likes">
+          <button 
+            className={`likes-button ${liked ? 'liked' : ''} ${isAnimating ? 'shake' : ''}`} 
+            onClick={handleLikeClick}
+            onAnimationEnd={() => setIsAnimating(false)} // Remove animation class after animation completes
+          >
+            <img src={chokbarButton} alt="Likes Icon" className="likes-icon" />
+          </button>
+          {likes > 0 && <span>{likes}</span>} {/* Only show the number of likes if greater than 0 */}
+        </div>
+
+      </div>
+      <div className="post-description">
+        <p>{post.description}</p>
+      </div>
+      <div className="post-footer">
+        <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>
+        {(user._id === postUser._id || (user.isAdmin && !post.isValidated)) && (
+          <div className="delete-wrapper">
+            <button className="delete-button" onClick={handleDeleteClick}>
+              <span className="delete-cross">✕</span>
+            </button>
+
+            {showConfirmDelete && (
+              <div className="confirm-delete-popup">
+                <div className="confirm-delete-content">
+                  <p>Are you sure you want to delete this post?</p>
+                  <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>
+                  <button className="cancel-delete-button" onClick={cancelDelete}>No</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {user.isAdmin && (
+          <button className="validate-button" onClick={handleValidateClick}>
+            {post.isValidated ? 'Invalider' : 'Valider'}
+          </button>
+        )}
+      </div>
+
+      {/* {showConfirmDelete && (
+        <div className="confirm-delete-popup">
+          <div className="confirm-delete-content">
+            <p>Are you sure you want to delete this post?</p>
+            <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>
+            <button className="cancel-delete-button" onClick={cancelDelete}>No</button>
+          </div>
+        </div>
+      )} */}
+    </div>
+  );
+};
+
+export default PostElement;

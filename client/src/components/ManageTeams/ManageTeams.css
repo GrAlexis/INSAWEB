@@ -1,0 +1,136 @@
+.manage-teams {
+  padding: 20px;
+}
+
+.create-team-form {
+  margin-bottom: 20px;
+}
+
+.create-team-form input {
+  padding: 10px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.create-team-form button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #28a745;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.team-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+.team-members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Adjust the gap value as needed */
+}
+
+.member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+}
+.team-item {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 20px;
+  margin: 10px;
+  width: 200px;
+}
+
+.team-item h3 {
+  margin-top: 0;
+}
+.edit-team-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.edit-team-button img {
+  width: 20px; /* Adjust the size as needed */
+  height: 20px; /* Adjust the size as needed */
+}
+
+.change-team-button {
+  background-color: rgba(255, 247, 223);
+  border: 1px solid rgba(130, 130, 130);
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: 'Lemon', sans-serif; /* Lemon font */
+  color: rgba(130, 130, 130);
+  font-style: italic;
+}
+.user-transfer-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  z-index: 1000;
+}
+
+.user-transfer-panel h2 {
+  margin-bottom: 15px;
+}
+
+.team-transfer-button,
+.no-team-button,
+.cancel-transfer-button {
+  display: block;
+  margin: 10px 0;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.team-transfer-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.team-transfer-button:hover:not(.disabled) {
+  background-color: #0056b3;
+}
+
+.team-transfer-button.disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.no-team-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.no-team-button:hover {
+  background-color: #218838;
+}
+
+.cancel-transfer-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.cancel-transfer-button:hover {
+  background-color: #c82333;
+}
+
