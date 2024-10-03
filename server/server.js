@@ -23,6 +23,49 @@ dotenv.config();
 
 const app = express();
 
+const rateLimit = require('express-rate-limit');
+// Créer une liste temporaire de bannissement
+const bannedIPs = new Set();
+
+// Fonction pour bannir une IP pendant un certain temps
+const banIP = (ip, duration) => {
+  bannedIPs.add(ip);
+  console.log(`IP ${ip} a été bannie pendant ${duration / 1000} secondes.`);
+  
+  // Retirer l'IP après le délai
+  setTimeout(() => {
+    bannedIPs.delete(ip);
+    console.log(`IP ${ip} a été débannie.`);
+  }, duration);
+};
+
+// Middleware pour vérifier si l'IP est bannie
+const checkBanMiddleware = (req, res, next) => {
+  if (bannedIPs.has(req.ip)) {
+    return res.status(403).json({ message: "Votre IP est temporairement bannie pour SPAM" });
+  }
+  next();
+};
+
+// Configurer le limiter de requêtes
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 15 minutes
+  max: 10, // Limite de 100 requêtes par IP dans ce laps de temps
+  handler: (req, res, next) => {
+    // Bannir l'IP pour 1 heure si la limite est dépassée
+    banIP(req.ip, 30 * 1000); 
+    res.status(429).json({ message: "Trop de requêtes - Votre IP est bannie temporairement." });
+  }
+});
+
+// Appliquer le middleware à toutes les routes
+app.use(checkBanMiddleware);  // Vérifie si l'IP est bannie avant de continuer
+
+
+app.use('/api/user/login', limiter);
+app.use('/api/user/registerGlobal', limiter);
+app.use('/api/user/registerAdminUser', limiter);
+
 //Décommenter la partie SSL pour la PROD et commenter le app.listen Localhost - changer aussi le .env
 //const sslServer = https.createServer({
 //    key: fs.readFileSync('/etc/letsencrypt/live/sheeesh.eu/privkey.pem'),
@@ -316,7 +359,7 @@ app.get('/getUsersTotalPoints', async (req, res) => {
       const usersWithPoints = users.map(user => {
         const totalPoints = Array.from(user.eventPoints.values()).reduce((acc, points) => acc + points, 0);
         return {
-          ...user.toObject(),
+          _id: user.id,
           totalPoints,
         };
       });
@@ -325,6 +368,7 @@ app.get('/getUsersTotalPoints', async (req, res) => {
       usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
   
       res.json(usersWithPoints);
+      //res.json("ok1");
     } catch (error) {
       console.error('Error fetching user rankings:', error);
       res.status(500).json({ error: 'Error fetching user rankings' });
@@ -790,25 +834,7 @@ app.post('/unpinChallenge', async (req, res) => {
     }
 });
 // Route to get user points and ranks
-app.get('/getUsersTotalPoints', async (req, res) => {
-    try {
-      // Fetch all users
-      const users = await User.find();
-  
-      // Calculate total points for each user
-      const usersWithPoints = users.map(user => ({
-        ...user.toObject(),
-        totalPoints: Object.values(user.eventPoints).reduce((acc, points) => acc + points, 0),
-      }));
-  
-      // Sort users by total points descending
-      usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
-  
-      res.json(usersWithPoints);
-    } catch (error) {
-      res.status(500).json({ error: 'Error fetching user rankings' });
-    }
-  });
+
 
 // Like a post
 app.post('/posts/:id/like', async (req, res) => {
