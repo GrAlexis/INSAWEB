@@ -40,37 +40,43 @@ const getAllUsers = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-
 const registerUser = async (req, res) => {
   try {
+    const { name, password, classYear, lastName, email } = req.body;
 
-    
-    const { name, password, isAdmin, classYear, lastName, email } = req.body;
+    // Vérification si l'utilisateur existe déjà
     const userAlreadyExist = await User.findOne({ email });
-
     if (userAlreadyExist) {
       return res.status(401).json({ message: 'User already exists' });
-    } else {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await User.create({
-        name,
-        password: hashedPassword,
-        isAdmin,
-        classYear,
-        email,
-        balance: 0,
-        lastName,
-      });
-
-      res.status(201).json({ message: 'User created successfully' });
     }
+
+    // Hachage du mot de passe
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Création de l'utilisateur
+    const user = await User.create({
+      name,
+      hashedPassword,
+      isAdmin: true,
+      classYear,
+      email,
+      balance: 0,
+      lastName,
+    });
+
+    // Vérifie si l'utilisateur a été créé avec succès
+    if (!user) {
+      return res.status(500).json({ message: 'Failed to create user' });
+    }
+
+    // Retourner une réponse de succès
+    res.status(201).json({ message: 'User created successfully', user });
   } catch (error) {
-    
+    // Gestion des erreurs
+    console.error('Error in registerUser:', error);
     res.status(500).json({ message: error.message });
   }
 };
-
 const registerUserGlobal = async (req, res) => {
   try {
     

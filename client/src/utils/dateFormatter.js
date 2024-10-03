@@ -1,4 +1,4 @@
-import config from '../config';
+import config from "../config";
 export const formatDate = (dateString) => {
     const date = new Date(dateString);
     const options = {
