@@ -28,6 +28,7 @@ const Login = ({ showNavBar }) => {
   const [showConfidentialTerms, setShowConfidentialTerms] = useState(false);
   const [confidentialText, setConfidentialText] = useState('');
   const [mdpVerification, setMdpVerification] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   // Fetch the terms of use when the modal is opened
   useEffect(() => {
@@ -151,6 +152,18 @@ const Login = ({ showNavBar }) => {
     
           if (!response.ok) {
             setMdpVerification(true)
+            const json_data = await response.json()
+            const message = json_data['message']
+            if (message === "Account not yet activated"){
+              setErrorMessage("Votre compte n'est pas encore activé")
+            }
+            else if (message === "Invalid username or password"){
+              setErrorMessage("Mot de passe incorrect")
+            }
+            else{
+              setErrorMessage("Unknown error")
+              console.log(message)
+            }
             throw new Error('Login failed');
             
           }
@@ -281,7 +294,7 @@ const Login = ({ showNavBar }) => {
               {mdpVerification && isSignIn ? 
                 <div className='error-message'>
                   <Icon path={mdiCloseCircle} size={1} className='error-icon'/>
-                  <p className='error-text'>Mot de passe incorrect</p>
+                  <p className='error-text'>{errorMessage}</p>
                 </div> : <></>}
           </div>
           {!isSignIn && (

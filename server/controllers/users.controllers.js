@@ -140,6 +140,9 @@ const loginUser = async (req, res) => {
     if (!user) {
       return res.status(401).json({ message: 'User does not exist' });
     }
+    if (!user.active){
+      return res.status(402).json({message: 'Account not yet activated'})
+    }
     const passwordMatch = await bcrypt.compare(password, user.hashedPassword);
     if (passwordMatch) {
       const token = jwt.sign({ email:email }, 'cléTC2024*SheeshDev');
