@@ -81,9 +81,6 @@ async function sendEmail(accessToken, to, subject, messageText) {
 }
 
 async function main() {
-    const clientId = "870362726807-4dcvr8vvcq0lkvnrkhh89sgr3plbtuib.apps.googleusercontent.com"
-    const clientSecret = "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"
-    const refreshToken = "1//09-xPq73I7tQyCgYIARAAGAkSNwF-L9IrZnWvOxxpqojJV4zMDOEs3it-dSOXU84kj2IhbLZRHbqRzfh5cscMTTl3pBkO0ao9lbk"    
 
     // Refresh the access token
     const accessToken = await refreshAccessToken(clientId, clientSecret, refreshToken);
@@ -95,9 +92,6 @@ async function main() {
         console.error("Could not retrieve access token, email not sent.");
     }
 }
-const clientId = "870362726807-4dcvr8vvcq0lkvnrkhh89sgr3plbtuib.apps.googleusercontent.com"
-const clientSecret = "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"
-const refreshToken = "1//09-xPq73I7tQyCgYIARAAGAkSNwF-L9IrZnWvOxxpqojJV4zMDOEs3it-dSOXU84kj2IhbLZRHbqRzfh5cscMTTl3pBkO0ao9lbk"    
 
 module.exports = {
     clientId,
