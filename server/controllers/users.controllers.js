@@ -99,7 +99,7 @@ const registerUserGlobal = async (req, res) => {
       const access_token = await refreshAccessToken(clientId, clientSecret, refreshToken)
       if (access_token) {
         // Call the sendEmail function with the access token
-        await sendEmail(access_token, email, '[Sheeesh] Code de vérification de votre compte',`Bonjour,\nSi vous recevez ce mail c\'est que vous vous êtes inscrits sur notre application Sheeesh.\nIl vous reste plus qu\'une étape avant que vous puissiez commencer à sheeesher.\nIl faut que vous cliquiez sur ce lien: http://localhost:5000/api/user/verify-account/${token} pour activer votre compte.(Promis c\'est pas du phishing)\n\nL\'équipe de devloppeurs de Sheeesh ;-)`);
+        await sendEmail(access_token, email, '[Sheeesh] Code de vérification de votre compte',`Bonjour,\nSi vous recevez ce mail c\'est que vous vous êtes inscrits sur notre application Sheeesh.\nIl vous reste plus qu\'une étape avant que vous puissiez commencer à sheeesher.\nIl faut que vous cliquiez sur ce lien: ${process.env.DEV_BACK_URL}/api/user/verify-account/${token} pour activer votre compte.(Promis c\'est pas du phishing)\n\nL\'équipe de devloppeurs de Sheeesh ;-)`);
       } else {
           console.error("Could not retrieve access token, email not sent.");
       }
@@ -212,7 +212,7 @@ const verifyAccount = async (req, res) => {
       { active:true },          // Champ à mettre à jour
       { new: true, runValidators: true }       // Options: retourner le document mis à jour et valider les schémas
     );
-    return res.redirect('http://localhost:3000/home')
+    return res.redirect(`${process.env.DEV_FRONT_URL}/home`)
   }
   catch (err){
     res.status(401).json({'message':"token invalide ou expiré"})
