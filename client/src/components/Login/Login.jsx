@@ -206,7 +206,7 @@ const Login = ({ showNavBar }) => {
           const response = await axios.post(config.backendAPI+"/api/user/registerGlobal", payload);
           console.log("Signup success:", response.data);
           // Log the user in after successful signup
-          
+          alert("Nous vous avons envoyé un email pour que vous activiez votre compte")
           // Call the function passed from App.js to trigger a state change
           showNavBar();
     
