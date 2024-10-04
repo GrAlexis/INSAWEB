@@ -94,9 +94,6 @@ async function main() {
 }
 
 module.exports = {
-    clientId,
-    clientSecret,
-    refreshToken,
     refreshAccessToken,
     createMessage,
     sendEmail
