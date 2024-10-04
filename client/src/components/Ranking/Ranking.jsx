@@ -72,14 +72,14 @@ const Ranking = ({ showNavBar }) => {
           <div key={team.id} className="team">
             <div className="team-rank" onClick={() => handleTeamClick(team.id)}>
               <span className="team-rank-name">{index + 1}. {team.name}</span>
-              <span className="team-rank-points">{team.points} points</span>
+              <span className="team-rank-points">{Math.round(team.points)} Sh</span>
             </div>
             {selectedTeam === team.id && (
               <div className="team-members-list">
                 {teamMembers.map(member => (
                   <>
                   <div key={member.id} className="member-name">
-                    {member.name} {member.points} points
+                    {member.name} {Math.round(member.points)} Sh
                   </div>
                 </>
                 ))}
