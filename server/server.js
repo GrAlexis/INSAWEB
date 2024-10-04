@@ -72,15 +72,16 @@ app.use('/api/user/registerAdminUser', limiter);
 //    cert: fs.readFileSync('/etc/letsencrypt/live/sheeesh.eu/fullchain.pem'),
 //}, app);
 
+const API_PORT = process.env.API_PORT;
+
 // Écoute sur le port 5000 en HTTPS
-//sslServer.listen(5000, "92.243.24.55", () => {
-//    console.log("Backend is running on port 5000 over HTTPS...");
+//sslServer.listen(API_PORT, "92.243.24.55", () => {
+//    console.log(`Backend is running on port ${API_PORT} over HTTPS...`);
 //});
 const DEVPROD = process.env.DEVPROD;
 
-
-app.listen(5000, DEVPROD,() => {
-    console.log("Backend is running on port 5000...");
+app.listen(API_PORT, DEVPROD,() => {
+    console.log(`Backend is running on port ${API_PORT}...`);
 });
 
 
