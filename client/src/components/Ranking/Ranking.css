@@ -35,12 +35,52 @@
     font-size: medium;
   }
 
-  .team-members{
+  .member-rank {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: space-between;
+    padding: 5px;
+  }
+
+  .team-members{
     padding-left: 20px;
     padding-right: 13px;
     padding-bottom: 7px;
   }
+  .member-name {
+    padding: 5px 0;
+    font-size: 14px; 
+  }
+
+  .toggle-view {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+  }
   
+  .toggle-view button {
+    padding: 10px 20px;
+    margin: 0 5px;
+    background-color: #ddd;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .toggle-view button.active {
+    background-color: #6a8a87;
+    color: white;
+  }
+  
+  .player-rank {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    font-weight: bold;
+  }
+  .rank-icon {
+    margin-right: 8px;
+    width: 20px; /* Adjust size as needed */
+    height: 20px;
+  }

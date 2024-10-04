@@ -89,7 +89,7 @@ const InfoBar = () => {
       <div className="section user-info">
         <h2>{user.name.charAt(0).toUpperCase() + user.name.slice(1)}</h2>
         <span>{user.teamName ?? 'No team'}</span> {/* Team name below the username */}
-        <h2>{user.balance} Sh</h2>
+        <h2>{Math.round(user.balance)} Sh</h2>
       </div>
     </div>
   );
