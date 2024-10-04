@@ -1,7 +1,14 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require("../models/user");
+const {clientId,
+  clientSecret,
+  refreshToken,
+  refreshAccessToken,
+  createMessage,
+  sendEmail} = require('../gmail')
 
+const secretKey = 'cléTC2024*SheeshDev'
 
 const deleteUser = async (req, res) => {
   try {
@@ -88,11 +95,19 @@ const registerUserGlobal = async (req, res) => {
       return res.status(401).json({ message: 'User already exists' });
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
+      const token = jwt.sign({email:email}, secretKey, {expiresIn:'15m'})
+      const access_token = await refreshAccessToken(clientId, clientSecret, refreshToken)
+      if (access_token) {
+        // Call the sendEmail function with the access token
+        await sendEmail(access_token, email, '[Sheeesh] Code de vérification de votre compte',`Bonjour,\nSi vous recevez ce mail c\'est que vous vous êtes inscrits sur notre application Sheeesh.\nIl vous reste plus qu\'une étape avant que vous puissiez commencer à sheeesher.\nIl faut que vous cliquiez sur ce lien: http://localhost:5000/api/user/verify-account/${token} pour activer votre compte.(Promis c\'est pas du phishing)\n\nL\'équipe de devloppeurs de Sheeesh ;-)`);
+      } else {
+          console.error("Could not retrieve access token, email not sent.");
+      }
       const user = await User.create({
         name,
         hashedPassword, // Assurez-vous d'utiliser le bon champ ici
         isAdmin : false,
-	classYear,
+	      classYear,
         email,
         balance: 0,
         lastName
@@ -107,7 +122,7 @@ const registerUserGlobal = async (req, res) => {
 const updateMdp = async (req,res) => {
   try{
     const {token, newMdp} = req.body
-    const decoded = jwt.verify(token, 'cléTC2024*SheeshDev')
+    const decoded = jwt.verify(token, secretKey)
     const newHashedPassword = await bcrypt.hash(newMdp, 10)
     if (decoded){
       const updatedUser = await User.findOneAndUpdate(
@@ -145,7 +160,7 @@ const loginUser = async (req, res) => {
     }
     const passwordMatch = await bcrypt.compare(password, user.hashedPassword);
     if (passwordMatch) {
-      const token = jwt.sign({ email:email }, 'cléTC2024*SheeshDev');
+      const token = jwt.sign({ email:email }, secretKey);
       res.status(200).json({ token });
     } else {
       return res.status(401).json({ message: 'Invalid username or password' });
@@ -158,7 +173,6 @@ const loginUser = async (req, res) => {
 const decodeToken = (req,res) => {
   try {
     const { token } = req.body;
-    const secretKey = 'cléTC2024*SheeshDev'
     const decoded = jwt.verify(token, secretKey);
     return res.status(200).json({'email':decoded.email});
   } catch (error) {
@@ -186,7 +200,24 @@ const isAdmin = async (req, res) => {
 }
 
 
-
+const verifyAccount = async (req, res) => {
+  const token = req.params.token
+  if (!token){
+    res.status(500).json({'message':'Missing url parameter token'})
+  }
+  try{
+    const decoded = jwt.verify(token, secretKey)
+    const updatedUser = await User.findOneAndUpdate(
+      { email: decoded.email },                  // Condition: trouver l'utilisateur par son nom d'utilisateur
+      { active:true },          // Champ à mettre à jour
+      { new: true, runValidators: true }       // Options: retourner le document mis à jour et valider les schémas
+    );
+    return res.redirect('http://localhost:3000/home')
+  }
+  catch (err){
+    res.status(401).json({'message':"token invalide ou expiré"})
+  }
+}
 
 
 const getUser = async (req, res) => {
@@ -194,7 +225,7 @@ const getUser = async (req, res) => {
       const userId = req.params.userId
       let user
       if (!userId){
-        res.status(500).json('Missing url parameter userId')
+        res.status(500).json({'message':'Missing url parameter userId'})
       }
       if (userId.includes('@')){
         const email = userId
@@ -227,6 +258,7 @@ module.exports = {
   updateUser,
   getUser,
   isAdmin,
+  verifyAccount,
   updateMdp,
   registerUserGlobal
 };
