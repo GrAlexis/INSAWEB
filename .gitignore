@@ -6,7 +6,7 @@
 /client/node_modules
 /server/node_modules
 /package-lock.json
-/server/gmail.js
+/server/secrets_API.json
 /server/package-lock.json
 /client/package-lock.json
 /.pnp
