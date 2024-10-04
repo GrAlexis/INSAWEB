@@ -71,15 +71,16 @@ const Ranking = ({ showNavBar }) => {
         {ranking.map((team, index) => (
           <div key={team.id} className="team">
             <div className="team-rank" onClick={() => handleTeamClick(team.id)}>
-              <span className="team-rank-name">{index + 1}. {team.name}</span>
-              <span className="team-rank-points">{Math.round(team.points)} Sh</span>
+              <span>{index + 1}. {team.name}</span>
+              <span>{Math.round(team.points)} Sh</span>
             </div>
             {selectedTeam === team.id && (
-              <div className="team-members-list">
+              <div className="team-members">
                 {teamMembers.map(member => (
                   <>
-                  <div key={member.id} className="member-name">
-                    {member.name} {Math.round(member.points)} Sh
+                  <div className="member-rank">
+                    <span key={member.id}>{`${member.name} ${member.lastName.charAt(0)}.`} </span>
+                    <span>{Math.round(member.points)} Sh</span>
                   </div>
                 </>
                 ))}

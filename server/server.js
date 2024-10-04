@@ -668,6 +668,7 @@ app.get('/teams/:id/members', async (req, res) => {
         _id: member._id,
         teamId: member.teamId,
         name: member.name,
+        lastName : member.lastName,
         points: member.eventPoints.get(team.eventId) || 0,
       })).sort((a, b) => b.points - a.points);
   
