@@ -1,12 +1,8 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require("../models/user");
-const {clientId,
-  clientSecret,
-  refreshToken,
-  refreshAccessToken,
-  createMessage,
-  sendEmail} = require('../gmail')
+const { refreshAccessToken,  sendEmail} = require('../gmail')
+const secrets = require('../secrets_API.json')
 
 const secretKey = 'cléTC2024*SheeshDev'
 
@@ -96,7 +92,7 @@ const registerUserGlobal = async (req, res) => {
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
       const token = jwt.sign({email:email}, secretKey, {expiresIn:'15m'})
-      const access_token = await refreshAccessToken(clientId, clientSecret, refreshToken)
+      const access_token = await refreshAccessToken(secrets['web']['client_id'], secrets['web']['client_secret'], secrets['web']['refreshToken'])
       if (access_token) {
         // Call the sendEmail function with the access token
         await sendEmail(access_token, email, '[Sheeesh] Code de vérification de votre compte',`Bonjour,\nSi vous recevez ce mail c\'est que vous vous êtes inscrits sur notre application Sheeesh.\nIl vous reste plus qu\'une étape avant que vous puissiez commencer à sheeesher.\nIl faut que vous cliquiez sur ce lien: ${process.env.DEV_BACK_URL}/api/user/verify-account/${token} pour activer votre compte.(Promis c\'est pas du phishing)\n\nL\'équipe de devloppeurs de Sheeesh ;-)`);
@@ -247,6 +243,18 @@ const getUser = async (req, res) => {
       //console.log(error)
       res.status(500).json(error)
     }
+}
+
+const createResetMdpLink = async (req, res) => {
+  const email = req.body.email
+  const token = jwt.sign({email:email}, secretKey, {expiresIn:'15m'})
+  const access_token = await refreshAccessToken(clientId, clientSecret, refreshToken)
+  if (access_token) {
+    // Call the sendEmail function with the access token
+    await sendEmail(access_token, email, '[Sheeesh] Code de vérification de votre compte',`Bonjour,\nSi vous recevez ce mail c\'est que vous vous êtes inscrits sur notre application Sheeesh.\nIl vous reste plus qu\'une étape avant que vous puissiez commencer à sheeesher.\nIl faut que vous cliquiez sur ce lien: ${process.env.DEV_BACK_URL}/api/user/verify-account/${token} pour activer votre compte.(Promis c\'est pas du phishing)\n\nL\'équipe de devloppeurs de Sheeesh ;-)`);
+  } else {
+      console.error("Could not retrieve access token, email not sent.");
+  }
 }
 
 module.exports = {
