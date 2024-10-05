@@ -3,20 +3,22 @@ import config from '../../config';
 import './EventCard.css';
 import axios from 'axios';
 import { useUser } from '../../hooks/commonHooks/UserContext';
+import Timer from '../Timer/Timer';
 
 const EventCard = ({ event }) => {
   const { user, setUser } = useUser();
   const [teams, setTeams] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [currentTeamName, setCurrentTeamName] = useState('');
+  const [timeLeftInHours, setTimeLeftInHours] = useState(null);
 
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await axios.get(config.backendAPI+`/events/${event.id}/teams`);
+        const response = await axios.get(config.backendAPI + `/events/${event.id}/teams`);
         const teamsWithMembersCount = await Promise.all(
           response.data.map(async (team) => {
-            const membersResponse = await axios.get(config.backendAPI+`/teams/${team.id}/members`);
+            const membersResponse = await axios.get(config.backendAPI + `/teams/${team.id}/members`);
             return {
               ...team,
               membersCount: membersResponse.data.length,
@@ -37,7 +39,18 @@ const EventCard = ({ event }) => {
     };
 
     fetchTeams();
-  }, [event.id, user]);
+
+    // Calculate the time left until the event date in hours
+    const calculateTimeLeft = () => {
+      const eventDate = parseDate(event.date);
+      const currentDate = new Date();
+      const timeDifference = eventDate - currentDate; // Difference in milliseconds
+      const hoursLeft = Math.floor(timeDifference / (1000 * 60 * 60)); // Convert to hours
+      setTimeLeftInHours(hoursLeft > 0 ? hoursLeft : 0); // Ensure the value is not negative
+    };
+
+    calculateTimeLeft();
+  }, [event.id, user, event.date]);
 
   const handleJoinTeam = async (teamId) => {
     if (user.teamId === teamId) {
@@ -45,16 +58,13 @@ const EventCard = ({ event }) => {
       return;
     }
     try {
-      var previousTeamId = ""
-      if (user.teamId)
-      {
+      var previousTeamId = '';
+      if (user.teamId) {
         previousTeamId = user.teamId;
+      } else {
+        previousTeamId = '';
       }
-      else
-      {
-        previousTeamId = ""
-      }
-      const response = await axios.post(config.backendAPI+'/assignTeam', {
+      const response = await axios.post(config.backendAPI + '/assignTeam', {
         userId: user._id,
         teamId: teamId,
         eventId: event.id,
@@ -83,16 +93,16 @@ const EventCard = ({ event }) => {
   const currentDate = new Date();
   const canChangeTeam = currentDate < eventDate;
 
-  if (user)return (
+  return (
     <div className="event-card">
       <img src={event.image} alt={event.title} className="event-image" />
       <div className="event-details">
         <h2>{event.title}</h2>
         <p>{event.date}</p>
-        {/* <p>{event.participants} inscrits</p> */}
-        {/* <p>{event.sheeshes} Sheeshers</p> */}
-        {/* <button className="inscription-button">s'inscrire</button> */}
-        {/* <button className="quest-button">Voir les quêtes</button> */}
+
+        {/* Timer component */}
+        {timeLeftInHours !== null && <Timer hours={timeLeftInHours} />}
+
         {canChangeTeam && (
           <button className="sheesh-button" onClick={() => setIsPopupOpen(true)}>
             {user.teamId ? 'Changer d\'equipe' : 'Rejoins une equipe!'}

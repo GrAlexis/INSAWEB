@@ -11,8 +11,7 @@ import { formatDate } from '../../utils/dateFormatter';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import LazyLoad from 'react-lazyload';
-
+import Carrousel from '../Carrousel/Carrousel'
 import logo from '../../assets/logos/astus.png';
 
 const PostElement = ({ post, onDelete, fetchPosts }) => {
@@ -189,6 +188,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
         </div>
       </div>
       <div className="post-media">
+      <Carrousel items={post.picture} />
       {isVideo(post.picture) ? (
           !isVideoPlaying ? (
             // Display the video thumbnail until the user clicks to play the video
@@ -214,8 +214,10 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
             src={`http://localhost:5000/file/${post.picture}`} // use normal <img> attributes as props
             className="post-image"
           />
+          
         )}
       </div>
+
       <div className="post-body">
         <div className="reward">
           <img src={getRewardIcon(challenge.reward)} alt="Reward Icon" className="reward-icon" />

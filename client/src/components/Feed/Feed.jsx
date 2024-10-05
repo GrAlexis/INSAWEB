@@ -1,86 +1,59 @@
 import './Feed.css';
 import config from '../../config';
-import PostFeed from '../PostFeed/PostFeed'
+import PostFeed from '../PostFeed/PostFeed';
 import InfoBar from '../InfoBar/InfoBar';
 import Animation from '../Animation';
-import Post1 from '../../assets/pictures/post/kayak1.jpeg'
-import Post2 from '../../assets/pictures/post/kayak2.jpeg'
-import Post3 from '../../assets/pictures/post/kayak1.jpeg'
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; 
+import EventBanner from '../EventBanner/EventBanner';
+import sound1 from '../../assets/sounds/sound1.mp3';
+import sound2 from '../../assets/sounds/sound2.mp3';
+import sound3 from '../../assets/sounds/sound3.mp3';
 
 const Feed = ({ showNavBar }) => {
-    const [posts, setPosts] = useState([]);
+    const [participants, setParticipants] = useState([]); 
+    const [audio, setAudio] = useState(null); 
     const navigate = useNavigate();
+    const soundTracks = [sound1, sound2, sound3];
+
     useEffect(() => {
-        showNavBar()
+        showNavBar();
 
         const token = localStorage.getItem('token');
-
         if (!token) {
-          // If no token, redirect to login page
           navigate('/login');
-          return; // Exit useEffect early to prevent further code execution
+          return;
         }
-
-
-        // Simulate fetching data
-        const fetchPosts = async () => {
-        // Replace this with actual API call if needed
-        const postsData = [
-            {
-            id: 1,
-            image: Post1,
-            title: 'Gagner la course de canoë',
-            points: 100,
-            likes: 1000,
-            user: 'Marie Friot',
-            date: '25/05',
-            event: 'WEK',
-            idDefi:'10',
-            reward: '1 frite'
-            },
-            {
-            id: 2,
-            image: Post2,
-            title: 'Retourner un canoë',
-            points: 100,
-            likes: 9,
-            user: 'Marie Friot',
-            date: '25/05',
-            event: 'WEK',
-            idDefi:'20',
-            reward: '1 biere'
-            },
-            {
-                id: 3,
-                image: Post3,
-                title: 'Attraper un phoque',
-                points: 100,
-                likes: 19,
-                user: 'Marie Friot',
-                date: '26/05',
-                event: 'WEK',
-                idDefi:'20',
-                reward: '1 biere'
-                },
-        ];
-        setPosts(postsData);
-        };
-
-        fetchPosts();
     }, []);
 
+    useEffect(() => {
+        if (participants.length > 0) {
+            const randomSound = soundTracks[Math.floor(Math.random() * soundTracks.length)];
+            const audioPlayer = new Audio(randomSound);
+            setAudio(audioPlayer);
+            audioPlayer.play(); 
+        }
+    }, [participants]); 
 
+    const defaultEventText = "My G, Sheeesh pour avoir ta propre bande son ;)";
+    const eventsToDisplay = participants.length > 0 ? participants : [defaultEventText];
+
+    
+    const bannerClass = participants.length > 0 ? 'banner-container shimmer' : 'banner-container';
 
     return (
         <Animation>
             <>
+            <header>
+              <div className={bannerClass}>
+                <EventBanner events={eventsToDisplay} />
+              </div>
+            </header>
              <div className="infobar-container">
                 <InfoBar />
             </div>
             <div className="postfeed-container">
-                <PostFeed posts={posts} />
+                <PostFeed setParticipants={setParticipants} />
             </div>
             </>
         </Animation>

@@ -1,0 +1,53 @@
+/* Style de base pour le conteneur du timer */
+.timer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f9f9f9; /* Fond clair pour s'harmoniser avec le blanc des événements */
+    border-radius: 10px;
+    border: 1px solid #ddd; /* Bordure douce comme pour les .event-card */
+    padding: 16px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Légère ombre */
+  }
+  
+  /* Style pour le texte du timer */
+  .timer-display {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333; /* Couleur de base similaire aux autres textes */
+    letter-spacing: 1.5px;
+    transition: color 0.5s ease-in-out; /* Transition douce entre les couleurs */
+  }
+  
+  /* Couleurs du timer selon les phases */
+  .timer-black {
+    color: #5da39c; /* Noir/gris foncé pour le début */
+  }
+  
+  .timer-orange {
+    color: #ff9800; /* Orange pour le milieu, couleur chaude */
+  }
+  
+  .timer-red {
+    color: #e53935; /* Rouge pour la fin */
+  }
+  
+  /* Scintillement fluide avec un effet de fondu */
+  .smooth-blink {
+    animation: smooth-blink-animation 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes smooth-blink-animation {
+    0% {
+      opacity: 1; /* Complètement visible */
+    }
+    50% {
+      opacity: 0; /* Complètement caché */
+    }
+    100% {
+      opacity: 1; /* Retour à visible */
+    }
+  }
+  
