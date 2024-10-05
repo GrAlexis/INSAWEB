@@ -11,7 +11,6 @@ import { formatDate } from '../../utils/dateFormatter';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import Carrousel from '../Carrousel/Carrousel'
 import logo from '../../assets/logos/astus.png';
 
 const PostElement = ({ post, onDelete, fetchPosts }) => {
@@ -26,6 +25,14 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const [videoUrl, setVideoUrl] = useState(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0); // Stocker la position de défilement
+  const [zoomScale, setZoomScale] = useState(1); // État pour stocker le niveau de zoom
+
+
+
+
 
   const navigate = useNavigate();
 
@@ -166,6 +173,47 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     setIsVideoPlaying(false); // Go back to the thumbnail after the video finishes
   };
 
+  const handleImageClick = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setIsModalOpen(true);
+    setScrollPosition(window.scrollY); // Capturer la position de défilement actuelle
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setZoomScale(1);
+  };
+
+  const handleZoom = (e) => {
+    e.preventDefault();
+    if (zoomScale === 1) {
+      setZoomScale(2); // Zoomer à 200%
+    } else {
+      setZoomScale(1); // Réinitialiser le zoom
+    }
+  };
+
+  const handleWheelZoom = (e) => {
+    e.preventDefault();
+    let newScale = zoomScale + e.deltaY * -0.01; // Zoom in/out avec la molette
+    newScale = Math.min(Math.max(1, newScale), 3); // Limiter le zoom entre 1 et 3
+    setZoomScale(newScale);
+  };
+
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden'; // Désactiver le scroll
+    } else {
+      document.body.style.overflow = 'auto'; // Rétablir le scroll
+    }
+  
+    return () => {
+      document.body.style.overflow = 'auto'; // Assure que le scroll est réactivé
+    };
+  }, [isModalOpen]);
+  
+  
+
   if (!challenge || !event || !postUser || !user) {
     return <div>Loading...</div>;
   }
@@ -188,35 +236,57 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
         </div>
       </div>
       <div className="post-media">
-      <Carrousel items={post.picture} />
-      {isVideo(post.picture) ? (
+        {isVideo(post.picture) ? (
           !isVideoPlaying ? (
-            // Display the video thumbnail until the user clicks to play the video
             <div className="video-thumbnail" onClick={handlePlayVideo}>
               <LazyLoadImage
-                src={`http://localhost:5000/file/${post.thumbnail}`} // Assuming thumbnails are stored
+                src={`http://localhost:5000/file/${post.thumbnail}`}
                 alt="Video Thumbnail"
                 className="thumbnail-image"
               />
               <div className="play-button-overlay"></div>
             </div>
           ) : (
-            // Load the video after the user clicks on the thumbnail
-              <video controls="controls" className="post-video" autoPlay playsInline onEnded={handleVideoEnd}>
-                <source src={videoUrl} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
+            <video controls="controls" className="post-video" autoPlay playsInline onEnded={handleVideoEnd}>
+              <source src={videoUrl} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
           )
         ) : (
           <LazyLoadImage
             alt={challenge.title}
             effect="blur"
-            src={`http://localhost:5000/file/${post.picture}`} // use normal <img> attributes as props
+            src={`http://localhost:5000/file/${post.picture}`}
             className="post-image"
+            onClick={() => handleImageClick(`http://localhost:5000/file/${post.picture}`)} // Open image in modal on click
           />
-          
         )}
       </div>
+      
+      {isModalOpen && (
+        <div
+          className="modal"
+          style={{
+            top: `${scrollPosition}px`, // Fixer la modale en fonction de la position de défilement
+          }}
+          onClick={closeModal}
+        >
+          <div
+            className="modal-content-wrapper"
+            onClick={(e) => e.stopPropagation()}
+            onWheel={handleWheelZoom} // Permet de zoomer/dézoomer avec la molette
+          >
+            <span className="close-modal" onClick={closeModal}>×</span>
+            <img
+              className={`modal-content ${zoomScale > 1 ? 'zoomed' : ''}`}
+              src={selectedImage}
+              alt="Enlarged"
+              style={{ transform: `scale(${zoomScale})` }} // Appliquer le zoom
+              onClick={handleZoom} // Zoom au clic
+            />
+          </div>
+        </div>
+      )}
 
       <div className="post-body">
         <div className="reward">
