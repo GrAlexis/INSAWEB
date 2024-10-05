@@ -15,10 +15,10 @@ const Sheesh = ({ showNavBar }) => {
   const { user, setUser } = useUser();
   const [events, setEvents] = useState([]);
   const [challenges, setChallenges] = useState([]);
-  const [filteredChallenges, setFilteredChallenges] = useState([]); // Nouvel état pour les défis filtrés
+  const [filteredChallenges, setFilteredChallenges] = useState([]); 
   const [pinnedChallenges, setPinnedChallenges] = useState([]);
   const [openChallengeId, setOpenChallengeId] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(''); // Nouvel état pour la requête de recherche
+  const [searchQuery, setSearchQuery] = useState(''); 
   const challengeRefs = useRef({});
   const navigate = useNavigate();
 
@@ -53,7 +53,7 @@ const Sheesh = ({ showNavBar }) => {
           icon: getImageByKey(challenge.icon)
         }));
         setChallenges(challengesWithIcons);
-        setFilteredChallenges(challengesWithIcons); // Initialiser les défis filtrés avec tous les défis
+        setFilteredChallenges(challengesWithIcons); 
       } catch (error) {
         console.error('Error fetching challenges', error);
       }
@@ -79,7 +79,6 @@ const Sheesh = ({ showNavBar }) => {
     }
   }, [challengeId, challenges]);
 
-  // Fonction pour supprimer les accents et rendre les termes insensibles à la casse
   const normalizeString = (str) => {
     return str
       .toLowerCase()
@@ -87,22 +86,20 @@ const Sheesh = ({ showNavBar }) => {
       .replace(/[\u0300-\u036f]/g, ''); // Supprimer les accents
   };
 
-  // Fonction pour gérer la recherche
   const handleSearch = (query) => {
     setSearchQuery(query);
 
-    // Filtrer les défis en fonction de la requête (recherche partielle insensible à la casse et sans accents)
     const normalizedQuery = normalizeString(query);
 
     const filtered = challenges.filter(challenge =>
       normalizeString(challenge.title).includes(normalizedQuery)
     );
-    setFilteredChallenges(filtered); // Mettre à jour l'état des défis filtrés
+    setFilteredChallenges(filtered); 
   };
 
   const getEventChallenges = (eventChallenges) => {
     const challengeIds = eventChallenges.split(',').map(id => id.trim());
-    return filteredChallenges.filter(challenge => challengeIds.includes(challenge.id)); // Utiliser les défis filtrés
+    return filteredChallenges.filter(challenge => challengeIds.includes(challenge.id)); 
   };
 
 

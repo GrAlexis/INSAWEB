@@ -27,8 +27,8 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [scrollPosition, setScrollPosition] = useState(0); // Stocker la position de défilement
-  const [zoomScale, setZoomScale] = useState(1); // État pour stocker le niveau de zoom
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [zoomScale, setZoomScale] = useState(1); 
 
 
 
@@ -176,7 +176,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const handleImageClick = (imageUrl) => {
     setSelectedImage(imageUrl);
     setIsModalOpen(true);
-    setScrollPosition(window.scrollY); // Capturer la position de défilement actuelle
+    setScrollPosition(window.scrollY); 
   };
 
   const closeModal = () => {
@@ -187,28 +187,28 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const handleZoom = (e) => {
     e.preventDefault();
     if (zoomScale === 1) {
-      setZoomScale(2); // Zoomer à 200%
+      setZoomScale(2);
     } else {
-      setZoomScale(1); // Réinitialiser le zoom
+      setZoomScale(1); 
     }
   };
 
   const handleWheelZoom = (e) => {
     e.preventDefault();
-    let newScale = zoomScale + e.deltaY * -0.01; // Zoom in/out avec la molette
-    newScale = Math.min(Math.max(1, newScale), 3); // Limiter le zoom entre 1 et 3
+    let newScale = zoomScale + e.deltaY * -0.01;
+    newScale = Math.min(Math.max(1, newScale), 3); 
     setZoomScale(newScale);
   };
 
   useEffect(() => {
     if (isModalOpen) {
-      document.body.style.overflow = 'hidden'; // Désactiver le scroll
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'auto'; // Rétablir le scroll
+      document.body.style.overflow = 'auto';
     }
   
     return () => {
-      document.body.style.overflow = 'auto'; // Assure que le scroll est réactivé
+      document.body.style.overflow = 'auto';
     };
   }, [isModalOpen]);
   
@@ -267,22 +267,22 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
         <div
           className="modal"
           style={{
-            top: `${scrollPosition}px`, // Fixer la modale en fonction de la position de défilement
+            top: `${scrollPosition}px`,
           }}
           onClick={closeModal}
         >
           <div
             className="modal-content-wrapper"
             onClick={(e) => e.stopPropagation()}
-            onWheel={handleWheelZoom} // Permet de zoomer/dézoomer avec la molette
+            onWheel={handleWheelZoom}
           >
             <span className="close-modal" onClick={closeModal}>×</span>
             <img
               className={`modal-content ${zoomScale > 1 ? 'zoomed' : ''}`}
               src={selectedImage}
               alt="Enlarged"
-              style={{ transform: `scale(${zoomScale})` }} // Appliquer le zoom
-              onClick={handleZoom} // Zoom au clic
+              style={{ transform: `scale(${zoomScale})` }} 
+              onClick={handleZoom}
             />
           </div>
         </div>
@@ -323,7 +323,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
             {showConfirmDelete && (
               <div className="confirm-delete-popup">
                 <div className="confirm-delete-content">
-                  <p>Are you sure you want to delete this post?</p>
+                  <p>Are you sure you want to delete this post ?</p>
                   <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>
                   <button className="cancel-delete-button" onClick={cancelDelete}>No</button>
                 </div>

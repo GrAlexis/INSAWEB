@@ -34,7 +34,7 @@ const Timer = ({ hours }) => {
     if (days > 0) {
       return `${days}j  ${hours}h  ${minutes}m`;
     } else {
-      return `${hours}h : ${minutes}m  ${sec < 10 ? `0${sec}` : sec}s`;
+      return `${hours}h  ${minutes}m  ${sec < 10 ? `0${sec}` : sec}s`;
     }
   };
 

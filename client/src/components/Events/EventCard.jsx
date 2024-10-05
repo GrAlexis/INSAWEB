@@ -12,6 +12,12 @@ const EventCard = ({ event }) => {
   const [currentTeamName, setCurrentTeamName] = useState('');
   const [timeLeftInHours, setTimeLeftInHours] = useState(null);
 
+  // Transform DD/MM/YYYY string into a Date object
+  const parseDate = (dateStr) => {
+    const [day, month, year] = dateStr.split('/');
+    return new Date(`${year}-${month}-${day}`);
+  };
+
   useEffect(() => {
     const fetchTeams = async () => {
       try {
@@ -42,7 +48,7 @@ const EventCard = ({ event }) => {
 
     // Calculate the time left until the event date in hours
     const calculateTimeLeft = () => {
-      const eventDate = parseDate(event.date);
+      const eventDate = parseDate(event.date); // Ensure that parseDate is used correctly
       const currentDate = new Date();
       const timeDifference = eventDate - currentDate; // Difference in milliseconds
       const hoursLeft = Math.floor(timeDifference / (1000 * 60 * 60)); // Convert to hours
@@ -82,12 +88,6 @@ const EventCard = ({ event }) => {
   if (!user) {
     return 'Loading...';
   }
-
-  // Transform DD/MM/YYYY string into a Date object
-  const parseDate = (dateStr) => {
-    const [day, month, year] = dateStr.split('/');
-    return new Date(`${year}-${month}-${day}`);
-  };
 
   const eventDate = parseDate(event.date);
   const currentDate = new Date();

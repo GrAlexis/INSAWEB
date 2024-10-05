@@ -14,7 +14,7 @@
   
   /* Style pour le texte du timer */
   .timer-display {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: bold;
     color: #333; /* Couleur de base similaire aux autres textes */
     letter-spacing: 1.5px;
