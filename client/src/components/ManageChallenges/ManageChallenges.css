@@ -102,4 +102,35 @@ border-radius: 5px;
     width: 20px; /* Adjust the size as needed */
     height: 20px; /* Adjust the size as needed */
   }
-  
+  /* Styles for the toggle filter button */
+.toggle-filter-button {
+  background-color: #4CAF50; /* Green background */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 10px; /* Space between toggle and add challenge button */
+  transition: background-color 0.3s ease;
+}
+
+.toggle-filter-button:hover {
+  background-color: #45a049; /* Darker green on hover */
+}
+.accept-challenge-button {
+  background-color: #28a745; /* Green background */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 10px; /* Optional margin to give some space */
+}
+.accept-challenge-button:active {
+  background-color: #1e7e34; /* Even darker green when clicked */
+  transform: scale(0.95); /* Slight shrink effect on click */
+}

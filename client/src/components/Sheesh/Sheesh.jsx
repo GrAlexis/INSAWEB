@@ -20,6 +20,13 @@ const Sheesh = ({ showNavBar }) => {
   const [openChallengeId, setOpenChallengeId] = useState(null);
   const [searchQuery, setSearchQuery] = useState(''); 
   const challengeRefs = useRef({});
+  const [openEventId, setOpenEventId] = useState(null); // Track which event's form is open
+  const [newChallenge, setNewChallenge] = useState({
+    title: '',
+    reward: '',
+    eventId: '',
+    isCollective: false,
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -79,6 +86,48 @@ const Sheesh = ({ showNavBar }) => {
     }
   }, [challengeId, challenges]);
 
+  const toggleForm = (eventId) => {
+    if (openEventId === eventId) {
+      setOpenEventId(null); // Close the form if it's already open
+    } else {
+      setNewChallenge({ ...newChallenge, eventId });
+      setOpenEventId(eventId); // Open the form for the selected event
+    }
+  };
+
+  const handleInputChange = (e) => {
+      setNewChallenge({
+        ...newChallenge,
+        [e.target.name]: e.target.value,
+      });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      // Fetch all challenges to generate a unique ID
+      const allChallengeIdsResponse = await axios.get(config.backendAPI+'/challenges/ids');
+      const allChallengeIds = allChallengeIdsResponse.data.map(challenge => parseInt(challenge.id, 10));
+
+      // Generate a unique ID for the new challenge
+      const newId = (allChallengeIds.length > 0 ? Math.max(...allChallengeIds) + 1 : 10) || 10;
+      const response = await axios.post(config.backendAPI + '/challenges', {
+        id : newId,
+        ...newChallenge,
+        reward: "X Sh",
+        isAccepted: false // Set isAccepted to false for suggested challenges
+      });
+      if (response.status === 201) {
+        alert('Challenge suggested successfully!');
+        setOpenEventId(null); // Close the form on success
+      }
+    } catch (error) {
+      console.error('Error suggesting challenge', error);
+    }
+  };
+  
+
+
   const normalizeString = (str) => {
     return str
       .toLowerCase()
@@ -99,7 +148,7 @@ const Sheesh = ({ showNavBar }) => {
 
   const getEventChallenges = (eventChallenges) => {
     const challengeIds = eventChallenges.split(',').map(id => id.trim());
-    return filteredChallenges.filter(challenge => challengeIds.includes(challenge.id)); 
+    return filteredChallenges.filter(challenge => challengeIds.includes(challenge.id) && challenge.isAccepted == true); 
   };
 
 
@@ -137,6 +186,46 @@ const Sheesh = ({ showNavBar }) => {
         {events.map(event => (
           <div key={event.id} className="event-section">
             <EventCard event={event} />
+
+            {/* Suggest Challenge Button */}
+            <button className='sheesh-button' onClick={() => toggleForm(event.id)}>
+              {openEventId === event.id ? 'Annuler' : 'Proposer un Sheesh'}
+            </button>
+
+            {/* Form for Suggesting a New Challenge (Inline Form) */}
+            {openEventId === event.id && (
+              <form onSubmit={handleSubmit} className="suggest-challenge-form">
+                <label>Défi :</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={newChallenge.title}
+                  onChange={handleInputChange}
+                  required
+                />
+                {/* <label>Récompense :</label>
+                <input
+                  type="text"
+                  name="reward"
+                  value={newChallenge.reward}
+                  onChange={handleInputChange}
+                  required
+                /> */}
+                <label>
+                  Collectif :
+                  <input
+                    type="checkbox"
+                    name="isCollective"
+                    checked={newChallenge.isCollective}
+                    onChange={(e) =>
+                      setNewChallenge({ ...newChallenge, isCollective: e.target.checked })
+                    }
+                  />
+                </label>
+                <button className='sheesh-button' type="submit">Envoyer propal</button>
+              </form>
+            )}
+
             {getEventChallenges(event.challenges).map(challenge => (
               <div
                 key={challenge.id}
