@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import config from '../../config';
 import './PostElement.css';
+import config from '../../config';
 import axios from 'axios';
 
 import { getRewardIcon } from '../../utils/imageMapper';
@@ -13,8 +13,6 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import CommentModal from '../CommentModal/CommentModal'; // Modal for viewing all comments
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import LazyLoad from 'react-lazyload';
-
 import logo from '../../assets/logos/astus.png';
 
 const PostElement = ({ post, onDelete, fetchPosts }) => {
@@ -32,6 +30,14 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const [videoUrl, setVideoUrl] = useState(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [zoomScale, setZoomScale] = useState(1); 
+
+
+
+
 
   const navigate = useNavigate();
 
@@ -67,11 +73,11 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     try {
       if (liked) {
         // Unlike the post
-        await axios.post(config.backendAPI+`/posts/${post._id}/unlike`, { userId: user._id });
+        await axios.post(`${config.backendAPI}/posts/${post._id}/unlike`, { userId: user._id });
         setLikes(likes - 1);
       } else {
         // Like the post
-        await axios.post(config.backendAPI+`/posts/${post._id}/like`, { userId: user._id });
+        await axios.post(`${config.backendAPI}/posts/${post._id}/like`, { userId: user._id });
         setLikes(likes + 1);
       }
       setLiked(!liked); // Toggle the liked state
@@ -84,11 +90,11 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   useEffect(() => {
     const fetchChallengeAndEvent = async () => {
       try {
-        const challengeResponse = await axios.get(config.backendAPI+`/challenges/${post.challengeId}`);
+        const challengeResponse = await axios.get(`${config.backendAPI}/challenges/${post.challengeId}`);
         const fetchedChallenge = challengeResponse.data;
         setChallenge(fetchedChallenge);
 
-        const eventResponse = await axios.get(config.backendAPI+`/events/${fetchedChallenge.eventId}`);
+        const eventResponse = await axios.get(`${config.backendAPI}/events/${fetchedChallenge.eventId}`);
         setEvent(eventResponse.data);
       } catch (error) {
         console.error('Error fetching challenge or event', error);
@@ -98,7 +104,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     const fetchTeam = async () => {
       if (post.teamId) {
         try {
-          const teamResponse = await axios.get(config.backendAPI+`/teams/${post.teamId}`);
+          const teamResponse = await axios.get(`${config.backendAPI}/teams/${post.teamId}`);
           setTeam(teamResponse.data);
         } catch (error) {
           console.error('Error fetching team', error);
@@ -108,7 +114,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
     const fetchUser = async () => {
       try {
-        const userResponse = await axios.get(config.backendAPI+`/api/user/${post.user}`);
+        const userResponse = await axios.get(`${config.backendAPI}/api/user/${post.user}`);
         setPostUser(userResponse.data);
       } catch (error) {
         console.error('Error fetching post user', error);
@@ -137,7 +143,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(config.backendAPI+`/posts/${post._id}`);
+      await axios.delete(`${config.backendAPI}/posts/${post._id}`);
       if (onDelete) {
         onDelete(post._id);
       }
@@ -153,7 +159,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
   const handleValidateClick = async () => {
     try {
-        const response = await axios.post(config.backendAPI+`/admin/validatePost/${post._id}`, {
+        const response = await axios.post(`${config.backendAPI}/admin/validatePost/${post._id}`, {
             isAdmin: user.isAdmin,
             rewardPoints : parseReward(challenge.reward),
             eventId : event.id
@@ -174,7 +180,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const handlePlayVideo = async () => {
     try {
       // Fetch the video file from the server
-      const response = await fetch(config.backendAPI+`/file/${post.picture}`);
+      const response = await fetch(`${config.backendAPI}/file/${post.picture}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch video');
@@ -198,6 +204,47 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const handleVideoEnd = () => {
     setIsVideoPlaying(false); // Go back to the thumbnail after the video finishes
   };
+
+  const handleImageClick = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setIsModalOpen(true);
+    setScrollPosition(window.scrollY); 
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setZoomScale(1);
+  };
+
+  const handleZoom = (e) => {
+    e.preventDefault();
+    if (zoomScale === 1) {
+      setZoomScale(2);
+    } else {
+      setZoomScale(1); 
+    }
+  };
+
+  const handleWheelZoom = (e) => {
+    e.preventDefault();
+    let newScale = zoomScale + e.deltaY * -0.01;
+    newScale = Math.min(Math.max(1, newScale), 3); 
+    setZoomScale(newScale);
+  };
+
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isModalOpen]);
+  
+  
 
   if (!challenge || !event || !postUser || !user) {
     return <div>Loading...</div>;
@@ -223,33 +270,58 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
         </div>
       </div>
       <div className="post-media">
-      {isVideo(post.picture) ? (
+        {isVideo(post.picture) ? (
           !isVideoPlaying ? (
-            // Display the video thumbnail until the user clicks to play the video
             <div className="video-thumbnail" onClick={handlePlayVideo}>
               <LazyLoadImage
-                src={config.backendAPI+`/file/${post.thumbnail}`} // Assuming thumbnails are stored
+                src={`${config.backendAPI}/file/${post.thumbnail}`}
                 alt="Video Thumbnail"
                 className="thumbnail-image"
               />
               <div className="play-button-overlay"></div>
             </div>
           ) : (
-            // Load the video after the user clicks on the thumbnail
-              <video controls="controls" className="post-video" autoPlay playsInline onEnded={handleVideoEnd}>
-                <source src={videoUrl} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
+            <video controls="controls" className="post-video" autoPlay playsInline onEnded={handleVideoEnd}>
+              <source src={videoUrl} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
           )
         ) : (
           <LazyLoadImage
             alt={challenge.title}
             effect="blur"
-            src={config.backendAPI+`/file/${post.picture}`} // use normal <img> attributes as props
+            src={`${config.backendAPI}/file/${post.picture}`}
             className="post-image"
+            onClick={() => handleImageClick(`${config.backendAPI}/file/${post.picture}`)} // Open image in modal on click
           />
         )}
       </div>
+      
+      {isModalOpen && (
+        <div
+          className="modal"
+          style={{
+            top: `${scrollPosition}px`,
+          }}
+          onClick={closeModal}
+        >
+          <div
+            className="modal-content-wrapper"
+            onClick={(e) => e.stopPropagation()}
+            onWheel={handleWheelZoom}
+          >
+            <span className="close-modal" onClick={closeModal}>×</span>
+            <img
+              className={`modal-content ${zoomScale > 1 ? 'zoomed' : ''}`}
+              src={selectedImage}
+              alt="Enlarged"
+              style={{ transform: `scale(${zoomScale})` }} 
+              onClick={handleZoom}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="post-body">
         <div className="reward">
           <img src={getRewardIcon(challenge.reward)} alt="Reward Icon" className="reward-icon" />
@@ -325,7 +397,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
             {showConfirmDelete && (
               <div className="confirm-delete-popup">
                 <div className="confirm-delete-content">
-                  <p>Are you sure you want to delete this post?</p>
+                  <p>Are you sure you want to delete this post ?</p>
                   <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>
                   <button className="cancel-delete-button" onClick={cancelDelete}>No</button>
                 </div>

@@ -5,6 +5,7 @@ import Animation from '../Animation';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import MiniGame from '../MiniGame/MiniGame';
 
 
 function Profil() {
@@ -128,6 +129,7 @@ function Profil() {
       </form>
       
       </div> }<p>{message}</p>
+      <MiniGame></MiniGame>
       </div>
     </Animation>
   );

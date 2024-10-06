@@ -6,9 +6,10 @@
 .post {
     background-color: rgba(255, 255, 255, 0.9);
     padding: 15px;
-    border-radius: 5px;
+    border-radius: 0px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 15px;
+    text-align: center;
     font-family: Arial, sans-serif;
 }
 
@@ -296,6 +297,52 @@ color: white;
 .cancel-delete-button {
 background-color: #5bc0de;
 color: white;
+}
+  
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed; /* Position fixe pour rester relative à la fenêtre visible */
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 100vw; /* Prend toute la largeur de la fenêtre visible */
+  height: 100vh; /* Prend toute la hauteur de la fenêtre visible */
+  background-color: rgba(0, 0, 0, 0.8);
+  overflow: hidden; /* Empêche le contenu de dépasser */
+}
+
+.modal-content-wrapper {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Important pour éviter que l'image déborde lors du zoom */
+}
+
+.modal-content {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease; /* Transition fluide pour le zoom */
+  cursor: zoom-in; /* Indicateur visuel de zoom */
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 40px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+}
+
+.modal-content.zoomed {
+  cursor: zoom-out;
 }
 /* Existing styles */
 

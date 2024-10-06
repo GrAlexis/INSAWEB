@@ -1,37 +1,40 @@
 import React, { useEffect, useState, useRef } from 'react';
-import config from '../../config';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
-import './Sheesh.css';
+import { getImageByKey } from '../../utils/imageMapper';
+import { useUser } from '../../hooks/commonHooks/UserContext';
+import config from '../../config';
 import EventCard from '../Events/EventCard';
 import ChallengeCard from './ChallengeCard';
 import Animation from '../Animation';
-import { getImageByKey } from '../../utils/imageMapper';
-import { useUser } from '../../hooks/commonHooks/UserContext';
-import { useNavigate } from 'react-router-dom';
+import SearchBar from '../SearchBar/SearchBar';
+import './Sheesh.css';
 
 const Sheesh = ({ showNavBar }) => {
   const { challengeId } = useParams();
-  const { user, setUser } = useUser(); // Assuming you have a setUser function to update the user context
+  const { user, setUser } = useUser();
   const [events, setEvents] = useState([]);
   const [challenges, setChallenges] = useState([]);
-  const [pinnedChallenges, setPinnedChallenges] = useState([]); // Add state to store pinned challenges
+  const [filteredChallenges, setFilteredChallenges] = useState([]); 
+  const [pinnedChallenges, setPinnedChallenges] = useState([]);
   const [openChallengeId, setOpenChallengeId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(''); 
   const challengeRefs = useRef({});
   const navigate = useNavigate();
+
   useEffect(() => {
     const token = localStorage.getItem('token');
 
-        if (!token) {
-          // If no token, redirect to login page
-          navigate('/login');
-          return; // Exit useEffect early to prevent further code execution
-        }
+    if (!token) {
+      navigate('/login');
+      return;
+    }
 
-    showNavBar()
+    showNavBar();
+
     const fetchEvents = async () => {
       try {
-        const eventResponse = await axios.get(config.backendAPI+'/events');
+        const eventResponse = await axios.get(config.backendAPI + '/events');
         const eventsWithImages = eventResponse.data.map(event => ({
           ...event,
           image: getImageByKey(event.image)
@@ -44,21 +47,23 @@ const Sheesh = ({ showNavBar }) => {
 
     const fetchChallenges = async () => {
       try {
-        const challengeResponse = await axios.get(config.backendAPI+'/challenges');
+        const challengeResponse = await axios.get(config.backendAPI + '/challenges');
         const challengesWithIcons = challengeResponse.data.map(challenge => ({
           ...challenge,
           icon: getImageByKey(challenge.icon)
         }));
         setChallenges(challengesWithIcons);
+        setFilteredChallenges(challengesWithIcons); 
       } catch (error) {
         console.error('Error fetching challenges', error);
       }
     };
 
-    // Calculate pinned challenges when both user and challenges are available
     const calculatePinnedChallenges = () => {
       if (user && challenges.length > 0) {
-        const userPinnedChallenges = challenges.filter(challenge => user.pinnedChallenges.includes(challenge.id));
+        const userPinnedChallenges = challenges.filter(challenge =>
+          user.pinnedChallenges.includes(challenge.id)
+        );
         setPinnedChallenges(userPinnedChallenges);
       }
     };
@@ -74,17 +79,40 @@ const Sheesh = ({ showNavBar }) => {
     }
   }, [challengeId, challenges]);
 
+  const normalizeString = (str) => {
+    return str
+      .toLowerCase()
+      .normalize('NFD') // Normalisation pour séparer les accents
+      .replace(/[\u0300-\u036f]/g, ''); // Supprimer les accents
+  };
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+
+    const normalizedQuery = normalizeString(query);
+
+    const filtered = challenges.filter(challenge =>
+      normalizeString(challenge.title).includes(normalizedQuery)
+    );
+    setFilteredChallenges(filtered); 
+  };
+
   const getEventChallenges = (eventChallenges) => {
     const challengeIds = eventChallenges.split(',').map(id => id.trim());
-    return challenges.filter(challenge => challengeIds.includes(challenge.id));
+    return filteredChallenges.filter(challenge => challengeIds.includes(challenge.id)); 
   };
+
 
   return (
     <Animation>
       <div className="home-page">
         <header>
-          {/* Sort options or other header elements */}
+          {/*Banniere d'info ? */}
         </header>
+        <div className="SearchBar">
+        <SearchBar onSearch={handleSearch} />
+        </div>
+        
         
         {/* Display pinned challenges first */}
         {pinnedChallenges.length > 0 && (

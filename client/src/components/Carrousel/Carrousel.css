@@ -1,0 +1,83 @@
+.carousel-container {
+    position: relative;
+    width: 80%;
+    max-width: 600px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .carousel-track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    width: 100%;
+  }
+  
+  .carousel-photo {
+    width: 100%;
+    height: auto;
+    flex-shrink: 0;
+  }
+  
+  /* Style très discret des boutons */
+  .carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: #8BC34A;
+    opacity: 0.4;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  
+  .carousel-button svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .carousel-button.left {
+    left: 10px;
+  }
+  
+  .carousel-button.right {
+    right: 10px;
+  }
+  
+  /* Augmentation légère de la visibilité lors du survol */
+  .carousel-button:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+  
+  .carousel-button:active {
+    transform: scale(0.9);
+  }
+  
+  .carousel-button:focus {
+    outline: none;
+  }
+  
+  .carousel-indicators {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+    padding-bottom: 10px;
+  }
+  
+  .indicator-dot {
+    width: 10px;
+    height: 10px;
+    margin: 0 5px;
+    border-radius: 50%;
+    background-color: #ccc;
+    transition: background-color 0.3s ease;
+  }
+  
+  .indicator-dot.active {
+    background-color: #8BC34A;
+  }
+  
