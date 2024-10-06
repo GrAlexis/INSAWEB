@@ -318,6 +318,93 @@ app.get('/posts/byTeamAndChallenge', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+// Route to add a comment to a post
+app.post('/posts/:id/comment', async (req, res) => {
+    const { userId, text } = req.body;
+    const postId = req.params.id;
+
+    try {
+        // Fetch the post
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+
+        // Fetch the user who is commenting
+        const user = await User.findById(userId).select('_id name lastName');
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        // Create the userLabel
+        const firstName = user.name || '';
+        const lastInitial = user.lastName ? user.lastName.charAt(0).toUpperCase() : '';
+        const userLabel = `${firstName} ${lastInitial}`;
+
+        // Add the comment to the post
+        const newComment = {
+            user: user._id, // Store only user._id
+            userLabel: userLabel, // Add userLabel for display purposes
+            text: text,
+        };
+        post.comments.push(newComment);
+        await post.save();
+
+        // Send the updated comments in response
+        const updatedPost = await Post.findById(postId).select('comments');
+        res.status(200).json(updatedPost.comments);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+// Route to delete a comment from a post
+app.delete('/posts/:postId/comments/:commentId', async (req, res) => {
+    const { postId, commentId } = req.params;
+
+    try {
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+
+        // Filter out the comment that needs to be deleted
+        post.comments = post.comments.filter((comment) => comment._id.toString() !== commentId);
+
+        await post.save();
+
+        // Send back the updated comments
+        const updatedPost = await Post.findById(postId).select('comments');
+        res.status(200).json(updatedPost.comments);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+// Route to get comments for a post
+app.get('/posts/:id/comments', async (req, res) => {
+    try {
+        // Fetch the post and return only the comments
+        const post = await Post.findById(req.params.id).select('comments');
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+
+        // Format comments to include only the user._id and userLabel
+        const formattedComments = post.comments.map(comment => ({
+            _id: comment._id,
+            user: comment.user, // Only return the user._id
+            userLabel: comment.userLabel,
+            text: comment.text,
+            date: comment.date
+        }));
+
+        res.status(200).json(formattedComments);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
 
 //get specfic image
 

@@ -11,6 +11,7 @@ import {parseReward} from '../../utils/rewardParser'
 import { formatDate } from '../../utils/dateFormatter';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
+import CommentModal from '../CommentModal/CommentModal'; // Modal for viewing all comments
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import LazyLoad from 'react-lazyload';
 
@@ -25,11 +26,42 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const [team, setTeam] = useState(null);
   const [postUser, setPostUser] = useState(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [comments, setComments] = useState([]); // New state for comments
+  const [newComment, setNewComment] = useState(''); // New state for the input comment
+  const [showCommentModal, setShowCommentModal] = useState(false); // State for modal visibility
   const [videoUrl, setVideoUrl] = useState(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const navigate = useNavigate();
+
+  // Fetch comments when the post is loaded
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const response = await axios.get(config.backendAPI + `/posts/${post._id}/comments`);
+        setComments(response.data);
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+      }
+    };
+    fetchComments();
+  }, [post._id]);
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return; // Avoid empty comments
+
+    try {
+      const response = await axios.post(config.backendAPI + `/posts/${post._id}/comment`, {
+        userId: user._id,
+        text: newComment
+      });
+      setComments(response.data); // Update the comments state with the new comment
+      setNewComment(''); // Clear the comment input
+    } catch (error) {
+      console.error('Error adding comment', error);
+    }
+  };
 
   const handleLikeClick = async () => {
     try {
@@ -50,7 +82,6 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   };
 
   useEffect(() => {
-
     const fetchChallengeAndEvent = async () => {
       try {
         const challengeResponse = await axios.get(config.backendAPI+`/challenges/${post.challengeId}`);
@@ -171,6 +202,8 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   if (!challenge || !event || !postUser || !user) {
     return <div>Loading...</div>;
   }
+  const openCommentModal = () => setShowCommentModal(true);
+  const closeCommentModal = () => setShowCommentModal(false);
 
   return (
     <div className="post">
@@ -241,6 +274,46 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
       <div className="post-description">
         <p>{post.description}</p>
       </div>
+            {/* Comments Section */}
+            <div className="post-comments">
+        <h4>Commentaires</h4>
+        {comments.slice(0, 3).map(comment => (
+          <div key={comment._id} className="comment">
+            <p><strong>{comment.userLabel}</strong> : {comment.text}</p>
+          </div>
+        ))}
+        {comments.length > 0 && (
+          <button onClick={openCommentModal}>Voir plus</button>
+        )}
+
+        {/* Add new comment */}
+        <div className="add-comment">
+          <input
+            type="text"
+            placeholder="À Méditérannée..."
+            value={newComment}
+            onChange={e => setNewComment(e.target.value)}
+          />
+          <button onClick={handleAddComment}>Commenter</button>
+        </div>
+      </div>
+
+      {showCommentModal && (
+        <CommentModal 
+          comments={comments} 
+          onClose={closeCommentModal} 
+          onDeleteComment={async (commentId) => {
+            try {
+              const response = await axios.delete(config.backendAPI + `/posts/${post._id}/comments/${commentId}`);
+              setComments(response.data); // Update comments after deletion
+            } catch (error) {
+              console.error('Error deleting comment:', error);
+            }
+          }}
+          currentUserId={user._id}
+        />
+      )}
+
       <div className="post-footer">
         <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>
         {(user._id === postUser._id || (user.isAdmin && !post.isValidated)) && (
