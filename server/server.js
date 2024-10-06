@@ -552,7 +552,7 @@ app.get('/challenges', async (req, res) => {
 
 app.post('/challenges', async (req, res) => {
     try {
-        const { id, eventId, title, reward, isCollective, icon } = req.body;
+        const { id, eventId, title, reward, isCollective, icon, isAccepted } = req.body;
 
         // Ensure the challenge ID is unique
         const existingChallenge = await Challenge.findOne({ id });
@@ -566,7 +566,8 @@ app.post('/challenges', async (req, res) => {
             title,
             reward,
             isCollective,
-            icon
+            icon,
+            isAccepted
         });
 
         await newChallenge.save();
