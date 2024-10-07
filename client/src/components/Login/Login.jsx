@@ -3,7 +3,6 @@ import config from '../../config';
 import Icon from '@mdi/react'
 import {mdiCloseCircle} from '@mdi/js'
 import './Login.css'; 
-import ForgotPasswordPopup from '../ForgotPassword/ForgotPasswordPopup';
 import axios from "axios";
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -17,9 +16,6 @@ const Login = ({ showNavBar }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [classYear, setClassYear] = useState("3TC");
-  const [secretQuestion, setSecretQuestion] = useState("");
-  const [secretAnswer, setSecretAnswer] = useState("");
-  const [showPopup, setShowPopup] = useState(false);
   const [isApprentice, setIsApprentice] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -326,31 +322,6 @@ const Login = ({ showNavBar }) => {
               <option value="5TC">5TC</option>
             </select>
             </div>
-            {/*<div className="input-group select-group">
-              <label htmlFor="secret-question">Question secrète</label>
-              <select
-                id="secret-question"
-                value={secretQuestion}
-                onChange={(e) => setSecretQuestion(e.target.value)}
-              >
-                <option value="Quelle est votre couleur préférée ?">Quelle est votre couleur préférée ?</option>
-                <option value="Quel est le prénom de votre premier animal de compagnie ?">Quel est le prénom de votre premier animal de compagnie ?</option>
-                <option value="Dans quelle ville êtes-vous né(e) ?">Dans quelle ville êtes-vous né(e) ?</option>
-              </select>
-            </div>
-
-            <div className="input-group">
-              <label htmlFor="secret-answer">Réponse à la question secrète</label>
-              <input
-                type="text"
-                id="secret-answer"
-                value={secretAnswer}
-                onChange={(e) => setSecretAnswer(e.target.value)}
-                placeholder="Entrez votre réponse"
-                required
-              />
-          </div>*/}
-
 
             <div className="input-group checkbox">
             <label htmlFor="name">Alternant</label>
@@ -385,19 +356,12 @@ const Login = ({ showNavBar }) => {
           <button type="submit" className="login-button">
             {isSignIn ? 'je veux je veux' : 'Prêt à sheeesh ??'}
           </button>
-          {/*isSignIn &&( 
+          {isSignIn &&( 
           <p className="forgot-password" onClick={handleForgotPassword}>
             Mot de passe oublié ?
           </p>
-        )*/}
-        {/* Pop-up pour la question secrète */}
-        {/*{showPopup && (
-          <ForgotPasswordPopup
-            onSubmit={handleSecretAnswerSubmit}
-            onClose={handlePopupClose}
-          />
-        )}*/}
-          
+        )}
+
         </form>
       </div>
       {/* Terms of Use Modal */}
