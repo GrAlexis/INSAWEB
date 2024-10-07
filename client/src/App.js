@@ -14,8 +14,8 @@ import Navbar from './components/Common/Navbar/Navbar'
 import { UserProvider } from './hooks/commonHooks/UserContext';
 import './App.css';
 import EventPage from './components/Events/EventPage'
-import ForgotPassword from './components/Login/ForgotPassword';
-import ResetPassword from './components/Login/ResetPassword';
+import ForgotPassword from './components/ForgotPassword/ForgotPassword';
+import ResetPassword from './components/ForgotPassword/ResetPassword';
 
 function App() {
 

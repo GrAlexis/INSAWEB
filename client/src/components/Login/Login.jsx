@@ -117,21 +117,6 @@ const Login = ({ showNavBar }) => {
     }, 300); // Temps de la transition en millisecondes
   };
 
-  const handleForgotPassword = () => {
-    setShowPopup(true);
-  };
-
-  const handlePopupClose = () => {
-    setShowPopup(false);
-  };
-
-  const handleSecretAnswerSubmit = (answer) => {
-    // Logique pour valider la réponse à la question secrète
-    console.log('Réponse soumise : ', answer);
-    setShowPopup(false);
-    // Ensuite, permettre la réinitialisation du mot de passe si la réponse est correcte
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -280,7 +265,7 @@ const Login = ({ showNavBar }) => {
               placeholder="●●●●●●●●" // Placeholder pour le mot de passe masqué
               required
             />
-            <Link to='/forgot-password'>Mot de passe oublié ?</Link>
+
               {mdpVerification && isSignIn ? 
                 <div className='error-message'>
                   <Icon path={mdiCloseCircle} size={1} className='error-icon'/>
@@ -357,8 +342,8 @@ const Login = ({ showNavBar }) => {
             {isSignIn ? 'je veux je veux' : 'Prêt à sheeesh ??'}
           </button>
           {isSignIn &&( 
-          <p className="forgot-password" onClick={handleForgotPassword}>
-            Mot de passe oublié ?
+          <p className="forgot-password">
+            <a className="linkPassword" href='/forgot-password'>Mot de passe oublié ?</a>
           </p>
         )}
 
