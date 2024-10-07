@@ -4,7 +4,7 @@ const User = require("../models/user");
 const { refreshAccessToken,  sendEmail} = require('../gmail')
 const secrets = require('../secrets_API.json')
 
-const secretKey = 'cléTC2024*SheeshDev'
+const secretKey = process.env.DEV_SECRET
 
 const deleteUser = async (req, res) => {
   try {
@@ -273,10 +273,6 @@ const createResetMdpLink = async (req, res) => {
   }
 }
 
-const resetMdp = async (req, res) => {
-
-}
-
 module.exports = {
   registerUser,
   deleteUser,
@@ -289,7 +285,6 @@ module.exports = {
   verifyAccount,
   updateMdp,
   createResetMdpLink,
-  registerUserGlobal,
-  resetMdp
+  registerUserGlobal
 };
 
