@@ -247,14 +247,29 @@ const getUser = async (req, res) => {
 
 const createResetMdpLink = async (req, res) => {
   const email = req.body.email
+  const user = await User.findOne({email:email})
+  if (!user){
+    return res.status(404).json({"message":"User not found"})
+  }
   const token = jwt.sign({email:email}, secretKey, {expiresIn:'15m'})
-  const access_token = await refreshAccessToken(clientId, clientSecret, refreshToken)
+  const access_token = await refreshAccessToken(secrets['web']['client_id'], secrets['web']['client_secret'], secrets['web']['refresh_token'])
   if (access_token) {
     // Call the sendEmail function with the access token
-    await sendEmail(access_token, email, '[Sheeesh] Code de vérification de votre compte',`Bonjour,\nSi vous recevez ce mail c\'est que vous vous êtes inscrits sur notre application Sheeesh.\nIl vous reste plus qu\'une étape avant que vous puissiez commencer à sheeesher.\nIl faut que vous cliquiez sur ce lien: ${process.env.DEV_BACK_URL}/api/user/verify-account/${token} pour activer votre compte.(Promis c\'est pas du phishing)\n\nL\'équipe de devloppeurs de Sheeesh ;-)`);
+    try{    
+      await sendEmail(access_token, email, '[Sheeesh] Lien pour recréer votre mot de passe',`Bonjour,\nSi vous recevez ce mail c\'est que vous vous avez cliqué sur mot de passe oublié.\nCliquez sur ce lien: ${process.env.DEV_FRONT_URL}/reset-password/${token} pour changer votre mot de passe.(Promis c\'est pas du phishing)\n\nL\'équipe de devloppeurs de Sheeesh ;-)`);
+      return res.status(200).json({'message':"Email for resetting password sent"})
+    }
+    catch {
+      return res.status(500).json({"message":"Email not sent but we don't know why"})
+    }
   } else {
       console.error("Could not retrieve access token, email not sent.");
+      return res.status(500).json({'message':"Could not send the reset password email because of unknown causes"})
   }
+}
+
+const resetMdp = async (req, res) => {
+
 }
 
 module.exports = {
@@ -268,6 +283,8 @@ module.exports = {
   isAdmin,
   verifyAccount,
   updateMdp,
-  registerUserGlobal
+  createResetMdpLink,
+  registerUserGlobal,
+  resetMdp
 };
 
