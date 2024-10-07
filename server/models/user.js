@@ -4,6 +4,7 @@ const userSchema = new mongoose.Schema({
     name: { type: String },
     lastName: { type: String },
     email: { type: String },
+    active: {type:Boolean, default:false},
     hashedPassword: { type: String },
     classYear: { type: String, required: true },
     rank: { type: Number },

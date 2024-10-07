@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import config from '../../config';
-import { useNavigate } from 'react-router-dom';
 import Icon from '@mdi/react'
 import {mdiCloseCircle} from '@mdi/js'
 import './Login.css'; 
 import ForgotPasswordPopup from '../ForgotPassword/ForgotPasswordPopup';
 import axios from "axios";
+import { Link, useNavigate } from 'react-router-dom';
 
 const Login = ({ showNavBar }) => {
   const [isSignIn, setIsSignIn] = useState(true); 
@@ -28,6 +28,7 @@ const Login = ({ showNavBar }) => {
   const [showConfidentialTerms, setShowConfidentialTerms] = useState(false);
   const [confidentialText, setConfidentialText] = useState('');
   const [mdpVerification, setMdpVerification] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   // Fetch the terms of use when the modal is opened
   useEffect(() => {
@@ -283,10 +284,11 @@ const Login = ({ showNavBar }) => {
               placeholder="●●●●●●●●" // Placeholder pour le mot de passe masqué
               required
             />
+            <Link to='/forgot-password'>Mot de passe oublié ?</Link>
               {mdpVerification && isSignIn ? 
                 <div className='error-message'>
                   <Icon path={mdiCloseCircle} size={1} className='error-icon'/>
-                  <p className='error-text'>Mot de passe incorrect</p>
+                  <p className='error-text'>{errorMessage}</p>
                 </div> : <></>}
           </div>
           {!isSignIn && (
