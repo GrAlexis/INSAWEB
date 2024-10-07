@@ -127,7 +127,8 @@ const updateMdp = async (req,res) => {
         { new: true, runValidators: true }       // Options: retourner le document mis à jour et valider les schémas
       );
       if (updatedUser){
-        return res.status(202).json('Successfully updated password')
+        return res.redirect(`${process.env.DEV_FRONT_URL}/login`)
+
       }
       else{
         console.error('User not found')
