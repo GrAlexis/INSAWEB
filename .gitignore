@@ -9,6 +9,7 @@
 /server/secrets_API.json
 /server/package-lock.json
 /client/package-lock.json
+/client/package.json
 /.pnp
 .pnp.js
 
