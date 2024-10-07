@@ -235,3 +235,24 @@ select:focus {
   font-size: 16px;
   color: red; /* Text color red */
 }
+
+.password-error-messages {
+  margin-top: 10px;
+  background-color: #ffe6e6; /* Fond rouge clair */
+  padding: 10px;
+  border: 1px solid #ff6666; /* Bordure rouge */
+  border-radius: 5px;
+}
+
+.password-error {
+  color: #cc0000; /* Couleur rouge pour les textes d'erreur */
+  font-size: 14px;
+  margin: 0;
+  padding: 2px 0;
+}
+
+.password-error::before {
+  content: '⚠ '; /* Icône d'avertissement avant chaque message */
+  color: #cc0000;
+  font-weight: bold;
+}

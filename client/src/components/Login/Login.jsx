@@ -28,6 +28,7 @@ const Login = ({ showNavBar }) => {
   const [showConfidentialTerms, setShowConfidentialTerms] = useState(false);
   const [confidentialText, setConfidentialText] = useState('');
   const [mdpVerification, setMdpVerification] = useState(false)
+  const [passwordErrors, setPasswordErrors] = useState([]);
 
   // Fetch the terms of use when the modal is opened
   useEffect(() => {
@@ -135,9 +136,35 @@ const Login = ({ showNavBar }) => {
     // Ensuite, permettre la réinitialisation du mot de passe si la réponse est correcte
   };
 
+  const validatePassword = (password) => {
+    const errors = [];
+    
+    if (password.length < 8) {
+      errors.push("Le mot de passe doit contenir au moins 8 caractères.");
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push("Le mot de passe doit contenir au moins une majuscule.");
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push("Le mot de passe doit contenir au moins une minuscule.");
+    }
+    if (!/\d/.test(password)) {
+      errors.push("Le mot de passe doit contenir au moins un chiffre.");
+    }
+    if (!/[\W_]/.test(password)) {
+      errors.push("Le mot de passe doit contenir au moins un caractère spécial.");
+    }
+  
+    setPasswordErrors(errors);
+    return errors.length === 0;
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (!isSignIn && !validatePassword(password)) {
+      return; // Ne pas soumettre le formulaire si les règles du mot de passe ne sont pas respectées
+    }
     
     const emailDomain = "@insa-lyon.fr";
     if (!email.endsWith(emailDomain)) {
@@ -302,6 +329,13 @@ const Login = ({ showNavBar }) => {
                 required
               />
             </div>
+            {passwordErrors.length > 0 && (
+              <div className="password-error-messages">
+               {passwordErrors.map((error, index) => (
+                <p key={index} className="password-error">{error}</p>
+               ))}
+               </div>
+              )}
 
             <div className="input-group checkbox">
             <label htmlFor="name">Afficher le mot de passe</label>
