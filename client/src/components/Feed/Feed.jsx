@@ -44,14 +44,13 @@ const Feed = ({ showNavBar }) => {
     return (
         <Animation>
             <>
-            <header>
-              <div className={bannerClass}>
-                <EventBanner events={eventsToDisplay} />
-              </div>
-            </header>
-             <div className="infobar-container">
+              <div className="infobar-container">
                 <InfoBar />
             </div>
+            <div className={bannerClass}>
+                <EventBanner events={eventsToDisplay} />
+              </div>
+
             <div className="postfeed-container">
                 <PostFeed setParticipants={setParticipants} />
             </div>
