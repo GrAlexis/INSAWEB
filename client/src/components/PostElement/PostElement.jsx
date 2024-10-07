@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './PostElement.css';
+import config from '../../config';
 import axios from 'axios';
 
 import { getRewardIcon } from '../../utils/imageMapper';
@@ -10,6 +11,7 @@ import {parseReward} from '../../utils/rewardParser'
 import { formatDate } from '../../utils/dateFormatter';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
+import CommentModal from '../CommentModal/CommentModal'; // Modal for viewing all comments
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import logo from '../../assets/logos/astus.png';
 
@@ -22,6 +24,9 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const [team, setTeam] = useState(null);
   const [postUser, setPostUser] = useState(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [comments, setComments] = useState([]); // New state for comments
+  const [newComment, setNewComment] = useState(''); // New state for the input comment
+  const [showCommentModal, setShowCommentModal] = useState(false); // State for modal visibility
   const [videoUrl, setVideoUrl] = useState(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -36,15 +41,43 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
   const navigate = useNavigate();
 
+  // Fetch comments when the post is loaded
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const response = await axios.get(config.backendAPI + `/posts/${post._id}/comments`);
+        setComments(response.data);
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+      }
+    };
+    fetchComments();
+  }, [post._id]);
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return; // Avoid empty comments
+
+    try {
+      const response = await axios.post(config.backendAPI + `/posts/${post._id}/comment`, {
+        userId: user._id,
+        text: newComment
+      });
+      setComments(response.data); // Update the comments state with the new comment
+      setNewComment(''); // Clear the comment input
+    } catch (error) {
+      console.error('Error adding comment', error);
+    }
+  };
+
   const handleLikeClick = async () => {
     try {
       if (liked) {
         // Unlike the post
-        await axios.post(`http://localhost:5000/posts/${post._id}/unlike`, { userId: user._id });
+        await axios.post(`${config.backendAPI}/posts/${post._id}/unlike`, { userId: user._id });
         setLikes(likes - 1);
       } else {
         // Like the post
-        await axios.post(`http://localhost:5000/posts/${post._id}/like`, { userId: user._id });
+        await axios.post(`${config.backendAPI}/posts/${post._id}/like`, { userId: user._id });
         setLikes(likes + 1);
       }
       setLiked(!liked); // Toggle the liked state
@@ -55,14 +88,13 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   };
 
   useEffect(() => {
-
     const fetchChallengeAndEvent = async () => {
       try {
-        const challengeResponse = await axios.get(`http://localhost:5000/challenges/${post.challengeId}`);
+        const challengeResponse = await axios.get(`${config.backendAPI}/challenges/${post.challengeId}`);
         const fetchedChallenge = challengeResponse.data;
         setChallenge(fetchedChallenge);
 
-        const eventResponse = await axios.get(`http://localhost:5000/events/${fetchedChallenge.eventId}`);
+        const eventResponse = await axios.get(`${config.backendAPI}/events/${fetchedChallenge.eventId}`);
         setEvent(eventResponse.data);
       } catch (error) {
         console.error('Error fetching challenge or event', error);
@@ -72,7 +104,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     const fetchTeam = async () => {
       if (post.teamId) {
         try {
-          const teamResponse = await axios.get(`http://localhost:5000/teams/${post.teamId}`);
+          const teamResponse = await axios.get(`${config.backendAPI}/teams/${post.teamId}`);
           setTeam(teamResponse.data);
         } catch (error) {
           console.error('Error fetching team', error);
@@ -82,7 +114,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
     const fetchUser = async () => {
       try {
-        const userResponse = await axios.get(`http://localhost:5000/api/user/${post.user}`);
+        const userResponse = await axios.get(`${config.backendAPI}/api/user/${post.user}`);
         setPostUser(userResponse.data);
       } catch (error) {
         console.error('Error fetching post user', error);
@@ -111,7 +143,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:5000/posts/${post._id}`);
+      await axios.delete(`${config.backendAPI}/posts/${post._id}`);
       if (onDelete) {
         onDelete(post._id);
       }
@@ -127,7 +159,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
   const handleValidateClick = async () => {
     try {
-        const response = await axios.post(`http://localhost:5000/admin/validatePost/${post._id}`, {
+        const response = await axios.post(`${config.backendAPI}/admin/validatePost/${post._id}`, {
             isAdmin: user.isAdmin,
             rewardPoints : parseReward(challenge.reward),
             eventId : event.id
@@ -148,7 +180,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const handlePlayVideo = async () => {
     try {
       // Fetch the video file from the server
-      const response = await fetch(`http://localhost:5000/file/${post.picture}`);
+      const response = await fetch(`${config.backendAPI}/file/${post.picture}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch video');
@@ -217,6 +249,8 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   if (!challenge || !event || !postUser || !user) {
     return <div>Loading...</div>;
   }
+  const openCommentModal = () => setShowCommentModal(true);
+  const closeCommentModal = () => setShowCommentModal(false);
 
   return (
     <div className="post">
@@ -240,7 +274,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           !isVideoPlaying ? (
             <div className="video-thumbnail" onClick={handlePlayVideo}>
               <LazyLoadImage
-                src={`http://localhost:5000/file/${post.thumbnail}`}
+                src={`${config.backendAPI}/file/${post.thumbnail}`}
                 alt="Video Thumbnail"
                 className="thumbnail-image"
               />
@@ -256,9 +290,9 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           <LazyLoadImage
             alt={challenge.title}
             effect="blur"
-            src={`http://localhost:5000/file/${post.picture}`}
+            src={`${config.backendAPI}/file/${post.picture}`}
             className="post-image"
-            onClick={() => handleImageClick(`http://localhost:5000/file/${post.picture}`)} // Open image in modal on click
+            onClick={() => handleImageClick(`${config.backendAPI}/file/${post.picture}`)} // Open image in modal on click
           />
         )}
       </div>
@@ -312,6 +346,47 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
       <div className="post-description">
         <p>{post.description}</p>
       </div>
+            {/* Comments Section */}
+            <div className="post-comments">
+        <h4>Commentaires</h4>
+        {comments.slice(0, 3).map(comment => (
+          <div key={comment._id} className="comment">
+            <p><strong>{comment.userLabel}</strong> : {comment.text}</p>
+          </div>
+        ))}
+        {comments.length > 0 && (
+          <button onClick={openCommentModal}>Voir plus</button>
+        )}
+
+        {/* Add new comment */}
+        <div className="add-comment">
+          <input
+            type="text"
+            placeholder="À Méditérannée..."
+            value={newComment}
+            onChange={e => setNewComment(e.target.value)}
+          />
+          <button onClick={handleAddComment}>Commenter</button>
+        </div>
+      </div>
+
+      {showCommentModal && (
+        <CommentModal 
+          comments={comments} 
+          onClose={closeCommentModal} 
+          onDeleteComment={async (commentId) => {
+            try {
+              const response = await axios.delete(config.backendAPI + `/posts/${post._id}/comments/${commentId}`);
+              setComments(response.data); // Update comments after deletion
+            } catch (error) {
+              console.error('Error deleting comment:', error);
+            }
+          }}
+          currentUserId={user._id}
+          isAdmin={user.isAdmin}
+        />
+      )}
+
       <div className="post-footer">
         <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>
         {(user._id === postUser._id || (user.isAdmin && !post.isValidated)) && (
@@ -337,16 +412,6 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           </button>
         )}
       </div>
-
-      {/* {showConfirmDelete && (
-        <div className="confirm-delete-popup">
-          <div className="confirm-delete-content">
-            <p>Are you sure you want to delete this post?</p>
-            <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>
-            <button className="cancel-delete-button" onClick={cancelDelete}>No</button>
-          </div>
-        </div>
-      )} */}
     </div>
   );
 };

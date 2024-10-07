@@ -1,0 +1,84 @@
+/* Modal styling */
+.comment-modal {
+    position: fixed;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center the modal */
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .comment-modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-height: 80vh;
+    position: relative;
+    max-width: 90%;
+    }
+  
+  .comment-list {
+    max-height: 60vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+/* Close modal button */
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 24px; /* Slightly larger for visibility */
+    color: #6B8A87; /* Ensure the cross has a visible color */
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1001; /* Ensure the button is above other elements */
+    padding: 5px; /* Add some padding for better clickable area */
+}
+
+.comment{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    word-wrap: break-word; /* Break long words */
+    overflow-wrap: break-word; /* Break long words */
+    white-space: normal; /* Allow text to wrap */
+}
+  /* Comment content layout */
+.comment-content {
+    margin-bottom: 10px;
+    max-width: 90%;
+    word-wrap: break-word; /* Break long words */
+    overflow-wrap: break-word; /* Break long words */
+    white-space: normal; /* Allow text to wrap */
+  }
+  
+  /* Delete comment button */
+  .delete-comment-button {
+    background-color: red;
+    border-radius: 50%;
+    color: white;
+    border: none;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .delete-comment-button:hover {
+    background-color: darkred;
+  }
+  
+  .delete-icon {
+    font-size: 16px;
+    line-height: 1;
+  }

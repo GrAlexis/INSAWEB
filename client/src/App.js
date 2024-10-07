@@ -14,6 +14,8 @@ import Navbar from './components/Common/Navbar/Navbar'
 import { UserProvider } from './hooks/commonHooks/UserContext';
 import './App.css';
 import EventPage from './components/Events/EventPage'
+import ForgotPassword from './components/ForgotPassword/ForgotPassword';
+import ResetPassword from './components/ForgotPassword/ResetPassword';
 
 function App() {
 
@@ -66,7 +68,9 @@ function App() {
                     <Profil showNavBar={refreshPath}/>
                   </ProtectedRoute></UserProvider>
                 }
-              />            
+              />
+              <Route path="/forgot-password" element={<ForgotPassword showNavBar={refreshPath} />} />
+              <Route path="/reset-password/:token" element={<ResetPassword showNavBar={refreshPath} />} />
               </Routes>
           {(isComponentWithNavbar || isLoggedIn) && <UserProvider><Navbar /></UserProvider>}
           </BrowserRouter>
