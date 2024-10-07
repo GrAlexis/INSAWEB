@@ -11,7 +11,13 @@ const postSchema = new mongoose.Schema({
     teamId : {type: String, required: false},
     isValidated: { type: Boolean, default: false },
     likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],  // Store users who liked the post
-    likes: { type: Number, default: 0 }
+    likes: { type: Number, default: 0 },
+    comments: [{
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        userLabel: { type: String }, 
+        text: { type: String, required: true },
+        date: { type: Date, default: Date.now }
+    }]
 });
 
 module.exports = mongoose.model('Post', postSchema);

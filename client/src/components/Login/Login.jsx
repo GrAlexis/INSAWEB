@@ -137,88 +137,81 @@ const Login = ({ showNavBar }) => {
   };
 
   const handleSubmit = async (e) => {
-      e.preventDefault();
-      console.log(isSignIn ? "Sign In" : "Sign Up");
-      if (isSignIn)
-      {
-        try {
-          const response = await fetch(config.backendAPI+'/api/user/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password }),
-          });
+    e.preventDefault();
     
-          if (!response.ok) {
-            setMdpVerification(true)
-            const json_data = await response.json()
-            const message = json_data['message']
-            if (message === "Account not yet activated"){
-              setErrorMessage("Votre compte n'est pas encore activé")
-            }
-            else if (message === "Invalid username or password"){
-              setErrorMessage("Mot de passe incorrect")
-            }
-            else{
-              setErrorMessage("Unknown error")
-              console.log(message)
-            }
-            throw new Error('Login failed');
-            
-          }
     
-          const data = await response.json();
+    const emailDomain = "@insa-lyon.fr";
+    if (!email.endsWith(emailDomain)) {
+      alert(`L'adresse email doit se terminer par ${emailDomain}`);
+      return;
+    }
     
-          // Stocker le token dans le localStorage
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('email', email);
+    console.log(isSignIn ? "Sign In" : "Sign Up");
     
-          // Call the function passed from App.js to trigger a state change
-          showNavBar();
-          
-          // Rediriger après l'authentification réussie
-          navigate('/home');
-    
-        } catch (error) {
-          console.error('Erreur lors de la connexion:', error);
-          // Vous pouvez afficher un message d'erreur à l'utilisateur ici
+    if (isSignIn) {
+      try {
+        const response = await fetch(config.backendAPI+'/api/user/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+  
+        if (!response.ok) {
+          setMdpVerification(true)
+          throw new Error('Login failed');
         }
-      } else
-      {
-        if (password !== confirmPassword) {
-          alert("Les mots de passe ne correspondent pas !");
-          return;
-        }
-    
-        const year = `${classYear}${isApprentice ? 'A' : ''}`;
+  
+        const data = await response.json();
+  
+        // Stocker le token dans le localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('email', email);
+  
+        // Call the function passed from App.js to trigger a state change
+        showNavBar();
         
-        const payload = {
-          name,
-          password,
-          lastName,
-          email,
-          isAdmin : false,
-          classYear: year,
-        };
-    
-        try {
-          const response = await axios.post(config.backendAPI+"/api/user/registerGlobal", payload);
-          console.log("Signup success:", response.data);
-          // Log the user in after successful signup
-          alert("Nous vous avons envoyé un email pour que vous activiez votre compte")
-          // Call the function passed from App.js to trigger a state change
-          showNavBar();
-    
-          // Redirect to the home page after signup
-          navigate('/home');
-    
-        } catch (error) {
-          console.error("Signup failed:", error);
-          // Handle signup error
-        }
+        // Rediriger après l'authentification réussie
+        navigate('/home');
+  
+      } catch (error) {
+        console.error('Erreur lors de la connexion:', error);
+        // Vous pouvez afficher un message d'erreur à l'utilisateur ici
       }
-
+    } else {
+      if (password !== confirmPassword) {
+        alert("Les mots de passe ne correspondent pas !");
+        return;
+      }
+  
+      const year = `${classYear}${isApprentice ? 'A' : ''}`;
+  
+      const payload = {
+        name,
+        password,
+        lastName,
+        email,
+        isAdmin: false,
+        classYear: year,
+      };
+  
+      try {
+        const response = await axios.post(config.backendAPI + "/api/user/registerGlobal", payload);
+        console.log("Signup success:", response.data);
+        // Log the user in after successful signup
+        
+        // Call the function passed from App.js to trigger a state change
+        showNavBar();
+  
+        // Redirect to the home page after signup
+        navigate('/home');
+  
+      } catch (error) {
+        console.error("Signup failed:", error);
+        // Handle signup error
+      }
+    }
   };
 
   return (

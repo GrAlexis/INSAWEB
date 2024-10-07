@@ -23,25 +23,71 @@ dotenv.config();
 
 const app = express();
 
+const rateLimit = require('express-rate-limit');
+// Créer une liste temporaire de bannissement
+const bannedIPs = new Set();
+
+// Fonction pour bannir une IP pendant un certain temps
+const banIP = (ip, duration) => {
+  bannedIPs.add(ip);
+  console.log(`IP ${ip} a été bannie pendant ${duration / 1000} secondes.`);
+  
+  // Retirer l'IP après le délai
+  setTimeout(() => {
+    bannedIPs.delete(ip);
+    console.log(`IP ${ip} a été débannie.`);
+  }, duration);
+};
+
+// Middleware pour vérifier si l'IP est bannie
+const checkBanMiddleware = (req, res, next) => {
+  if (bannedIPs.has(req.ip)) {
+    return res.status(403).json({ message: "Votre IP est temporairement bannie pour SPAM" });
+  }
+  next();
+};
+
+// Configurer le limiter de requêtes
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 15 minutes
+  max: 10, // Limite de 100 requêtes par IP dans ce laps de temps
+  handler: (req, res, next) => {
+    // Bannir l'IP pour 1 heure si la limite est dépassée
+    banIP(req.ip, 30 * 1000); 
+    res.status(429).json({ message: "Trop de requêtes - Votre IP est bannie temporairement." });
+  }
+});
+
+// Appliquer le middleware à toutes les routes
+app.use(checkBanMiddleware);  // Vérifie si l'IP est bannie avant de continuer
+
+
+app.use('/api/user/login', limiter);
+app.use('/api/user/registerGlobal', limiter);
+app.use('/api/user/registerAdminUser', limiter);
+
 //Décommenter la partie SSL pour la PROD et commenter le app.listen Localhost - changer aussi le .env
 //const sslServer = https.createServer({
 //    key: fs.readFileSync('/etc/letsencrypt/live/sheeesh.eu/privkey.pem'),
 //    cert: fs.readFileSync('/etc/letsencrypt/live/sheeesh.eu/fullchain.pem'),
 //}, app);
 
+const API_PORT = process.env.API_PORT;
+
 // Écoute sur le port 5000 en HTTPS
-//sslServer.listen(5000, "92.243.24.55", () => {
-//    console.log("Backend is running on port 5000 over HTTPS...");
+//sslServer.listen(API_PORT, "92.243.24.55", () => {
+//    console.log(`Backend is running on port ${API_PORT} over HTTPS...`);
 //});
 const DEVPROD = process.env.DEVPROD;
-app.listen(5000, DEVPROD,() => {
-    console.log("Backend is running on port 5000...");
+
+app.listen(API_PORT, DEVPROD,() => {
+    console.log(`Backend is running on port ${API_PORT}...`);
 });
 
 
 // Setting up session management
 app.use(session({
-    secret: 'cléTC2024*SheeshDev',
+    secret: "cléTC2024*SheeshDev",
     resave: false,
     saveUninitialized: true
   }))
@@ -272,6 +318,93 @@ app.get('/posts/byTeamAndChallenge', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+// Route to add a comment to a post
+app.post('/posts/:id/comment', async (req, res) => {
+    const { userId, text } = req.body;
+    const postId = req.params.id;
+
+    try {
+        // Fetch the post
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+
+        // Fetch the user who is commenting
+        const user = await User.findById(userId).select('_id name lastName');
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        // Create the userLabel
+        const firstName = user.name || '';
+        const lastInitial = user.lastName ? user.lastName.charAt(0).toUpperCase() : '';
+        const userLabel = `${firstName} ${lastInitial}`;
+
+        // Add the comment to the post
+        const newComment = {
+            user: user._id, // Store only user._id
+            userLabel: userLabel, // Add userLabel for display purposes
+            text: text,
+        };
+        post.comments.push(newComment);
+        await post.save();
+
+        // Send the updated comments in response
+        const updatedPost = await Post.findById(postId).select('comments');
+        res.status(200).json(updatedPost.comments);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+// Route to delete a comment from a post
+app.delete('/posts/:postId/comments/:commentId', async (req, res) => {
+    const { postId, commentId } = req.params;
+
+    try {
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+
+        // Filter out the comment that needs to be deleted
+        post.comments = post.comments.filter((comment) => comment._id.toString() !== commentId);
+
+        await post.save();
+
+        // Send back the updated comments
+        const updatedPost = await Post.findById(postId).select('comments');
+        res.status(200).json(updatedPost.comments);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
+// Route to get comments for a post
+app.get('/posts/:id/comments', async (req, res) => {
+    try {
+        // Fetch the post and return only the comments
+        const post = await Post.findById(req.params.id).select('comments');
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
+
+        // Format comments to include only the user._id and userLabel
+        const formattedComments = post.comments.map(comment => ({
+            _id: comment._id,
+            user: comment.user, // Only return the user._id
+            userLabel: comment.userLabel,
+            text: comment.text,
+            date: comment.date
+        }));
+
+        res.status(200).json(formattedComments);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
+
 
 //get specfic image
 
@@ -314,8 +447,37 @@ app.get('/getUsersTotalPoints', async (req, res) => {
       const usersWithPoints = users.map(user => {
         const totalPoints = Array.from(user.eventPoints.values()).reduce((acc, points) => acc + points, 0);
         return {
-          ...user.toObject(),
+          _id: user.id,
           totalPoints,
+        };
+      });
+  
+      // Sort users by total points descending
+      usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
+  
+      res.json(usersWithPoints);
+      //res.json("ok1");
+    } catch (error) {
+      console.error('Error fetching user rankings:', error);
+      res.status(500).json({ error: 'Error fetching user rankings' });
+    }
+  });
+
+  app.get('/getUsersTotalPoints/:eventId', async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      
+      // Fetch all users
+      const users = await User.find();
+  
+      // Calculate points for each user for the specific event
+      const usersWithPoints = users.map(user => {
+        const eventPoints = user.eventPoints.get(eventId) || 0; // Get points for the selected event
+        return {
+          _id: user.id,
+          name: user.name,
+          lastName: user.lastName,
+          totalPoints: eventPoints,
         };
       });
   
@@ -328,6 +490,7 @@ app.get('/getUsersTotalPoints', async (req, res) => {
       res.status(500).json({ error: 'Error fetching user rankings' });
     }
   });
+  
   
 
 // Fetch ranking for a specific event
@@ -389,7 +552,7 @@ app.get('/challenges', async (req, res) => {
 
 app.post('/challenges', async (req, res) => {
     try {
-        const { id, eventId, title, reward, isCollective, icon } = req.body;
+        const { id, eventId, title, reward, isCollective, icon, isAccepted } = req.body;
 
         // Ensure the challenge ID is unique
         const existingChallenge = await Challenge.findOne({ id });
@@ -403,7 +566,8 @@ app.post('/challenges', async (req, res) => {
             title,
             reward,
             isCollective,
-            icon
+            icon,
+            isAccepted
         });
 
         await newChallenge.save();
@@ -621,6 +785,7 @@ app.get('/teams/:id/members', async (req, res) => {
         _id: member._id,
         teamId: member.teamId,
         name: member.name,
+        lastName : member.lastName,
         points: member.eventPoints.get(team.eventId) || 0,
       })).sort((a, b) => b.points - a.points);
   
@@ -788,25 +953,7 @@ app.post('/unpinChallenge', async (req, res) => {
     }
 });
 // Route to get user points and ranks
-app.get('/getUsersTotalPoints', async (req, res) => {
-    try {
-      // Fetch all users
-      const users = await User.find();
-  
-      // Calculate total points for each user
-      const usersWithPoints = users.map(user => ({
-        ...user.toObject(),
-        totalPoints: Object.values(user.eventPoints).reduce((acc, points) => acc + points, 0),
-      }));
-  
-      // Sort users by total points descending
-      usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
-  
-      res.json(usersWithPoints);
-    } catch (error) {
-      res.status(500).json({ error: 'Error fetching user rankings' });
-    }
-  });
+
 
 // Like a post
 app.post('/posts/:id/like', async (req, res) => {

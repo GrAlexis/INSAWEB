@@ -165,7 +165,7 @@ const ManageTeams = ({ eventId }) => {
             <h3>{team.name}</h3>
             <p>Members: {team.members.length}</p>
             <p>Max Members: {team.maxMembers || 'Unlimited'}</p>
-            <p>Points: {team.points}</p>
+            <p>Points: {Math.round(team.points)}</p>
             <button className="edit-team-button" onClick={() => handleEditClick(team)}>
               <img src={modifyButtonIcon} alt="Modify" />
             </button>

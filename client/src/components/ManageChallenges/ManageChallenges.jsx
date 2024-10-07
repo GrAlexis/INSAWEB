@@ -17,6 +17,7 @@ const ManageChallenges = ({ eventId }) => {
   });
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [challengeToDelete, setChallengeToDelete] = useState(null);
+  const [filterNotAccepted, setFilterNotAccepted] = useState(false); // New state for filtering
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -49,6 +50,7 @@ const ManageChallenges = ({ eventId }) => {
           id: newId,
           eventId,
           ...newChallenge,
+          isAccepted: true,
         });
 
         setChallenges([...challenges, response.data]);
@@ -99,17 +101,45 @@ const ManageChallenges = ({ eventId }) => {
     setShowForm(true);
   };
 
+  const handleAcceptChallenge = async (challengeId) => {
+    try {
+      const response = await axios.put(config.backendAPI + `/challenges/${challengeId}`, {
+        isAccepted: true
+      });
+      setChallenges(challenges.map(challenge => challenge.id === challengeId ? response.data : challenge));
+    } catch (error) {
+      console.error('Error accepting challenge:', error);
+    }
+  };
+
   useEffect(() => {
     axios.get(config.backendAPI+`/challenges?eventId=${eventId}`)
       .then(response => setChallenges(response.data))
       .catch(error => console.error('Error fetching challenges:', error));
   }, [eventId]);
 
+  // Toggle filtering for not accepted challenges
+  const toggleFilterNotAccepted = () => {
+    setFilterNotAccepted(prevState => !prevState);
+  };
+
+  // Filter challenges based on the filterNotAccepted state
+  const filteredChallenges = filterNotAccepted
+    ? challenges.filter(challenge => !challenge.isAccepted)
+    : challenges;
+
   return (
     <div className="manage-challenges">
-      <button className="add-challenge-button" onClick={() => setShowForm(!showForm)}>
-        {editChallenge ? "Edit Challenge" : "+"}
+      {/* Button to toggle filtering */}
+      <button onClick={toggleFilterNotAccepted} className="toggle-filter-button">
+        {filterNotAccepted ? 'Voir tous les Sheesh' : 'Voir les Sheesh proposés'}
       </button>
+      <div>
+        <button className="add-challenge-button" onClick={() => setShowForm(!showForm)}>
+          {editChallenge ? "Edit Challenge" : "+"}
+        </button>
+      </div>
+
 
       {showForm && (
         <div className="challenge-form-card">
@@ -163,7 +193,7 @@ const ManageChallenges = ({ eventId }) => {
       )}
 
       <div className="challenge-list">
-        {challenges.map(challenge => (
+        {filteredChallenges.map(challenge => (
           <div key={challenge.id} className="challenge-item">
             <button className="delete-challenge-button" onClick={() => handleDeleteClick(challenge)}>x</button>
             <button className="edit-challenge-button" onClick={() => handleEditClick(challenge)}>
@@ -171,6 +201,11 @@ const ManageChallenges = ({ eventId }) => {
             </button>
             <h3>{challenge.title}</h3>
             <p>Reward: {challenge.reward}</p>
+            {!challenge.isAccepted && (
+              <button className="accept-challenge-button" onClick={() => handleAcceptChallenge(challenge.id)}>
+                Accepter
+              </button>
+            )}
           </div>
         ))}
       </div>

@@ -109,17 +109,7 @@ function SignupPage({ showNavBar }) {
           Afficher le mot de passe
         </label>
       </div>
-      {user?.isAdmin && <div style={styles.inputGroupCheckbox}>
-        <label style={styles.label}>
-          <input
-            type="checkbox"
-            checked={isAdmin}
-            onChange={(e) => setIsAdmin(e.target.checked)}
-            
-          />
-          Admin
-        </label>
-      </div>}
+      
       <div style={styles.inputGroup}>
         <label style={styles.label}>Année de classe:</label>
         <select

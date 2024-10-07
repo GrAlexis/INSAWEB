@@ -6,9 +6,10 @@
 .post {
     background-color: rgba(255, 255, 255, 0.9);
     padding: 15px;
-    border-radius: 5px;
+    border-radius: 0px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 15px;
+    text-align: center;
     font-family: Arial, sans-serif;
 }
 
@@ -130,7 +131,7 @@
   }
 
 .likes-icon {
-    width: 24px;
+    width: 34px;
     height: auto;
     margin-right: 5px;
   }
@@ -298,3 +299,134 @@ background-color: #5bc0de;
 color: white;
 }
   
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed; /* Position fixe pour rester relative à la fenêtre visible */
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 100vw; /* Prend toute la largeur de la fenêtre visible */
+  height: 100vh; /* Prend toute la hauteur de la fenêtre visible */
+  background-color: rgba(0, 0, 0, 0.8);
+  overflow: hidden; /* Empêche le contenu de dépasser */
+}
+
+.modal-content-wrapper {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Important pour éviter que l'image déborde lors du zoom */
+}
+
+.modal-content {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease; /* Transition fluide pour le zoom */
+  cursor: zoom-in; /* Indicateur visuel de zoom */
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 40px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+}
+
+.modal-content.zoomed {
+  cursor: zoom-out;
+}
+/* Existing styles */
+
+/* Styling the comments section */
+.post-comments {
+  margin-top: 10px;
+}
+
+.post-comments h4 {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.comment {
+  font-size: 14px; /* Smaller text for comments */
+  color: #555; /* Gray text color for comments */
+  margin-bottom: 5px;
+}
+
+.add-comment {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.add-comment input {
+  flex-grow: 1;
+  padding: 5px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+/* Updated Commenter Button Styling */
+.add-comment button {
+  padding: 5px 10px;
+  background-color: #6B8A87; /* Updated button color */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+.add-comment button:hover {
+  background-color: #57736d; /* Slightly darker green on hover */
+}
+
+/* Styling for View All Comments Button */
+.post-comments button {
+  background-color: #6B8A87; /* Updated background for View All Comments */
+  border: none;
+  color: white; /* White text color */
+  font-size: 14px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-top: 5px;
+  transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+.post-comments button:hover {
+  background-color: #57736d; /* Slightly darker green on hover */
+}
+
+/* Smaller font for comment text */
+.comment p {
+  font-size: 13px; /* Even smaller font for comments */
+  margin: 0;
+  color: #444;
+}
+
+  
+.delete-comment-button {
+  background: none;
+  border: none;
+  color: red;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.delete-comment-button:hover {
+  text-decoration: underline;
+}

@@ -1,9 +1,8 @@
-.home-page {
-    padding: 16px;
-}
-
 .event-section {
     margin-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
 }
 
 header {
