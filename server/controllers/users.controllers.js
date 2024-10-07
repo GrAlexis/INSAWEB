@@ -96,7 +96,7 @@ const registerUserGlobal = async (req, res) => {
         name,
         hashedPassword, // Assurez-vous d'utiliser le bon champ ici
         isAdmin : false,
-	classYear,
+	      classYear,
         email,
         balance: 0,
         lastName
