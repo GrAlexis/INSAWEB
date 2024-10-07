@@ -383,6 +383,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
             }
           }}
           currentUserId={user._id}
+          isAdmin={user.isAdmin}
         />
       )}
 
@@ -411,16 +412,6 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           </button>
         )}
       </div>
-
-      {/* {showConfirmDelete && (
-        <div className="confirm-delete-popup">
-          <div className="confirm-delete-content">
-            <p>Are you sure you want to delete this post?</p>
-            <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>
-            <button className="cancel-delete-button" onClick={cancelDelete}>No</button>
-          </div>
-        </div>
-      )} */}
     </div>
   );
 };

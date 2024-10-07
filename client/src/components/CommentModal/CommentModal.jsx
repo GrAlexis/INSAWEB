@@ -1,7 +1,7 @@
 import React from 'react';
 import './CommentModal.css';
 
-const CommentModal = ({ comments, onClose, onDeleteComment, currentUserId }) => {
+const CommentModal = ({ comments, onClose, onDeleteComment, currentUserId, isAdmin }) => {
   return (
     <div className="comment-modal">
       <div className="comment-modal-content">
@@ -13,7 +13,7 @@ const CommentModal = ({ comments, onClose, onDeleteComment, currentUserId }) => 
                 <div className='comment-content'>
                     <p><strong>{comment.userLabel}</strong>: {comment.text}</p>
                 </div>
-              {comment.user === currentUserId && (
+              {(comment.user || isAdmin) === currentUserId && (
                 <button className="delete-comment-button" onClick={() => onDeleteComment(comment._id)}>
                   <span className="delete-icon">✕</span>
                 </button>
