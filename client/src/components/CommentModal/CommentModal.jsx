@@ -10,7 +10,9 @@ const CommentModal = ({ comments, onClose, onDeleteComment, currentUserId }) => 
         <div className="comment-list">
           {comments.map(comment => (
             <div key={comment._id} className="comment">
-              <p><strong>{comment.userLabel}</strong>: {comment.text}</p>
+                <div className='comment-content'>
+                    <p><strong>{comment.userLabel}</strong>: {comment.text}</p>
+                </div>
               {comment.user === currentUserId && (
                 <button className="delete-comment-button" onClick={() => onDeleteComment(comment._id)}>
                   <span className="delete-icon">✕</span>
