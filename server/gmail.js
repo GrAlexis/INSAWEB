@@ -1,6 +1,6 @@
 async function refreshAccessToken(clientId, clientSecret, refreshToken) {
     const url = 'https://oauth2.googleapis.com/token';
-  
+    //console.log(clientId, clientSecret, refreshToken)
     const body = new URLSearchParams({
       client_id: clientId,
       client_secret: clientSecret,
