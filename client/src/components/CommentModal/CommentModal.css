@@ -16,15 +16,15 @@
     background-color: white;
     padding: 20px;
     border-radius: 10px;
-    width: 400px;
     max-height: 80vh;
-    overflow-y: auto;
     position: relative;
-  }
+    max-width: 90%;
+    }
   
   .comment-list {
     max-height: 60vh;
     overflow-y: auto;
+    overflow-x: hidden;
   }
   
 /* Close modal button */
@@ -46,10 +46,17 @@
     flex-direction: row;
     justify-content: space-between;
     padding-bottom: 10px;
+    word-wrap: break-word; /* Break long words */
+    overflow-wrap: break-word; /* Break long words */
+    white-space: normal; /* Allow text to wrap */
 }
   /* Comment content layout */
 .comment-content {
     margin-bottom: 10px;
+    max-width: 90%;
+    word-wrap: break-word; /* Break long words */
+    overflow-wrap: break-word; /* Break long words */
+    white-space: normal; /* Allow text to wrap */
   }
   
   /* Delete comment button */
