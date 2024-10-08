@@ -3,6 +3,7 @@ import config from '../../config';
 import axios from 'axios';
 import PostElement from '../PostElement/PostElement';
 import './PostFeed.css';
+import LazyLoad from 'react-lazyload';
 
 const PostFeed = ({ setParticipants }) => {
   const [posts, setPosts] = useState([]);
@@ -40,8 +41,10 @@ const PostFeed = ({ setParticipants }) => {
   return (
     <div className="postfeed">
       {posts.map((post) => (
-        <PostElement key={post._id} post={post} onDelete={handleDelete} fetchPosts={fetchPosts} />
-      ))}
+        <LazyLoad key={post._id} height={200} offset={100} once> 
+          <PostElement post={post} onDelete={handleDelete} fetchPosts={fetchPosts} />
+        </LazyLoad>      
+    ))}
     </div>
   );
 }
