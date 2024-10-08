@@ -118,20 +118,7 @@ const Login = ({ showNavBar }) => {
     }, 300); // Temps de la transition en millisecondes
   };
 
-  const handleForgotPassword = () => {
-    setShowPopup(true);
-  };
 
-  const handlePopupClose = () => {
-    setShowPopup(false);
-  };
-
-  const handleSecretAnswerSubmit = (answer) => {
-    // Logique pour valider la réponse à la question secrète
-    console.log('Réponse soumise : ', answer);
-    setShowPopup(false);
-    // Ensuite, permettre la réinitialisation du mot de passe si la réponse est correcte
-  };
 
   const validatePassword = (password) => {
     const errors = [];
