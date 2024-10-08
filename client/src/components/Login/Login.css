@@ -235,3 +235,8 @@ select:focus {
   font-size: 16px;
   color: red; /* Text color red */
 }
+
+.linkPassword{
+  text-decoration: none;
+  color: inherit;
+}
