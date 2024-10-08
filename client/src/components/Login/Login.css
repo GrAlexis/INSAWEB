@@ -216,6 +216,7 @@ select:focus {
 .terms{
   font-weight: bold;
 }
+
 .error-message {
   display: flex;
   align-items: center;
