@@ -4,7 +4,7 @@ const User = require("../models/user");
 const { refreshAccessToken,  sendEmail} = require('../gmail')
 const secrets = require('../secrets_API.json')
 
-const secretKey = process.env.DEV_SECRET
+
 
 const deleteUser = async (req, res) => {
   try {
@@ -46,7 +46,7 @@ const getAllUsers = async (req, res) => {
 const registerUser = async (req, res) => {
   try {
     const { name, password, classYear, lastName, email } = req.body;
-
+    const secretKey = process.env.DEV_SECRET
     // Vérification si l'utilisateur existe déjà
     const userAlreadyExist = await User.findOne({ email });
     if (userAlreadyExist) {
@@ -84,7 +84,7 @@ const registerUserGlobal = async (req, res) => {
   try {
     
     const { name, password, classYear, lastName, email } = req.body;
-
+    const secretKey = process.env.DEV_SECRET
     // Vérifiez si isAdmin est à true et renvoyez une erreur
     if (isAdmin === true) {
       return res.status(400).json({ message: 'isAdmin must be false or not included' });
@@ -121,6 +121,7 @@ const registerUserGlobal = async (req, res) => {
 
 const updateMdp = async (req,res) => {
   try{
+    const secretKey = process.env.DEV_SECRET
     const {token, newMdp} = req.body
     const decoded = jwt.verify(token, secretKey)
     const newHashedPassword = await bcrypt.hash(newMdp, 10)
@@ -152,6 +153,8 @@ const updateMdp = async (req,res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const secretKey = process.env.DEV_SECRET
+    
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'User does not exist' });
@@ -162,6 +165,7 @@ const loginUser = async (req, res) => {
     const passwordMatch = await bcrypt.compare(password, user.hashedPassword);
     if (passwordMatch) {
       const token = jwt.sign({ email:email }, secretKey);
+      
       res.status(200).json({ token });
     } else {
       return res.status(401).json({ message: 'Invalid username or password' });
@@ -173,6 +177,7 @@ const loginUser = async (req, res) => {
 
 const decodeToken = (req,res) => {
   try {
+    const secretKey = process.env.DEV_SECRET
     const { token } = req.body;
     const decoded = jwt.verify(token, secretKey);
     return res.status(200).json({'email':decoded.email});
@@ -202,6 +207,7 @@ const isAdmin = async (req, res) => {
 
 
 const verifyAccount = async (req, res) => {
+  const secretKey = process.env.DEV_SECRET
   const token = req.params.token
   if (!token){
     res.status(500).json({'message':'Missing url parameter token'})
@@ -251,6 +257,7 @@ const getUser = async (req, res) => {
 }
 
 const createResetMdpLink = async (req, res) => {
+  const secretKey = process.env.DEV_SECRET
   const email = req.body.email
   const user = await User.findOne({email:email})
   if (!user){

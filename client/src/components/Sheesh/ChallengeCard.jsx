@@ -228,7 +228,7 @@ const handleFileChange = (e) => {
       )}
       {collectivePost && (
         <div className="team-post-notification">
-          {`A member of your team (${teammateName}) has already posted for this collective challenge`}
+          {`A member of your team has already posted for this collective challenge`}
         </div>
       )}
     </div>
