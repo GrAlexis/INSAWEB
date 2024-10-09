@@ -82,10 +82,10 @@ const registerUser = async (req, res) => {
 };
 const registerUserGlobal = async (req, res) => {
   try {
-    
-    const { name, password, classYear, lastName, email } = req.body;
-    const secretKey = process.env.DEV_SECRET
-    // Vérifiez si isAdmin est à true et renvoyez une erreur
+    const { name, password, classYear, lastName, email, isAdmin } = req.body;
+    const secretKey = process.env.DEV_SECRET;
+
+    // Vérifie si isAdmin est à true
     if (isAdmin === true) {
       return res.status(400).json({ message: 'isAdmin must be false or not included' });
     }
@@ -93,31 +93,46 @@ const registerUserGlobal = async (req, res) => {
     const userAlreadyExist = await User.findOne({ email });
     if (userAlreadyExist) {
       return res.status(401).json({ message: 'User already exists' });
-    } else {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const token = jwt.sign({email:email}, secretKey, {expiresIn:'15m'})
-      const access_token = await refreshAccessToken(secrets['web']['client_id'], secrets['web']['client_secret'], secrets['web']['refreshToken'])
-      if (access_token) {
-        // Call the sendEmail function with the access token
-        await sendEmail(access_token, email, '[Sheeesh] Code de vérification de votre compte',`Bonjour,\nSi vous recevez ce mail c\'est que vous vous êtes inscrits sur notre application Sheeesh.\nIl vous reste plus qu\'une étape avant que vous puissiez commencer à sheeesher.\nIl faut que vous cliquiez sur ce lien: ${process.env.DEV_BACK_URL}/api/user/verify-account/${token} pour activer votre compte.(Promis c\'est pas du phishing)\n\nL\'équipe de devloppeurs de Sheeesh ;-)`);
-      } else {
-          console.error("Could not retrieve access token, email not sent.");
-      }
-      const user = await User.create({
-        name,
-        hashedPassword, // Assurez-vous d'utiliser le bon champ ici
-        isAdmin : false,
-	      classYear,
-        email,
-        balance: 0,
-        lastName
-      }); // isAdmin est géré par le modèle, donc pas besoin de l'inclure ici
-      res.status(201).json({ message: 'User created successfully' });
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const token = jwt.sign({ email: email }, secretKey, { expiresIn: '15m' });
+    const access_token = await refreshAccessToken(secrets['web']['client_id'], secrets['web']['client_secret'], secrets['web']['refresh_token'])
+    console.log(token);
+    console.log(email);
+    if (access_token) {
+      try {
+        await sendEmail(
+          access_token,
+          email,
+          '[Sheeesh] Code de vérification de votre compte',
+          `Bonjour,\nSi vous recevez ce mail c\'est que vous vous êtes inscrits sur notre application Sheeesh.\nIl vous reste plus qu\'une étape avant que vous puissiez commencer à sheeesher.\nIl faut que vous cliquiez sur ce lien: ${process.env.DEV_BACK_URL}/api/user/verify-account/${token} pour activer votre compte.(Promis c\'est pas du phishing)\n\nL\'équipe de developpeurs de Sheeesh ;-)`
+        );
+      } catch (emailError) {
+        console.error("Email not sent:", emailError);
+        return res.status(500).json({ message: "Failed to send verification email." });
+      }
+    } else {
+      console.error("Could not retrieve access token, email not sent.");
+      return res.status(500).json({ message: "Could not send verification email." });
+    }
+
+    const user = await User.create({
+      name,
+      hashedPassword,
+      isAdmin: false,
+      classYear,
+      email,
+      balance: 0,
+      lastName
+    });
+
+    res.status(201).json({ message: 'User created successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 const updateMdp = async (req,res) => {
   try{
@@ -270,7 +285,7 @@ const createResetMdpLink = async (req, res) => {
   if (access_token) {
     // Call the sendEmail function with the access token
     try{    
-      await sendEmail(access_token, email, '[Sheeesh] Lien pour recréer votre mot de passe',`Bonjour,\nSi vous recevez ce mail c\'est que vous vous avez cliqué sur mot de passe oublié.\nCliquez sur ce lien: ${process.env.DEV_FRONT_URL}/reset-password/${token} pour changer votre mot de passe.(Promis c\'est pas du phishing)\n\nL\'équipe de devloppeurs de Sheeesh ;-)`);
+      await sendEmail(access_token, email, '[Sheeesh] Lien pour recreer votre mot de passe',`Bonjour,\nSi vous recevez ce mail c\'est que vous vous avez cliqué sur mot de passe oublié.\nCliquez sur ce lien: ${process.env.DEV_FRONT_URL}/reset-password/${token} pour changer votre mot de passe.(Promis c\'est pas du phishing)\n\nL\'équipe de developpeurs de Sheeesh ;-)`);
       return res.status(200).json({'message':"Email for resetting password sent"})
     }
     catch {
