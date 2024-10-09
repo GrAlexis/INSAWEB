@@ -121,10 +121,11 @@ const registerUserGlobal = async (req, res) => {
 
 const updateMdp = async (req,res) => {
   try{
-    const secretKey = process.env.DEV_SECRET
-    const {token, newMdp} = req.body
-    const decoded = jwt.verify(token, secretKey)
-    const newHashedPassword = await bcrypt.hash(newMdp, 10)
+    const URL = process.env.DEV_FRONT_URL;
+    const secretKey = process.env.DEV_SECRET;
+    const {token, newMdp} = req.body;
+    const decoded = jwt.verify(token, secretKey);
+    const newHashedPassword = await bcrypt.hash(newMdp, 10);;
     if (decoded){
       const updatedUser = await User.findOneAndUpdate(
         { email: decoded.email },                  // Condition: trouver l'utilisateur par son nom d'utilisateur
@@ -132,21 +133,22 @@ const updateMdp = async (req,res) => {
         { new: true, runValidators: true }       // Options: retourner le document mis à jour et valider les schémas
       );
       if (updatedUser){
-        return res.redirect(`${process.env.DEV_FRONT_URL}/login`)
+        return res.status(201).json("Pswd updated OK");
+        
 
       }
       else{
         console.error('User not found')
-        return res.status(404).json('User not found')
+        return res.status(404).json('User not found');
       }
     }
     else{
-      return res.status(401).json('Wrong token')
+      return res.status(401).json('Wrong token');
     }
   }
   catch (error){
     console.log(error)
-    return res.status(500).json('Erreur de bz')
+    return res.status(500).json('Erreur de bz');
   }
 }
 

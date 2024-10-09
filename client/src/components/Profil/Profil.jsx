@@ -78,18 +78,21 @@ function Profil() {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.status===201) {
         // Réponse réussie
         setMessage('Mot de passe changé avec succès !');
         setUpdatingMdp(false)
         setNewPassword('');
         setConfirmPassword('');
+        navigate("/login");
+        
       } else {
         // Gérer les erreurs renvoyées par le serveur
         console.log(data || 'Erreur lors du changement de mot de passe');
       }
     } catch (error) {
       console.error('Erreur:', error);
+      
     }
   }
   return (
