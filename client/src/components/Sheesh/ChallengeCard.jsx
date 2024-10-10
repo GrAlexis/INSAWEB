@@ -148,6 +148,7 @@ const handleFileChange = (e) => {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('challengeId', challenge.id);
+      formData.append('eventId', challenge.eventId);
       formData.append('user', user._id);
       formData.append('description', description);
       if (user.teamId) {

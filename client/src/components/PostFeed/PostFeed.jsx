@@ -5,26 +5,31 @@ import PostElement from '../PostElement/PostElement';
 import './PostFeed.css';
 import LazyLoad from 'react-lazyload';
 
-const PostFeed = ({ setParticipants }) => {
+const PostFeed = ({ setParticipants, selectedEvent }) => {
   const [posts, setPosts] = useState([]);
 
   const fetchPosts = async () => {
     try {
       const response = await axios.get(config.backendAPI + '/posts');
-      setPosts(response.data);
+      let filteredPosts = response.data;
+
+      if (selectedEvent) {
+        console.log("selectedevent.id "+selectedEvent.id)
+        filteredPosts = filteredPosts.filter(post => post.challengeId && post.eventId === selectedEvent.id);
+      }
+
+      setPosts(filteredPosts);
       
-      const participants = response.data.map(post => {
+      const participants = filteredPosts.map(post => {
         const user = post.user ? `${post.user.name} ${post.user.lastName}` : null;
         const challenge = post.challengeId ? post.challengeId.title : null;
-        
         if (user && challenge) {
           return `${user} a participé à ${challenge}`;
         }
         return null;
       }).filter(participant => participant !== null); 
 
-      setParticipants(participants); 
-
+      setParticipants(participants);
     } catch (error) {
       console.error('Error fetching posts', error);
     }
@@ -32,7 +37,7 @@ const PostFeed = ({ setParticipants }) => {
 
   useEffect(() => {
     fetchPosts();
-  }, []);
+  }, [selectedEvent]);
 
   const handleDelete = (postId) => {
     setPosts(posts.filter(post => post._id !== postId));

@@ -13,3 +13,20 @@
   margin: 0 auto;
   margin-bottom: 80px;
 }
+.event-buttons button {
+  margin: 5px;
+  border-radius: 30px;
+  padding: 10px;
+  color: rgb(110, 108, 108);
+  background-color:  #A4C0A5 ;
+  font-family: 'Lemon', sans-serif; /* Lemon font */
+  border: none;
+  cursor: pointer;
+}
+
+.event-buttons button.selected {
+  background-color:  #6a8a87;
+  color: aliceblue;
+  border-color: aliceblue;
+  border-width: 20px;
+}
