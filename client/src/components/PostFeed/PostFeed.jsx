@@ -5,7 +5,7 @@ import PostElement from '../PostElement/PostElement';
 import './PostFeed.css';
 import LazyLoad from 'react-lazyload';
 
-const PostFeed = ({ setParticipants, selectedEvent }) => {
+const PostFeed = ({selectedEvent }) => {
   const [posts, setPosts] = useState([]);
 
   const fetchPosts = async () => {
@@ -20,16 +20,6 @@ const PostFeed = ({ setParticipants, selectedEvent }) => {
 
       setPosts(filteredPosts);
       
-      const participants = filteredPosts.map(post => {
-        const user = post.user ? `${post.user.name} ${post.user.lastName}` : null;
-        const challenge = post.challengeId ? post.challengeId.title : null;
-        if (user && challenge) {
-          return `${user} a participé à ${challenge}`;
-        }
-        return null;
-      }).filter(participant => participant !== null); 
-
-      setParticipants(participants);
     } catch (error) {
       console.error('Error fetching posts', error);
     }
