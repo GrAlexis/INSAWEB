@@ -18,7 +18,7 @@ def get_refresh_token(code=input("Rentrer le code que vous récup")):
     'code':code}
     req = r.post(url, json=auth)
     if req.ok:
-        print("voici le nouveau refresh_token")
+        print("voici le nouveau refresh_token. Il faut le mettre à jour dans secrets_API.json")
         print(req.json()['refresh_token'])
     else:
         print('ça a pas marché')
