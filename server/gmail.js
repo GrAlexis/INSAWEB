@@ -1,22 +1,23 @@
 async function refreshAccessToken(clientId, clientSecret, refreshToken) {
     const url = 'https://oauth2.googleapis.com/token';
     //console.log(clientId, clientSecret, refreshToken)
+    // Create the body as URL-encoded form data
     const body = new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      refresh_token: refreshToken,
-      grant_type: 'refresh_token',
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token',
     });
+    console.log(body.toString())
   
     try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: body.toString(),
-      });
-  
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded', // This is required for Google OAuth
+          },
+          body: body.toString(), // Convert the body to a string
+        });
       if (!response.ok) {
         throw new Error(`Error: ${response.status} - ${response.statusText}`);
       }

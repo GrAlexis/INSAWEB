@@ -98,8 +98,6 @@ const registerUserGlobal = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const token = jwt.sign({ email: email }, secretKey, { expiresIn: '15m' });
     const access_token = await refreshAccessToken(secrets['web']['client_id'], secrets['web']['client_secret'], secrets['web']['refresh_token'])
-    console.log(token);
-    console.log(email);
     if (access_token) {
       try {
         await sendEmail(
