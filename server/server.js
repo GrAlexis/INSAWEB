@@ -254,6 +254,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     writeStream.on('finish', async () => {
         const newPost = new Post({
             challengeId: req.body.challengeId,
+            eventId: req.body.eventId,
             date: new Date(),
             user: req.body.user,
             likes: 0,
@@ -267,7 +268,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         try {
             const savedPost = await newPost.save();
 
-            // Delete the temporary files in the 'uploads' folder
             // Delete the temporary files in the 'uploads' folder
             await unlinkAsync(filePath);
             console.log('Temporary files in uploads folder deleted.');

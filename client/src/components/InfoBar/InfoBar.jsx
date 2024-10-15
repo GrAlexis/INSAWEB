@@ -9,7 +9,7 @@ import rankOneIcon from '../../assets/icons/ranks/1_v1.png';
 import rankTwoIcon from '../../assets/icons/ranks/2_v1.png';
 import rankThreeIcon from '../../assets/icons/ranks/3_v1.svg';
 
-const InfoBar = () => {
+const InfoBar = ({ selectedEvent }) => {
   const { user, setUser, updateUserTeamName } = useUser();
   const [userRank, setUserRank] = useState(null);
   const [loading, setLoading] = useState(true); // Add loading state
@@ -20,33 +20,42 @@ const InfoBar = () => {
     }
   }, [user?.teamId, updateUserTeamName]);
 
+
   useEffect(() => {
     const fetchRankings = async () => {
       try {
-        setLoading(true); // Set loading to true before fetching
-        const response = await axios.get(config.backendAPI+'/getUsersTotalPoints');
+        setLoading(true);
+
+        // Determine the correct URL based on whether an event is selected
+        const url = selectedEvent 
+          ? `${config.backendAPI}/getUsersTotalPoints/${selectedEvent.id}` // Fetch event-specific points
+          : `${config.backendAPI}/getUsersTotalPoints`; // Fetch global points
+
+        const response = await axios.get(url);
         const users = response.data;
 
-        // Find the current user and set their rank and total points
+        // Find the current user in the returned user list
         const currentUser = users.find(u => u._id === user?._id);
-        if (currentUser) {
-          const rank = users.findIndex(u => u._id === user._id) + 1;
-          setUserRank(rank);
 
-          // Update user's balance with total points
-          setUser(prevUser => ({ ...prevUser, balance: currentUser.totalPoints }));
+        if (currentUser) {
+          const points = currentUser.totalPoints; // Points for event or total points
+          const rank = users.findIndex(u => u._id === user._id) + 1; // Calculate rank
+
+          // Update state with the user's rank and points
+          setUserRank(rank);
+          setUser(prevUser => ({ ...prevUser, balance: points }));
         }
       } catch (error) {
         console.error('Error fetching user rankings:', error);
       } finally {
-        setLoading(false); // Set loading to false after fetching is done
+        setLoading(false);
       }
     };
 
     if (user?._id) {
       fetchRankings();
     }
-  }, [user?._id, setUser]); // Depend only on user ID
+  }, [user?._id, setUser, selectedEvent]);
 
   if (loading) {
     return <div>Loading...</div>; // Show loading state

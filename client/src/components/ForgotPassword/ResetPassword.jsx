@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import config from '../../config'
 import { useParams } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 const ResetPassword = () => {
+  const navigate = useNavigate();
   const [message, setMessage] = useState("");
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -21,6 +23,7 @@ const ResetPassword = () => {
 
       if (response.ok) {
         setMessage("Mot de passe changé avec succes.");
+        navigate("/login")
       } else {
         setMessage("Une erreur s'est produite. Veuillez réessayer.");
       }
