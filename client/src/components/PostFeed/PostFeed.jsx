@@ -10,14 +10,17 @@ const PostFeed = ({ setParticipants, selectedEvent }) => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get(config.backendAPI + '/posts');
+      const response = await axios.get(`${config.backendAPI}/posts`, {
+        params: {
+          universeId: config.universe  // Send universeId as a query parameter
+        }
+      });
       let filteredPosts = response.data;
-
+  
       if (selectedEvent) {
-        console.log("selectedevent.id "+selectedEvent.id)
         filteredPosts = filteredPosts.filter(post => post.challengeId && post.eventId === selectedEvent.id);
       }
-
+  
       setPosts(filteredPosts);
       
       const participants = filteredPosts.map(post => {
@@ -28,12 +31,12 @@ const PostFeed = ({ setParticipants, selectedEvent }) => {
         }
         return null;
       }).filter(participant => participant !== null); 
-
+  
       setParticipants(participants);
     } catch (error) {
       console.error('Error fetching posts', error);
     }
-  };
+  };  
 
   useEffect(() => {
     fetchPosts();

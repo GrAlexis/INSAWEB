@@ -19,6 +19,8 @@ const Ranking = ({ showNavBar }) => {
   const [playerRanking, setPlayerRanking] = useState([]); // State for player ranking
   const navigate = useNavigate();
 
+  const universeId=config.universe
+
   useEffect(() => {
     const token = localStorage.getItem('token');
 
@@ -38,12 +40,17 @@ const Ranking = ({ showNavBar }) => {
   useEffect(() => {
     if (selectedEvent && viewMode === 'teams') {
       // Fetch team ranking for the selected event
-      axios.get(config.backendAPI + `/ranking/${selectedEvent.id}`)
+      // Fetch team ranking for the selected event, passing universeId as a query parameter
+      axios.get(`${config.backendAPI}/teamRanking/${selectedEvent.id}`, {
+        params: { universeId: universeId }  // Passing universeId as a query parameter
+      })
         .then(response => setRanking(response.data))
         .catch(error => console.error('Error fetching ranking:', error));
     } else if (selectedEvent && viewMode === 'players') {
       // Fetch player ranking for the selected event
-      axios.get(config.backendAPI + `/getUsersTotalPoints/${selectedEvent.id}`)
+      axios.get(`${config.backendAPI}/getUsersTotalPoints/${selectedEvent.id}`, {
+        params: { universeId: universeId }  // Pass universeId here as well
+      })        
         .then(response => setPlayerRanking(response.data))
         .catch(error => console.error('Error fetching player ranking:', error));
     }
@@ -55,7 +62,10 @@ const Ranking = ({ showNavBar }) => {
       setTeamMembers([]);
     } else {
       setSelectedTeam(teamId);
-      axios.get(config.backendAPI + `/teams/${teamId}/members`)
+      console.log("requete "+config.backendAPI + `/teams/${teamId}/members`)
+      axios.get(config.backendAPI + `/teams/${teamId}/members`, {
+        params: { universeId: universeId }  // Pass universeId as a query parameter
+      })
         .then(response => setTeamMembers(response.data))
         .catch(error => console.error('Error fetching team members:', error));
     }

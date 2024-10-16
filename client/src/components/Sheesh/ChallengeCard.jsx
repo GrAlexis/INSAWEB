@@ -25,6 +25,8 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
   const [userNeedsToJoinTeam, setUserNeedsToJoinTeam] = useState(false);
   const navigate = useNavigate();
 
+  const universeId = config.universe; // Or get it from wherever you're setting it
+
   useEffect(() => {
     if (challenge.id === challengeId) {
       setOpenChallengeId(challenge.id);
@@ -32,6 +34,7 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
   }, [challenge.id, challengeId, setOpenChallengeId]);
 
   useEffect(() => {
+
     const checkUserPost = async () => {
       if (!user) return; // Ensure user is not null before making requests
 
@@ -39,14 +42,15 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
         // Check if event has teams and user is not in a team
         const eventResponse = await axios.get(config.backendAPI+`/events/${challenge.eventId}`);
         const event = eventResponse.data;
-        setUserNeedsToJoinTeam(event?.teams.length > 0 && !user.teamId);
+        setUserNeedsToJoinTeam(event?.teams.length > 0 && !user.universes[universeId].events[challenge.eventId].teamId);
+
         const response = await axios.get(config.backendAPI+`/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
         if (response.data.length > 0) {
           setPost(response.data[0]);
         }
 
-        if (challenge.isCollective && user.teamId) {
-          const teamPostsResponse = await axios.get(config.backendAPI+`/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+        if (challenge.isCollective && user.universes[universeId].events[challenge.eventId].teamId) {
+          const teamPostsResponse = await axios.get(config.backendAPI+`/posts/byTeamAndChallenge?teamId=${user.universes[universeId].events[challenge.eventId].teamId}&challengeId=${challenge.id}`);
           if (teamPostsResponse.data.length > 0) {
             const teamPost = teamPostsResponse.data[0];
             if (teamPost.user !== user._id) {
@@ -64,7 +68,7 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
     };
 
     checkUserPost();
-  }, [user, challenge.id, user?.teamId, challenge.isCollective]);
+  }, [user, challenge.id, challenge.isCollective]);
 
   const handlePinClick = async () => {
     if (!user) return; // Ensure user is not null before proceeding
@@ -123,19 +127,21 @@ const handleFileChange = (e) => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setIsProcessing(true)
-
+    console.log("debut handleformsubmit")
     try {
       const eventResponse = await axios.get(config.backendAPI+`/events/${challenge.eventId}`);
       const event = eventResponse.data;
+      console.log("event fetched "+event)
 
-      if (event.teams.length > 0 && (!user.teamId || !event.teams.includes(user.teamId))) {
+      if (event.teams.length > 0 && (!user.universes[universeId].events[challenge.eventId].teamId)) {
         setShowTeamWarning(true);
         setTimeout(() => setShowTeamWarning(false), 3000);
         return;
       }
+      console.log("aled")
 
-      if (challenge.isCollective &&user.teamId) {
-        const teamPostsResponse = await axios.get(config.backendAPI+`/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+      if (challenge.isCollective &&user.universes[universeId].events[challenge.eventId].teamId) {
+        const teamPostsResponse = await axios.get(config.backendAPI+`/posts/byTeamAndChallenge?teamId=${user.universes[universeId].events[challenge.eventId].teamId}&challengeId=${challenge.id}`);
         if (teamPostsResponse.data.length > 0 && teamPostsResponse.data[0].user !== user._id) {
           setCollectivePost(teamPostsResponse.data[0]);
           const userResponse = await axios.get(`/users/${teamPostsResponse.data[0].user}`);
@@ -144,15 +150,16 @@ const handleFileChange = (e) => {
           return;
         }
       }
-
+      console.log("juste avant de créer le formData")
       const formData = new FormData();
       formData.append('file', file);
       formData.append('challengeId', challenge.id);
       formData.append('eventId', challenge.eventId);
       formData.append('user', user._id);
       formData.append('description', description);
-      if (user.teamId) {
-        formData.append('teamId', user.teamId);
+      formData.append('universeId', universeId)
+      if (user.universes[universeId].events[challenge.eventId].teamId) {
+        formData.append('teamId', user.universes[universeId].events[challenge.eventId].teamId);
       }
       const response = await axios.post(config.backendAPI+'/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
