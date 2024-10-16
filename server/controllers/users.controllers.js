@@ -168,6 +168,7 @@ const updateMdp = async (req,res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(req)
     const secretKey = process.env.DEV_SECRET
     
     const user = await User.findOne({ email });
