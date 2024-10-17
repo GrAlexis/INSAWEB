@@ -37,12 +37,11 @@ const GoogleLoginButton = ({ showNavBar }) => {
   const handleGoogleSignIn = async (response) => {
     const token = response.credential;
     try {
-      const verifyResponse = await axios.post(`${config.backendAPI}/api/user/login`, { token });
+      const verifyResponse = await axios.post(`${config.backendAPI}/api/user/loginGoogle`, { token });
       const { token: userToken, email } = verifyResponse.data;
-
+      console.log(userToken)
       localStorage.setItem('token', userToken);
       localStorage.setItem('email', email);
-      showNavBar();
       navigate('/home');
     } catch (error) {
       console.error('Échec de la connexion via Google', error);
@@ -53,3 +52,4 @@ const GoogleLoginButton = ({ showNavBar }) => {
 };
 
 export default GoogleLoginButton;
+/*Probleme tah le cors */
