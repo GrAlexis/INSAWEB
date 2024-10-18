@@ -4,7 +4,7 @@ import axios from 'axios';
 import config from '../../config';
 import { useNavigate } from 'react-router-dom';
 
-const GoogleLoginButton = ({ showNavBar }) => {
+const GoogleLoginBouton = ({ showNavBar }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,5 +51,4 @@ const GoogleLoginButton = ({ showNavBar }) => {
   return <div id="googleSignInButton"></div>;
 };
 
-export default GoogleLoginButton;
-/*Probleme tah le cors */
+export default GoogleLoginBouton;

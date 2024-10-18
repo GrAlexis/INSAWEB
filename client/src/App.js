@@ -16,7 +16,6 @@ import './App.css';
 import EventPage from './components/Events/EventPage'
 import ForgotPassword from './components/ForgotPassword/ForgotPassword';
 import ResetPassword from './components/ForgotPassword/ResetPassword';
-import GoogleLoginButton from './components/Login/LoginGoogle'
 
 function App() {
 
@@ -55,7 +54,6 @@ function App() {
                 <Route path="/register" element={<UserProvider><ProtectedRoute adminOnly={true}><Register showNavBar={refreshPath}/></ProtectedRoute></UserProvider>} />
                 <Route path="/login" element={<Login showNavBar={refreshPath} />} />
                 <Route path="/events" element={<UserProvider><EventPage/></UserProvider>} />
-                <Route path="/loginGoogle" element={<GoogleLoginButton />}/>
                 <Route
                   path="/admin"
                   element={<UserProvider>
