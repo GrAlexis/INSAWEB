@@ -1,0 +1,180 @@
+* {
+    box-sizing: border-box;
+  }
+  
+  /* Ajuster la navbar */
+  .navbarHome {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 10px 50px; /* Tu peux garder le padding */
+    width: 100%;
+    background-color: white;
+    position: relative;
+  }
+  
+
+  
+  .logo-containerHome {
+    display: flex;
+    align-items: center;
+  }
+  
+  .logoHome {
+    height: 40px;
+    margin-right: 15px; /* Espace entre le logo et le nom de l'application */
+  }
+  
+  .app-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: #758D7C;
+    margin-left: 10px;
+  }
+  
+  /* Par défaut, les liens principaux (ul) sont visibles sur desktop */
+  .nav-linksHome {
+    display: flex;
+    justify-content: center;
+    flex: 1;
+    list-style: none;
+    padding: 0;
+    position: relative;
+  }
+  
+  .nav-linksHome li {
+    margin: 0 15px;
+    font-size: 16px;
+    color: #758D7C;
+    font-weight: bold;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .nav-linksHome li:hover {
+    color: #00d08e;
+  }
+  
+  /* Cacher les sous-éléments (li) par défaut */
+  .nav-linksHome li .dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+    z-index: 1000;
+    list-style: none;
+    margin-top: 10px;
+  }
+  
+  /* Afficher les sous-éléments au survol */
+  .nav-linksHome li:hover .dropdown {
+    display: block;
+  }
+  
+  /* Transition pour le soulignement */
+  .nav-linksHome li::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background-color: #00d08e;
+    left: 0;
+    bottom: -5px;
+    transition: width 0.3s ease;
+  }
+  
+  .nav-linksHome li:hover::after,
+  .nav-linksHome li.selected::after {
+    width: 100%;
+  }
+  
+  .dropdown li {
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #758D7C;
+  }
+  
+  .dropdown li:hover {
+    background-color: #eaeaea;
+    color: #00d08e;
+  }
+  
+  /* Cacher le bouton toggle sur desktop */
+  .menu-toggle {
+    display: none; /* Le bouton toggle est caché par défaut sur les grands écrans */
+  }
+  
+  /* Pour les écrans moyens et petits (max-width: 1024px) */
+  @media (max-width: 1024px) {
+    /* Les liens sont cachés par défaut sur mobile/tablette, et gérés via le bouton toggle */
+    .nav-linksHome {
+      display: none;
+      flex-direction: column;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background-color: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 10px;
+      border-radius: 4px;
+      z-index: 1000;
+      width: 100%;
+      text-align: center;
+    }
+  
+    .nav-linksHome.open {
+      display: flex;
+    }
+  
+    .nav-linksHome li {
+      margin: 10px 0;
+      font-size: 18px;
+    }
+  
+    /* Affiche le toggle button pour les tablettes et les mobiles */
+    .menu-toggle {
+      display: block; /* Le bouton toggle est visible uniquement sur les écrans petits/moyens */
+      cursor: pointer;
+      font-size: 24px;
+      color: #758D7C;
+      position: absolute;
+      right: 50px;
+    }
+  
+    .app-name {
+      font-size: 18px;
+    }
+  
+    /* Sous-menus en mode téléphone/tablette : les sous-éléments apparaissent sous le parent */
+    .nav-linksHome li .dropdown {
+      display: none;
+      position: static; /* Supprimer la position absolue pour les petits écrans */
+      background-color: white;
+      box-shadow: none;
+      padding: 0;
+      margin-top: 5px;
+    }
+  
+    .nav-linksHome li.open .dropdown {
+      display: block;
+    }
+  
+    .dropdown li {
+      margin-top: 10px;
+      padding: 8px;
+      background-color: #f8f8f8;
+      width: 100%;
+      text-align: center;
+    }
+  
+    .dropdown li:hover {
+      background-color: #eaeaea;
+      color: #00d08e;
+    }
+  }
+  
