@@ -57,9 +57,6 @@ const Feed = ({ showNavBar }) => {
               <div className="infobar-container">
                 <InfoBar selectedEvent={selectedEvent}/>
               </div>
-
-              {/* SearchBar Component with search handling */}
-              <SearchBar onSearch={handleSearch} />
             
             {/* Event Filter Buttons */}
             <div className="event-buttons">
