@@ -279,7 +279,7 @@ const Login = ({ showNavBar }) => {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={isSignIn ? "Email" : "Entrer votre email insa :)"}
+              placeholder={isSignIn ? "Email" : "Entrer votre email"}
               required
             />
           </div>
@@ -331,8 +331,9 @@ const Login = ({ showNavBar }) => {
               
             />
             </div>
-
-            <div className="input-group select-group">
+              {
+                /*
+                <div className="input-group select-group">
             <label htmlFor="name">Année scolaire</label>
             <select
               value={classYear}
@@ -352,6 +353,9 @@ const Login = ({ showNavBar }) => {
               onChange={(e) => setIsApprentice(e.target.checked)}
             />
             </div>
+                */
+              }
+            
 
             <div className="input-group checkbox">
             <label className="terms" htmlFor="name" onClick={handleShowTerms} >Accepter les conditions d'utilisations *</label>
