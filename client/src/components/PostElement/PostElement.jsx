@@ -35,6 +35,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const [scrollPosition, setScrollPosition] = useState(0);
   const [zoomScale, setZoomScale] = useState(1); 
 
+  const universeId = config.universe
 
 
 
@@ -162,7 +163,8 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
         const response = await axios.post(`${config.backendAPI}/admin/validatePost/${post._id}`, {
             isAdmin: user.isAdmin,
             rewardPoints : parseReward(challenge.reward),
-            eventId : event.id
+            eventId : event.id,
+            universeId : universeId
         });
         if (response.status === 200) {
           fetchPosts(); // Refresh posts after validation

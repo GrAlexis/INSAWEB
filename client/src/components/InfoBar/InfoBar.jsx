@@ -13,9 +13,13 @@ const InfoBar = ({ selectedEvent }) => {
   const { user, setUser, updateUserTeamName } = useUser();
   const [userRank, setUserRank] = useState(null);
   const [loading, setLoading] = useState(true); // Add loading state
+  const [teamName, setTeamName] = useState('');
+  const [totalPoints, setTotalPoints] = useState(0);
+
+  const universeId = config.universe
 
   useEffect(() => {
-    if (user && user.teamId) {
+    if (user && user.universes) {
       updateUserTeamName(user);
     }
   }, [user?.teamId, updateUserTeamName]);
@@ -25,13 +29,17 @@ const InfoBar = ({ selectedEvent }) => {
     const fetchRankings = async () => {
       try {
         setLoading(true);
+        let url, params;
 
-        // Determine the correct URL based on whether an event is selected
-        const url = selectedEvent 
-          ? `${config.backendAPI}/getUsersTotalPoints/${selectedEvent.id}` // Fetch event-specific points
-          : `${config.backendAPI}/getUsersTotalPoints`; // Fetch global points
+        // Determine the correct URL and params based on whether an event is selected
+        if (selectedEvent) {
+          url = `${config.backendAPI}/getUsersTotalPoints/${selectedEvent.id}`; // Event-specific points
+        } else {
+          url = `${config.backendAPI}/getUsersTotalPoints`; // Global points across all events
+        }
+        params = { universeId };
 
-        const response = await axios.get(url);
+        const response = await axios.get(url, {params});
         const users = response.data;
 
         // Find the current user in the returned user list
@@ -40,10 +48,28 @@ const InfoBar = ({ selectedEvent }) => {
         if (currentUser) {
           const points = currentUser.totalPoints; // Points for event or total points
           const rank = users.findIndex(u => u._id === user._id) + 1; // Calculate rank
+          // Set team name if an event is selected
+          if (selectedEvent) {
+            try {
+              // Find the user's team for the selected event
+              const teamResponse = await axios.get(`${config.backendAPI}/userTeam/${selectedEvent.id}`, {
+                params: { userId: user._id, universeId }
+              });
+              const team = teamResponse.data;
+              setTeamName(team ? team.name : 'No team');
+            } catch (error) {
+              console.error('Error fetching team:', error);
+              setTeamName('No team'); // Fallback if the team cannot be fetched
+            }
+          } else {
+            setTeamName(''); // No event selected, no team to display
+          }
+          
 
           // Update state with the user's rank and points
           setUserRank(rank);
           setUser(prevUser => ({ ...prevUser, balance: points }));
+          setTotalPoints(points);
         }
       } catch (error) {
         console.error('Error fetching user rankings:', error);
@@ -95,10 +121,19 @@ const InfoBar = ({ selectedEvent }) => {
       <div className="section astus-logo-container">
         <img src={logo} alt="Association Logo" className="astuce-logo" />
       </div>
+
       <div className="section user-info">
         <h2>{user.name.charAt(0).toUpperCase() + user.name.slice(1)}</h2>
-        <span>{user.teamName ?? 'No team'}</span> {/* Team name below the username */}
-        <h2>{Math.round(user.balance)} Sh</h2>
+        {selectedEvent ? (
+          <>
+            <span>{teamName}</span> {/* Team name below the username */}
+            <h2>{Math.round(totalPoints)} Sh</h2> {/* Points for the selected event */}
+          </>
+        ) : (
+          <>
+            <h2>{Math.round(totalPoints)} Sh</h2> {/* Total points across all events */}
+          </>
+        )}
       </div>
     </div>
   );

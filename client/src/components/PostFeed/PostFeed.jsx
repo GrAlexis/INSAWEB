@@ -11,7 +11,11 @@ const PostFeed = ({ selectedEvent, searchQuery }) => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get(config.backendAPI + '/posts');
+      const response = await axios.get(`${config.backendAPI}/posts`, {
+        params: {
+          universeId: config.universe  // Send universeId as a query parameter
+        }
+      });
       let filteredPosts = response.data;
 
       // Filter by selected event if event filter is applied
@@ -41,7 +45,7 @@ const PostFeed = ({ selectedEvent, searchQuery }) => {
     } catch (error) {
       console.error('Error fetching posts', error);
     }
-  };
+  };  
 
   useEffect(() => {
     fetchPosts();

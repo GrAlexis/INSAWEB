@@ -124,7 +124,10 @@ const registerUserGlobal = async (req, res) => {
       classYear,
       email,
       balance: 0,
-      lastName
+      lastName,
+      universes: {
+        "64f3c9a9ef437ef982acb1e3": {}
+      }
     });
 
     res.status(201).json({ message: 'User created successfully' });

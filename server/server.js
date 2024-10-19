@@ -136,6 +136,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const heicConvert = require('heic-convert');
 
 const { promisify } = require('util');
+const event = require("./models/event");
 const unlinkAsync = promisify(fs.unlink);
 
 // Set the ffmpeg and ffprobe paths (for video processing)
@@ -262,7 +263,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             thumbnail: isVideo ? thumbnailName : '',
             description: req.body.description,
             teamId: req.body.teamId,
-            isValidated: false
+            isValidated: false,
+            universeId: req.body.universeId
         });
 
         try {
@@ -284,16 +286,20 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 });
 
 
-//get posts/publications route
-
+// get posts/publications route
 app.get('/posts', async (req, res) => {
     try {
-        const posts = await Post.find().sort({ date: -1 });
+        const universeId = req.query.universeId;  // Get universeId from query parameters
+
+        // Fetch posts only from the specified universe
+        const posts = await Post.find({ universeId }).sort({ date: -1 });
+        
         res.status(200).json(posts);
     } catch (error) {
         res.status(500).send(error.message);
     }
 });
+
 
 // Route to get posts by userId and challengeId
 app.get('/posts/byUserAndChallenge', async (req, res) => {
@@ -440,75 +446,153 @@ app.get('/events', async (req, res) => {
 
 app.get('/getUsersTotalPoints', async (req, res) => {
     try {
-      // Fetch all users
-      const users = await User.find();
-  
-      // Calculate total points for each user
-      const usersWithPoints = users.map(user => {
-        const totalPoints = Array.from(user.eventPoints.values()).reduce((acc, points) => acc + points, 0);
-        return {
-          _id: user.id,
-          totalPoints,
-        };
-      });
-  
-      // Sort users by total points descending
-      usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
-  
-      res.json(usersWithPoints);
-      //res.json("ok1");
-    } catch (error) {
-      console.error('Error fetching user rankings:', error);
-      res.status(500).json({ error: 'Error fetching user rankings' });
-    }
-  });
+        const { universeId } = req.query;  // Universe must be specified
 
-  app.get('/getUsersTotalPoints/:eventId', async (req, res) => {
-    try {
-      const { eventId } = req.params;
-      
-      // Fetch all users
-      const users = await User.find();
-  
-      // Calculate points for each user for the specific event
-      const usersWithPoints = users.map(user => {
-        const eventPoints = user.eventPoints.get(eventId) || 0; // Get points for the selected event
-        return {
-          _id: user.id,
-          name: user.name,
-          lastName: user.lastName,
-          totalPoints: eventPoints,
-        };
-      });
-  
-      // Sort users by total points descending
-      usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
-  
-      res.json(usersWithPoints);
+        // Fetch users who are part of the specified universe
+        const users = await User.find({ [`universes.${universeId}`]: { $exists: true } });
+
+        // Calculate total points for each user across all events in the specified universe
+        const usersWithPoints = users.map(user => {
+            const universe = user.universes.get(universeId);  // Get the universe
+            if (!universe || !universe.events) {
+                return { _id: user._id, name: user.name, lastName: user.lastName, totalPoints: 0 };
+            }
+
+            // Sum the points of all events in the universe using Map methods
+            let totalPoints = 0;
+            universe.events.forEach(event => {
+                if (event && event.points) {
+                    totalPoints += event.points;
+                }
+            });
+
+            return {
+                _id: user._id,
+                name: user.name,
+                lastName: user.lastName,
+                totalPoints
+            };
+        });
+
+        // Sort users by total points in descending order
+        usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
+        res.json(usersWithPoints);
     } catch (error) {
-      console.error('Error fetching user rankings:', error);
-      res.status(500).json({ error: 'Error fetching user rankings' });
+        console.error('Error fetching user rankings:', error);
+        res.status(500).json({ error: 'Error fetching user rankings' });
     }
-  });
-  
+});
+
   
 
-// Fetch ranking for a specific event
-app.get('/ranking/:eventId', async (req, res) => {
+app.get('/getUsersTotalPoints/:eventId', async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const { universeId } = req.query;
+
+        // Fetch users who are part of the specified universe
+        const users = await User.find({ [`universes.${universeId}`]: { $exists: true } });
+
+        // Calculate points for each user for the specific event within the universe
+        const usersWithPoints = users.map(user => {
+            const universe = user.universes.get(universeId);  // Get the universe
+            if (!universe || !universe.events) {
+                return { _id: user._id, name: user.name, lastName: user.lastName, totalPoints: 0 };
+            }
+
+            const event = universe.events.get(eventId);  // Get the specific event
+            const eventPoints = event ? event.points : 0; // Get points for the selected event
+
+            return {
+                _id: user._id,
+                name: user.name,
+                lastName: user.lastName,
+                totalPoints: eventPoints
+            };
+        });
+
+        // Sort users by event points in descending order
+        usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
+        res.json(usersWithPoints);
+    } catch (error) {
+        console.error('Error fetching user rankings:', error);
+        res.status(500).json({ error: 'Error fetching user rankings' });
+    }
+});
+
+app.get('/teamRanking/:eventId', async (req, res) => {
     try {
       const { eventId } = req.params;
+      const { universeId } = req.query;
+  
+      // Fetch teams for the event within the specified universe
       const teams = await Team.find({ eventId }).populate('members');
       
       const teamRankings = teams.map(team => {
-        const totalPoints = team.members.reduce((acc, member) => acc + (member.eventPoints.get(eventId) || 0), 0);
-        return { id: team.id, name: team.name, points: totalPoints };
-      }).sort((a, b) => b.points - a.points);
-  
+        // Calculate total points for each team by summing the points of all its members
+        const totalPoints = team.members.reduce((acc, member) => {
+          const universe = member.universes.get(universeId);
+          const event = universe.events.get(eventId);
+          const memberPoints = event?.points || 0;  // Get the points for this member in the specific event and universe
+          
+          return acc + memberPoints;
+        }, 0);
+        
+        return { id: team._id, name: team.name, points: totalPoints };
+      }).sort((a, b) => b.points - a.points); // Sort teams by total points in descending order
+
       res.json(teamRankings);
     } catch (error) {
+      console.error('Error fetching ranking:', error);
       res.status(500).json({ message: 'Error fetching ranking' });
     }
 });
+
+
+//route to fetch the data of one user's team
+app.get('/userTeam/:eventId', async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const { userId, universeId } = req.query;
+
+  
+      // Fetch the user
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Get the universe and event data for the user
+      const universe = user.universes?.get(universeId);
+      if (!universe || !universe.events) {
+        return res.status(404).json({ message: 'Universe or events not found for user' });
+      }
+  
+      // Get the teamId from the event
+      const event = universe.events.get(eventId);
+      console.log("event "+event)
+      console.log("eventid "+eventId)
+
+      if (!event || !event.teamId) {
+        return res.status(404).json({ message: 'Team not found for the selected event' });
+      }
+  
+      const teamId = event.teamId; // Get the teamId
+  
+      // Fetch the team by teamId
+      const team = await Team.findOne({id : teamId});
+      if (!team) {
+        return res.status(404).json({ message: 'Team not found' });
+      }
+  
+      res.json(team); // Return the team object
+    } catch (error) {
+      console.error('Error fetching team:', error);
+      res.status(500).json({ message: 'Error fetching team' });
+    }
+  });
+  
+  
 
 //fetch an event by its name
 app.get('/events/:id', async (req, res) => {
@@ -779,21 +863,51 @@ app.get('/teams/ids', async (req, res) => {
 // Fetch team members for a specific team
 app.get('/teams/:id/members', async (req, res) => {
     try {
-      const team = await Team.findOne({ id: req.params.id }).populate('members');
+        const teamId = req.params.id;
+
+        // Check if teamId is a valid ObjectId
+        let query = {};
+        if (mongoose.isValidObjectId(teamId)) {
+            query._id = teamId;  // If it's a valid ObjectId, search by _id
+        } else {
+            query.id = teamId;   // Otherwise, search by regular id field
+        }
+
+        // Fetch the team and populate the members (users)
+        const team = await Team.findOne(query).populate('members');
   
-      const members = team.members.map(member => ({
-        _id: member._id,
-        teamId: member.teamId,
-        name: member.name,
-        lastName : member.lastName,
-        points: member.eventPoints.get(team.eventId) || 0,
-      })).sort((a, b) => b.points - a.points);
+      if (!team) {
+        console.log("erreur 404")
+        return res.status(404).json({ message: 'Team not found' });
+      }
+  
+      // Get the universeId from the team or from the event (assuming it's known)
+      const universeId = req.query.universeId;  // Make sure the universeId is passed in the query
+      const eventId = String(team.eventId);     // Ensure eventId is a string
+  
+      // Map members with relevant details, including points for the event from user.universes
+      const members = team.members.map(member => {
+        const universe = member.universes?.get(universeId);
+
+        // Ensure the universe and event exist before accessing points
+        const eventPoints = universe.events.get(eventId).points || 0;
+  
+        return {
+          _id: member._id,
+          teamId: member.teamId,
+          name: member.name,
+          lastName: member.lastName,
+          points: eventPoints,
+        };
+      }).sort((a, b) => b.points - a.points);  // Sort members by points in descending order
   
       res.json(members);
     } catch (error) {
+      console.error('Error fetching team members:', error);
       res.status(500).json({ message: 'Error fetching team members' });
     }
-});
+  });
+  
 
 // Route to fetch a team by ID
 app.get('/teams/:id', async (req, res) => {
@@ -808,10 +922,9 @@ app.get('/teams/:id', async (req, res) => {
     }
   });
 
-//route to assign a team to an user
-app.post('/assignTeam', async (req, res) => {
-    const { userId, teamId, eventId, previousTeamId } = req.body;
-
+  //route to assign an user to a team
+  app.post('/assignTeam', async (req, res) => {
+    const { userId, teamId, eventId, universeId, previousTeamId } = req.body;
     try {
         // Find user
         const user = await User.findById(userId);
@@ -827,10 +940,18 @@ app.post('/assignTeam', async (req, res) => {
                 await previousTeam.save();
             }
         }
+        // Get the universe map using `get()`
+        let universe = user.universes.get(universeId);
 
-        // If the new teamId is empty, simply remove the teamId from the user
+        // If the new teamId is empty, remove the team from the user
         if (!teamId) {
-            user.teamId = '';
+            if (universe && universe.events && universe.events.has(eventId)) {
+                const event = universe.events.get(eventId);
+                if (event) {
+                    event.teamId = undefined; // Or use null if preferred
+                    universe.events.set(eventId, event);
+                }
+            }
             await user.save();
             return res.status(200).send('User removed from team successfully');
         }
@@ -842,10 +963,24 @@ app.post('/assignTeam', async (req, res) => {
         }
 
         // Assign user to team
-        user.teamId = teamId;
-        if (!user.eventPoints.has(eventId)) {
-            user.eventPoints.set(eventId, 0); // Initialize points for the event
+        // If the universe does not exist, initialize it
+        if (!universe) {
+            universe = { events: new Map() };
+            user.universes.set(universeId, universe);
         }
+
+        // Get the events map for the universe
+        let event = universe.events.get(eventId);
+
+        // If the event does not exist, initialize it
+        if (!event) {
+            event = {};
+            universe.events.set(eventId, event);
+        }
+
+        // Assign the teamId to the event
+        event.teamId = teamId;
+
         await user.save();
 
         // Add user to team members if not already added
@@ -861,6 +996,7 @@ app.post('/assignTeam', async (req, res) => {
 });
 
 
+
 // Middleware to check if the user is an admin
 const checkAdmin = (req, res, next) => {
     const isAdmin = req.body.isAdmin;
@@ -874,8 +1010,9 @@ const checkAdmin = (req, res, next) => {
 // Route to validate or unvalidate a pending post
 app.post('/admin/validatePost/:id', checkAdmin, async (req, res) => {
     try {
-        const { rewardPoints, eventId } = req.body;
+        const { rewardPoints, eventId, universeId } = req.body;  // Include universeId in the request body
         const post = await Post.findById(req.params.id);
+        
         if (!post) {
             return res.status(404).send('Post not found');
         }
@@ -894,33 +1031,44 @@ app.post('/admin/validatePost/:id', checkAdmin, async (req, res) => {
             const pointsPerMember = rewardPoints / memberCount;
 
             for (const member of team.members) {
-                if (!member.eventPoints.has(eventId)) {
-                    member.eventPoints.set(eventId, 0);
+                const universe = member.universes.get(universeId);
+                if (universe) {
+                    const event = universe.events.get(eventId);
+                    if (!event) {
+                        universe.events.set(eventId, { teamId: post.teamId, points: 0, pinnedChallenges: [] });
+                    }
+
+                    // Add or subtract points based on the validation state
+                    const currentPoints = universe.events.get(eventId).points || 0;
+                    universe.events.get(eventId).points = post.isValidated ? currentPoints + pointsPerMember : currentPoints - pointsPerMember;
+                    await member.save();
                 }
-                // Add or subtract points based on the validation state
-                const currentPoints = member.eventPoints.get(eventId);
-                member.eventPoints.set(eventId, post.isValidated ? currentPoints + pointsPerMember : currentPoints - pointsPerMember);
-                await member.save();
             }
         } else {
             // For non-collective challenges
             const user = await User.findById(post.user);
             if (user) {
-                if (!user.eventPoints.has(eventId)) {
-                    user.eventPoints.set(eventId, 0);
+                const universe = user.universes.get(universeId);
+                if (universe) {
+                    const event = universe.events.get(eventId);
+                    if (!event) {
+                        universe.events.set(eventId, { points: 0, pinnedChallenges: [] });
+                    }
+
+                    // Add or subtract points based on the validation state
+                    const currentPoints = universe.events.get(eventId).points || 0;
+                    universe.events.get(eventId).points = post.isValidated ? currentPoints + rewardPoints : currentPoints - rewardPoints;
+                    await user.save();
                 }
-                // Add or subtract points based on the validation state
-                const currentPoints = user.eventPoints.get(eventId);
-                user.eventPoints.set(eventId, post.isValidated ? currentPoints + rewardPoints : currentPoints - rewardPoints);
-                await user.save();
             }
         }
-
         res.status(200).send('Post validation status updated successfully');
     } catch (error) {
+        console.error('Error validating post:', error);
         res.status(500).send(error.message);
     }
 });
+
 // Route to pin a challenge
 app.post('/pinChallenge', async (req, res) => {
     const { userId, challengeId } = req.body;
