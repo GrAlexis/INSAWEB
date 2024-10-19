@@ -16,6 +16,8 @@ import './App.css';
 import EventPage from './components/Events/EventPage'
 import ForgotPassword from './components/ForgotPassword/ForgotPassword';
 import ResetPassword from './components/ForgotPassword/ResetPassword';
+import HomePage from './components/HomePage/HomePage'
+import ContactPage from './components/ContactPage/ContactPage'
 
 function App() {
 
@@ -53,6 +55,8 @@ function App() {
                 <Route path="/sheesh/:challengeId" element={<UserProvider><Sheesh showNavBar={refreshPath}/></UserProvider>} />
                 <Route path="/register" element={<UserProvider><ProtectedRoute adminOnly={true}><Register showNavBar={refreshPath}/></ProtectedRoute></UserProvider>} />
                 <Route path="/login" element={<Login showNavBar={refreshPath} />} />
+                <Route path="/first" element={<HomePage showNavBar={refreshPath} />} />
+                <Route path="/contact" element={<ContactPage showNavBar={refreshPath} />} />
                 <Route path="/events" element={<UserProvider><EventPage/></UserProvider>} />
                 <Route
                   path="/admin"

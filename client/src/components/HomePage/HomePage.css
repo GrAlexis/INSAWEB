@@ -1,0 +1,130 @@
+/* Conteneur principal */
+.home-container {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* Overlay sombre pour rendre le texte plus lisible */
+.overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.text-content {
+  text-align: center;
+  color: white;
+}
+
+.text-content h1 {
+  font-size: 48px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  color: #ddd;
+}
+
+.highlight {
+  color: #00d08e;
+}
+
+.cta-button {
+  background-color: #00d08e;
+  border: none;
+  color: white;
+  padding: 15px 30px;
+  font-size: 18px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.cta-button:hover {
+  background-color: #009f6b;
+  transform: scale(1.05);
+}
+
+/* Scroll doux */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Section "Qui sommes-nous" */
+.about-section {
+  padding: 50px;
+  text-align: center;
+  background-color: white;
+  width: 100%;
+  margin-top: -5px; /* Ajuste pour éviter l'espace entre sections lors du scroll */
+}
+
+.about-section h2 {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.about-section p {
+  font-size: 18px;
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Parallaxe avec couleur de fond */
+.team{
+  height: 400px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.services-section {
+  padding: 50px;
+  text-align: center;
+  background-color: #f8f8f8;
+  width: 100%;
+}
+
+.services-section h2 {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.services-section p {
+  font-size: 18px;
+}
+
+/*   Team   */
+
+.team-members {
+  display: flex;
+  justify-content: space-around;
+}
+
+.member-card {
+  width: 150px;
+  height: 210px;
+  background-color: #ddd; /* Placeholder for team photo */
+  text-align: center;
+  border-radius: 3px;
+}
+.id{
+  width: 150px;
+  height: 160px;
+  border-radius: 3px;
+}
+
+.member-photo{
+  width: 150px;
+  height: 160px;
+  align-items: center;
+}
