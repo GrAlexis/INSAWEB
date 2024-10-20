@@ -20,39 +20,42 @@ const EventCard = ({ event }) => {
   };
 
   useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        
-        const response = await axios.get(`${config.backendAPI}/events/${event._id}/teams`);
-        console.log("prout")
-        const teamsWithMembersCount = await Promise.all(
-          response.data.map(async (team) => {
-            const membersResponse = await axios.get(`${config.backendAPI}/teams/${team.id}/members`, {
-              params: { universeId: universeId }
-            });            
-            return {
-              ...team,
-              membersCount: membersResponse.data.length,
-            };
-          })
-        );
-        setTeams(teamsWithMembersCount);
-
-        // Access the current team from user.universes[universeId].events[eventId].teamId
-        const universe = user.universes[universeId];
-        if (universe && universe.events[event._id] && universe.events[event._id].teamId) {
-          const currentTeamId = universe.events[event._id].teamId;
-          const currentTeam = teamsWithMembersCount.find((team) => team.id === currentTeamId);
-          setCurrentTeamName(currentTeam ? currentTeam.name : 'No team');
-        } else {
-          setCurrentTeamName('No team');
+    console.log("event.image "+event.image)
+    if (event.teams)
+    {
+      const fetchTeams = async () => {
+        try {
+          
+          const response = await axios.get(`${config.backendAPI}/events/${event._id}/teams`);
+          const teamsWithMembersCount = await Promise.all(
+            response.data.map(async (team) => {
+              const membersResponse = await axios.get(`${config.backendAPI}/teams/${team.id}/members`, {
+                params: { universeId: universeId }
+              });            
+              return {
+                ...team,
+                membersCount: membersResponse.data.length,
+              };
+            })
+          );
+          setTeams(teamsWithMembersCount);
+  
+          // Access the current team from user.universes[universeId].events[eventId].teamId
+          const universe = user.universes[universeId];
+          if (universe && universe.events[event._id] && universe.events[event._id].teamId) {
+            const currentTeamId = universe.events[event._id].teamId;
+            const currentTeam = teamsWithMembersCount.find((team) => team.id === currentTeamId);
+            setCurrentTeamName(currentTeam ? currentTeam.name : 'No team');
+          } else {
+            setCurrentTeamName('No team');
+          }
+        } catch (error) {
+          console.error('Error fetching teams', error);
         }
-      } catch (error) {
-        console.error('Error fetching teams', error);
-      }
-    };
+      };
+      fetchTeams();
+    }
 
-    fetchTeams();
 
     // Calculate the time left until the event date in hours
     const calculateTimeLeft = () => {
@@ -107,11 +110,15 @@ const EventCard = ({ event }) => {
 
   const eventDate = parseDate(event.date);
   const currentDate = new Date();
-  const canChangeTeam = currentDate < eventDate;
+  const canChangeTeam = currentDate < eventDate && (event.teams && event.teams.length>0);
 
   return (
     <div className="event-card">
-      <img src={event.image} alt={event.title} className="event-image" />
+      <img 
+        src={`${config.backendAPI}/file/${event.image}`}  // Dynamically constructing the image URL
+        alt={event.title} 
+        className="event-image" 
+      />
       <div className="event-details">
         <h2>{event.title}</h2>
         <p>{event.date}</p>

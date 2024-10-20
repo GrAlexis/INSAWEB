@@ -138,6 +138,7 @@ const heicConvert = require('heic-convert');
 
 const { promisify } = require('util');
 const event = require("./models/event");
+const universe = require("./models/universe");
 const unlinkAsync = promisify(fs.unlink);
 
 // Set the ffmpeg and ffprobe paths (for video processing)
@@ -1209,7 +1210,82 @@ app.post('/users/join-universe', async (req, res) => {
     }
 });
 
+// Join universe route
+app.post('/users/join-universe', async (req, res) => {
+    const { userId, universeId } = req.body;
 
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        // Check if the user has already joined the universe in `joinedUniverses`
+        if (!user.joinedUniverses.includes(universeId)) {
+            // Add universeId to `joinedUniverses` if not already present
+            user.joinedUniverses.push(universeId);
+        }
+
+        // Initialize `user.universes[universeId]` if it doesn't exist
+        let universe = user.universes.get(universeId);
+        if (!universe) {
+            universe = {
+                events: new Map()
+            };
+            user.universes.set(universeId, universe);
+        }
+
+        // Save the updated user document
+        await user.save();
+        res.status(200).send('Successfully joined the universe and initialized universe data');
+    } catch (error) {
+        res.status(500).send(error.message);  // Send error message if something goes wrong
+    }
+});
+
+// Initialize universe and event data for the user
+app.post('/users/initialize-universe', async (req, res) => {
+    const { userId, universeId, eventId } = req.body;
+    console.log("userId "+userId)
+    console.log("userId "+universeId)
+    console.log("eventId "+eventId)
+
+    try {
+        const user = await User.findById(userId);
+
+        // Check if the universe exists in user.universes Map
+        let universe = user.universes.get(universeId);
+
+        if (!universe) {
+            // If universe doesn't exist, initialize it with the event
+            universe = {
+                events: new Map([
+                    [eventId.toString(), {
+                        points: 0,
+                        pinnedChallenges: []
+                    }]
+                ])
+            };
+            user.universes.set(universeId, universe);
+        } else if (!universe.events.get(eventId.toString())) {
+            // If the universe exists but the event doesn't, initialize the event
+            universe.events.set(eventId.toString(), {
+                points: 0,
+                pinnedChallenges: []
+            });
+            user.universes.set(universeId, universe); // Update the universe with the new event
+        }
+
+        // Save the updated user data
+        await user.save();
+        res.status(200).send('Universe and event initialized for the user.');
+    } catch (error) {
+        console.error('Error initializing universe or event:', error);
+        res.status(500).send(error.message);
+    }
+});
+  
 
 app.get("/", (req,res) =>{
     res.send("Hello from Backend Server !");

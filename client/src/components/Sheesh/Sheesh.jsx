@@ -48,7 +48,7 @@ const Sheesh = ({ showNavBar }) => {
         });
         const eventsWithImages = eventResponse.data.map(event => ({
           ...event,
-          image: getImageByKey(event.image)
+          image: event.image
         }));
         setEvents(eventsWithImages);
       } catch (error) {
@@ -152,6 +152,12 @@ const Sheesh = ({ showNavBar }) => {
   };
 
   const getEventChallenges = (eventChallenges) => {
+      // Check if eventChallenges is defined and not an empty string
+      if (!eventChallenges || typeof eventChallenges !== 'string') {
+        console.warn('No valid eventChallenges provided or challenges is undefined');
+        return [];
+      }
+
     const challengeIds = eventChallenges.split(',').map(id => id.trim());
     return filteredChallenges.filter(challenge => challengeIds.includes(challenge.id) && challenge.isAccepted == true); 
   };

@@ -166,6 +166,13 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
     e.preventDefault();
     setIsProcessing(true)
     try {
+      // Initialize the universe and event if necessary
+    await axios.post(`${config.backendAPI}/users/initialize-universe`, {
+      userId: user._id,
+      universeId: selectedUniverse._id,
+      eventId: challenge.eventId,
+    });
+    
       const eventResponse = await axios.get(config.backendAPI+`/events/${challenge.eventId}`);
       const event = eventResponse.data;
 
