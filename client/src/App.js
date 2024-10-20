@@ -19,6 +19,7 @@ import ResetPassword from './components/ForgotPassword/ResetPassword';
 import HomePage from './components/HomePage/HomePage'
 import ContactPage from './components/ContactPage/ContactPage'
 
+
 function App() {
 
   const [path, setPath] = useState(window.location.pathname);
@@ -58,6 +59,7 @@ function App() {
                 <Route path="/first" element={<HomePage showNavBar={refreshPath} />} />
                 <Route path="/contact" element={<ContactPage showNavBar={refreshPath} />} />
                 <Route path="/events" element={<UserProvider><EventPage/></UserProvider>} />
+
                 <Route
                   path="/admin"
                   element={<UserProvider>
