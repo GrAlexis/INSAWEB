@@ -252,12 +252,12 @@ padding: 10px;
 }
 
 .validate-button {
-    background-color: rgb(6, 155, 16);
+    background-color: #7AA95C;
     border: 1px solid rgba(130, 130, 130);
     border-radius: 20px;
-    padding: 10px 20px;
+    padding: 10px;
+    margin-bottom: 10px;
     font-size: 1em;
-    cursor: pointer;
     font-family: 'Lemon', sans-serif; /* Lemon font */
     color: rgb(255, 255, 255);
     font-weight: bold;
@@ -301,15 +301,16 @@ padding: 10px;
     font-weight: bold;
 }
 .delete-wrapper {
-    position: relative; /* Make the wrapper the reference for absolute positioning */
+    position: absolute;
+    top: 20px;
+    left: 20px;
   }
 
   .confirm-delete-popup {
     position: absolute;
-    top: -120%; /* Position the popup above the delete button */
+    top: 40px; /* Position the popup above the delete button */
 
-    right: 0; /* Align the popup to the right of the delete button */
-    padding: 10px;
+    left: 70px ; /* Align the popup to the right of the delete button */
     border-radius: 5px;
     z-index: 1000;
     display: flex;
@@ -320,7 +321,7 @@ padding: 10px;
   
 .confirm-delete-content {
 background: white;
-padding: 20px;
+padding: 40px;
 border-radius: 8px;
 text-align: center;
 }
@@ -340,7 +341,7 @@ color: white;
 }
 
 .cancel-delete-button {
-background-color: #5bc0de;
+background-color: #72b1ab;
 color: white;
 }
   /*   Modal  */
@@ -531,22 +532,19 @@ color: white;
 
 
 /* Bouton pour zoomer */
-.zoom-button {
+.zoom-logo {
   position: absolute;
-  bottom: 10px;
+  top: 210px;
   right: 10px;
-  background-color: rgba(0, 0, 0, 0.5);
   color: white;
-  border: none;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
   font-size: 18px;
   opacity: 0.7;
-  cursor: pointer;
+  z-index: 500;
   transition: opacity 0.3s ease;
 }
 
-.zoom-button:hover {
+.zoom-button:focus {
   opacity: 1; /* Opacité complète au survol */
 }

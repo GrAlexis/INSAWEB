@@ -14,6 +14,8 @@ import { useUser } from '../../hooks/commonHooks/UserContext';
 import CommentModal from '../CommentModal/CommentModal'; // Modal for viewing all comments
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import LazyLoad from 'react-lazyload';
+import zoom from '../../assets/buttons/zoom/chercher.svg';
+
 
 
 const PostElement = ({ post, onDelete, fetchPosts }) => {
@@ -322,6 +324,24 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           {showOverlay && (
             <div className={`overlay ${transitionOverlay ? 'show' : ''}`} onClick={handleCloseOverlay}>
               <div className="overlay-content" onClick={e => e.stopPropagation()}>
+
+              {(user._id === postUser._id || (user.isAdmin && !post.isValidated)) && (
+                <div className="delete-wrapper">
+                  <button className="delete-button" onClick={handleDeleteClick}>
+                    <span className="delete-cross" >✕</span>
+                  </button>
+
+                  {showConfirmDelete && (
+                    <div className="confirm-delete-popup">
+                      <div className="confirm-delete-content">
+                        <p>Es tu sur de vouloir supprimer ce post ?</p>
+                        <button className="confirm-delete-button" onClick={confirmDelete}>Oui</button>
+                        <button className="cancel-delete-button" onClick={cancelDelete}>Non</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
                 <div className="points">
                 <span className="points-text">{challenge.reward}</span>
                 <img src={getRewardIcon(challenge.reward)} alt="Points Icon" className="points-icon" />
@@ -330,6 +350,12 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
               </div>
             </div>
           )}
+            <img 
+            src={zoom} 
+            alt="Zoom Logo" 
+            className="zoom-logo"
+            onClick={() => handleImageClick(`${config.backendAPI}/file/${post.picture}`)}
+            />
           
           </>
         )}
@@ -454,26 +480,9 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
       <div className="post-footer">
     {/*  <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>*/}
-        {(user._id === postUser._id || (user.isAdmin && !post.isValidated)) && (
-          <div className="delete-wrapper">
-            <button className="delete-button" onClick={handleDeleteClick}>
-              <span className="delete-cross">✕</span>
-            </button>
-
-            {showConfirmDelete && (
-              <div className="confirm-delete-popup">
-                <div className="confirm-delete-content">
-                  <p>Es tu sur de vouloir supprimer ce post ?</p>
-                  <button className="confirm-delete-button" onClick={confirmDelete}>Oui</button>
-                  <button className="cancel-delete-button" onClick={cancelDelete}>Non</button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
         {user.isAdmin && (
           <button className="validate-button" onClick={handleValidateClick}>
-            {post.isValidated ? 'Invalider' : 'Valider'}
+            {post.isValidated ? 'En attente': 'Validé ?'}
           </button>
         )}
       </div>
