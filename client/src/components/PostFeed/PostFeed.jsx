@@ -23,7 +23,7 @@ const PostFeed = ({ selectedEvent, searchQuery }) => {
 
       // Filter by selected event if event filter is applied
       if (selectedEvent) {
-        filteredPosts = filteredPosts.filter(post => post.challengeId && post.eventId === selectedEvent.id);
+        filteredPosts = filteredPosts.filter(post => post.challengeId && post.eventId === selectedEvent._id);
       }
 
       // Filter by search query

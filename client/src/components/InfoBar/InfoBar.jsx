@@ -13,12 +13,12 @@ import rankThreeIcon from '../../assets/icons/ranks/3_v1.svg';
 
 const InfoBar = ({ selectedEvent }) => {
   const { user, setUser, updateUserTeamName } = useUser();
-  const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
+  const { selectedUniverse, saveUniverse } = useUniverse();
   const [userRank, setUserRank] = useState(null);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
   const [teamName, setTeamName] = useState('');
   const [totalPoints, setTotalPoints] = useState(0);
-  const [dropdownVisible, setDropdownVisible] = useState(false); // State to toggle dropdown
+  const [isModalVisible, setModalVisible] = useState(false); // State to toggle modal visibility
   const [universes, setUniverses] = useState([]); // State to store fetched universes
 
   const navigate = useNavigate(); // Initialize useNavigate hook
@@ -44,22 +44,20 @@ const InfoBar = ({ selectedEvent }) => {
     }
   }, [user?.joinedUniverses]);
 
-const handleUniverseChange = (universeId) => {
-  // Find the whole universe object in the fetched universes array using its _id
-  const chosenUniverse = universes.find(universe => universe._id === universeId);
-  
-  if (chosenUniverse) {
-    saveUniverse(chosenUniverse); // Save the whole universe object to context and localStorage
-  } else {
-    console.error('Selected universe not found');
-  }
-};
+  const handleUniverseChange = (universeId) => {
+    const chosenUniverse = universes.find(universe => universe._id === universeId);
+    if (chosenUniverse) {
+      saveUniverse(chosenUniverse); // Save the whole universe object to context and localStorage
+      setModalVisible(false); // Close the modal after selection
+    } else {
+      console.error('Selected universe not found');
+    }
+  };
 
-
-    // Toggle dropdown visibility on logo click
-    const toggleDropdown = () => {
-      setDropdownVisible(prevVisible => !prevVisible);
-    };
+  // Toggle modal visibility on logo click
+  const toggleModal = () => {
+    setModalVisible(prevVisible => !prevVisible);
+  };
 
   const handleNavigateToUniverseSelection = () => {
     navigate('/select-universe'); // Navigate to the UniverseSelectionPage
@@ -71,49 +69,39 @@ const handleUniverseChange = (universeId) => {
     }
   }, [user?.teamId, updateUserTeamName]);
 
-
+  // Fetch rankings
   useEffect(() => {
     const fetchRankings = async () => {
       try {
         setLoading(true);
         let url, params;
 
-        // Determine the correct URL and params based on whether an event is selected
         if (selectedEvent) {
-          url = `${config.backendAPI}/getUsersTotalPoints/${selectedEvent._id}`; // Event-specific points
+          url = `${config.backendAPI}/getUsersTotalPoints/${selectedEvent._id}`;
         } else {
-          url = `${config.backendAPI}/getUsersTotalPoints`; // Global points across all events
+          url = `${config.backendAPI}/getUsersTotalPoints`;
         }
         params = { universeId: selectedUniverse._id };
 
-        const response = await axios.get(url, {params});
+        const response = await axios.get(url, { params });
         const users = response.data;
 
-        // Find the current user in the returned user list
         const currentUser = users.find(u => u._id === user?._id);
 
         if (currentUser) {
-          const points = currentUser.totalPoints; // Points for event or total points
-          const rank = users.findIndex(u => u._id === user._id) + 1; // Calculate rank
-          // Set team name if an event is selected
-          if (selectedEvent) {
-            try {
-              // Find the user's team for the selected event
-              const teamResponse = await axios.get(`${config.backendAPI}/userTeam/${selectedEvent._id}`, {
-                params: { userId: user._id, universeId: selectedUniverse._id }
-              });
-              const team = teamResponse.data;
-              setTeamName(team ? team.name : 'No team');
-            } catch (error) {
-              console.error('Error fetching team:', error);
-              setTeamName('No team'); // Fallback if the team cannot be fetched
-            }
-          } else {
-            setTeamName(''); // No event selected, no team to display
-          }
+          const points = currentUser.totalPoints;
+          const rank = users.findIndex(u => u._id === user._id) + 1;
           
+          if (selectedEvent) {
+            const teamResponse = await axios.get(`${config.backendAPI}/userTeam/${selectedEvent._id}`, {
+              params: { userId: user._id, universeId: selectedUniverse._id }
+            });
+            const team = teamResponse.data;
+            setTeamName(team ? team.name : 'No team');
+          } else {
+            setTeamName('');
+          }
 
-          // Update state with the user's rank and points
           setUserRank(rank);
           setUser(prevUser => ({ ...prevUser, balance: points }));
           setTotalPoints(points);
@@ -128,7 +116,7 @@ const handleUniverseChange = (universeId) => {
     if (user?._id) {
       fetchRankings();
     }
-  }, [user?._id, setUser, selectedEvent,selectedUniverse]);
+  }, [user?._id, setUser, selectedEvent, selectedUniverse]);
 
   if (loading) {
     return <div>Loading...</div>; // Show loading state
@@ -165,10 +153,15 @@ const handleUniverseChange = (universeId) => {
         </div>
       </div>
 
-      <div className="section universe-logo-container" onClick={toggleDropdown}>
+      <div className="section universe-logo-container" onClick={toggleModal}>
         <img src={logo} alt="Association Logo" className="universe-logo" />
-        {dropdownVisible && (
-          <div className="dropdown-menu">
+      </div>
+
+      {/* Modal for universe selection */}
+      {isModalVisible && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Select Universe</h2>
             <select
               value={selectedUniverse?._id || ''}
               onChange={(e) => handleUniverseChange(e.target.value)}
@@ -180,25 +173,23 @@ const handleUniverseChange = (universeId) => {
               ))}
             </select>
 
-            {/* Option to navigate to UniverseSelectionPage */}
             <button onClick={handleNavigateToUniverseSelection}>
-              Select Universe
+              Go to Universe Selection Page
             </button>
+            <button onClick={toggleModal}>Close</button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="section user-info">
         <h2>{user.name.charAt(0).toUpperCase() + user.name.slice(1)}</h2>
         {selectedEvent ? (
           <>
-            <span>{teamName}</span> {/* Team name below the username */}
-            <h2>{Math.round(totalPoints)} Sh</h2> {/* Points for the selected event */}
+            <span>{teamName}</span>
+            <h2>{Math.round(totalPoints)} Sh</h2>
           </>
         ) : (
-          <>
-            <h2>{Math.round(totalPoints)} Sh</h2> {/* Total points across all events */}
-          </>
+          <h2>{Math.round(totalPoints)} Sh</h2>
         )}
       </div>
     </div>
