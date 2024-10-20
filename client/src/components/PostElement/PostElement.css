@@ -528,3 +528,25 @@ color: white;
   opacity: 1; /* Fully visible */
   transform: translateY(0) scale(1); /* Slide down to original position and full size */
 }
+
+
+/* Bouton pour zoomer */
+.zoom-button {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 18px;
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.zoom-button:hover {
+  opacity: 1; /* Opacité complète au survol */
+}

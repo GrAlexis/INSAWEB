@@ -330,6 +330,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
               </div>
             </div>
           )}
+          
           </>
         )}
       </div>
