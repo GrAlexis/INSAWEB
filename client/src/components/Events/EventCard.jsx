@@ -23,8 +23,8 @@ const EventCard = ({ event }) => {
     const fetchTeams = async () => {
       try {
         
-        const response = await axios.get(`${config.backendAPI}/events/${event.id}/teams`);
-
+        const response = await axios.get(`${config.backendAPI}/events/${event._id}/teams`);
+        console.log("prout")
         const teamsWithMembersCount = await Promise.all(
           response.data.map(async (team) => {
             const membersResponse = await axios.get(`${config.backendAPI}/teams/${team.id}/members`, {
@@ -40,8 +40,8 @@ const EventCard = ({ event }) => {
 
         // Access the current team from user.universes[universeId].events[eventId].teamId
         const universe = user.universes[universeId];
-        if (universe && universe.events[event.id] && universe.events[event.id].teamId) {
-          const currentTeamId = universe.events[event.id].teamId;
+        if (universe && universe.events[event._id] && universe.events[event._id].teamId) {
+          const currentTeamId = universe.events[event._id].teamId;
           const currentTeam = teamsWithMembersCount.find((team) => team.id === currentTeamId);
           setCurrentTeamName(currentTeam ? currentTeam.name : 'No team');
         } else {
@@ -64,24 +64,24 @@ const EventCard = ({ event }) => {
     };
 
     calculateTimeLeft();
-  }, [event.id, user, event.date, isPopupOpen]);
+  }, [event._id, user, event.date, isPopupOpen]);
 
   const handleJoinTeam = async (teamId) => {
     const universe = user.universes[universeId];
-    const previousTeamId = universe?.events[event.id]?.teamId || '';
+    const previousTeamId = universe?.events[event._id]?.teamId || '';
 
     try {
       const response = await axios.post(`${config.backendAPI}/assignTeam`, {
         userId: user._id,
         teamId: teamId,
-        eventId: event.id,
+        eventId: event._id,
         universeId,
         previousTeamId,
       });
 
       // Update the user's team in state
       const updatedUser = { ...user };
-      updatedUser.universes[universeId].events[event.id].teamId = teamId;
+      updatedUser.universes[universeId].events[event._id].teamId = teamId;
       setUser(updatedUser);
 
       // Refresh the teams and currentTeamName after joining the team
@@ -121,7 +121,7 @@ const EventCard = ({ event }) => {
 
         {canChangeTeam && (
           <button className="sheesh-button" onClick={() => setIsPopupOpen(true)}>
-            {user.universes[universeId].events[event.id].teamId ? 'Changer d\'equipe' : 'Rejoins une equipe!'}
+            {user.universes[universeId].events[event._id].teamId ? 'Changer d\'equipe' : 'Rejoins une equipe!'}
           </button>
         )}
       </div>

@@ -5,15 +5,18 @@ import axios from 'axios';
 import PostElement from '../PostElement/PostElement';
 import './PostFeed.css';
 import LazyLoad from 'react-lazyload';
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 
 const PostFeed = ({ selectedEvent, searchQuery }) => {
   const [posts, setPosts] = useState([]);
+
+  const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
 
   const fetchPosts = async () => {
     try {
       const response = await axios.get(`${config.backendAPI}/posts`, {
         params: {
-          universeId: config.universe  // Send universeId as a query parameter
+          universeId: selectedUniverse._id  // Send universeId as a query parameter
         }
       });
       let filteredPosts = response.data;
@@ -49,11 +52,14 @@ const PostFeed = ({ selectedEvent, searchQuery }) => {
 
   useEffect(() => {
     fetchPosts();
-  }, [selectedEvent, searchQuery]); // Refetch posts when searchQuery or selectedEvent changes
+  }, [selectedEvent, searchQuery,selectedUniverse]); // Refetch posts when searchQuery or selectedEvent changes
 
   const handleDelete = (postId) => {
     setPosts(posts.filter(post => post._id !== postId));
   };
+  if (!selectedUniverse) {
+    return <p>No universe selected</p>
+  }
 
   return (
     <div className="postfeed">

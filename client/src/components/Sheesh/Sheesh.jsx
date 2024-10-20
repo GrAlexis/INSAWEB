@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { getImageByKey } from '../../utils/imageMapper';
 import { useUser } from '../../hooks/commonHooks/UserContext';
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 import config from '../../config';
 import EventCard from '../Events/EventCard';
 import ChallengeCard from './ChallengeCard';
@@ -12,6 +13,7 @@ import './Sheesh.css';
 
 const Sheesh = ({ showNavBar }) => {
   const { challengeId } = useParams();
+  const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
   const { user, setUser } = useUser();
   const [events, setEvents] = useState([]);
   const [challenges, setChallenges] = useState([]);
@@ -41,7 +43,9 @@ const Sheesh = ({ showNavBar }) => {
 
     const fetchEvents = async () => {
       try {
-        const eventResponse = await axios.get(config.backendAPI + '/events');
+        const eventResponse = await axios.get(`${config.backendAPI}/events`, {
+          params: { universeId: selectedUniverse._id }
+        });
         const eventsWithImages = eventResponse.data.map(event => ({
           ...event,
           image: getImageByKey(event.image)
@@ -69,7 +73,8 @@ const Sheesh = ({ showNavBar }) => {
     const calculatePinnedChallenges = () => {
       if (user && challenges.length > 0) {
         const userPinnedChallenges = challenges.filter(challenge =>
-          user.pinnedChallenges.includes(challenge.id)
+          user.pinnedChallenges.includes(challenge.id) &&
+          selectedUniverse.events.includes(challenge.eventId)  // Ensure the challenge's eventId belongs to the selectedUniverse
         );
         setPinnedChallenges(userPinnedChallenges);
       }
@@ -184,16 +189,16 @@ const Sheesh = ({ showNavBar }) => {
 
         {/* Display other challenges under their respective events */}
         {events.map(event => (
-          <div key={event.id} className="event-section">
+          <div key={event._id} className="event-section">
             <EventCard event={event} />
 
             {/* Suggest Challenge Button */}
-            <button className='sheesh-button' onClick={() => toggleForm(event.id)}>
-              {openEventId === event.id ? 'Annuler' : 'Proposer un Sheesh'}
+            <button className='sheesh-button' onClick={() => toggleForm(event._id)}>
+              {openEventId === event._id ? 'Annuler' : 'Proposer un Sheesh'}
             </button>
 
             {/* Form for Suggesting a New Challenge (Inline Form) */}
-            {openEventId === event.id && (
+            {openEventId === event._id && (
               <form onSubmit={handleSubmit} className="suggest-challenge-form">
                 <label>Défi :</label>
                 <input

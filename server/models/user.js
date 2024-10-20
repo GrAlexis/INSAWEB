@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema({
         }), 
         default: {}
     },
+    joinedUniverses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Universe' }],
     isAdmin: { type: Boolean, default: false },
     pinnedChallenges: [{ type: String, default: [] }],
     secretQuestion: { type: String, default: '' },

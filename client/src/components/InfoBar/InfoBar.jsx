@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import config from '../../config';
 import { useUser } from '../../hooks/commonHooks/UserContext';
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext'; // Import UniverseContext
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 import axios from 'axios';
 import './InfoBar.css';
 
@@ -11,12 +13,57 @@ import rankThreeIcon from '../../assets/icons/ranks/3_v1.svg';
 
 const InfoBar = ({ selectedEvent }) => {
   const { user, setUser, updateUserTeamName } = useUser();
+  const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
   const [userRank, setUserRank] = useState(null);
   const [loading, setLoading] = useState(true); // Add loading state
   const [teamName, setTeamName] = useState('');
   const [totalPoints, setTotalPoints] = useState(0);
+  const [dropdownVisible, setDropdownVisible] = useState(false); // State to toggle dropdown
+  const [universes, setUniverses] = useState([]); // State to store fetched universes
 
-  const universeId = config.universe
+  const navigate = useNavigate(); // Initialize useNavigate hook
+
+  // Fetch each universe by its ID from the backend
+  const fetchJoinedUniverses = async () => {
+    try {
+      const fetchedUniverses = await Promise.all(
+        user.joinedUniverses.map(async (universeId) => {
+          const response = await axios.get(`${config.backendAPI}/universes/${universeId}`);
+          return response.data;
+        })
+      );
+      setUniverses(fetchedUniverses); // Set the fetched universes into state
+    } catch (error) {
+      console.error('Error fetching universes:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.joinedUniverses?.length) {
+      fetchJoinedUniverses(); // Fetch the universes if user has joined some
+    }
+  }, [user?.joinedUniverses]);
+
+const handleUniverseChange = (universeId) => {
+  // Find the whole universe object in the fetched universes array using its _id
+  const chosenUniverse = universes.find(universe => universe._id === universeId);
+  
+  if (chosenUniverse) {
+    saveUniverse(chosenUniverse); // Save the whole universe object to context and localStorage
+  } else {
+    console.error('Selected universe not found');
+  }
+};
+
+
+    // Toggle dropdown visibility on logo click
+    const toggleDropdown = () => {
+      setDropdownVisible(prevVisible => !prevVisible);
+    };
+
+  const handleNavigateToUniverseSelection = () => {
+    navigate('/select-universe'); // Navigate to the UniverseSelectionPage
+  };
 
   useEffect(() => {
     if (user && user.universes) {
@@ -33,11 +80,11 @@ const InfoBar = ({ selectedEvent }) => {
 
         // Determine the correct URL and params based on whether an event is selected
         if (selectedEvent) {
-          url = `${config.backendAPI}/getUsersTotalPoints/${selectedEvent.id}`; // Event-specific points
+          url = `${config.backendAPI}/getUsersTotalPoints/${selectedEvent._id}`; // Event-specific points
         } else {
           url = `${config.backendAPI}/getUsersTotalPoints`; // Global points across all events
         }
-        params = { universeId };
+        params = { universeId: selectedUniverse._id };
 
         const response = await axios.get(url, {params});
         const users = response.data;
@@ -52,8 +99,8 @@ const InfoBar = ({ selectedEvent }) => {
           if (selectedEvent) {
             try {
               // Find the user's team for the selected event
-              const teamResponse = await axios.get(`${config.backendAPI}/userTeam/${selectedEvent.id}`, {
-                params: { userId: user._id, universeId }
+              const teamResponse = await axios.get(`${config.backendAPI}/userTeam/${selectedEvent._id}`, {
+                params: { userId: user._id, universeId: selectedUniverse._id }
               });
               const team = teamResponse.data;
               setTeamName(team ? team.name : 'No team');
@@ -81,7 +128,7 @@ const InfoBar = ({ selectedEvent }) => {
     if (user?._id) {
       fetchRankings();
     }
-  }, [user?._id, setUser, selectedEvent]);
+  }, [user?._id, setUser, selectedEvent,selectedUniverse]);
 
   if (loading) {
     return <div>Loading...</div>; // Show loading state
@@ -118,8 +165,27 @@ const InfoBar = ({ selectedEvent }) => {
         </div>
       </div>
 
-      <div className="section astus-logo-container">
-        <img src={logo} alt="Association Logo" className="astuce-logo" />
+      <div className="section universe-logo-container" onClick={toggleDropdown}>
+        <img src={logo} alt="Association Logo" className="universe-logo" />
+        {dropdownVisible && (
+          <div className="dropdown-menu">
+            <select
+              value={selectedUniverse?._id || ''}
+              onChange={(e) => handleUniverseChange(e.target.value)}
+            >
+              {universes.map(universe => (
+                <option key={universe._id} value={universe._id}>
+                  {universe.name}
+                </option>
+              ))}
+            </select>
+
+            {/* Option to navigate to UniverseSelectionPage */}
+            <button onClick={handleNavigateToUniverseSelection}>
+              Select Universe
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="section user-info">

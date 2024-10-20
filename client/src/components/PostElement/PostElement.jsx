@@ -38,8 +38,6 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const universeId = config.universe
 
 
-
-
   const navigate = useNavigate();
 
   // Fetch comments when the post is loaded

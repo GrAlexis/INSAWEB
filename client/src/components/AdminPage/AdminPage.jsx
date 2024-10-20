@@ -4,6 +4,7 @@ import axios from 'axios';
 import EventAdmin from '../EventAdmin/EventAdmin';
 import './AdminPage.css';
 import { Link, useNavigate } from 'react-router-dom';
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';  // Assuming UniverseContext is available
 
 
 
@@ -12,6 +13,7 @@ const AdminPage = ({ showNavBar }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const navigate = useNavigate();
 
+  const { selectedUniverse } = useUniverse();  // Get selected universe from the context
 
   useEffect(() => {
 
@@ -20,7 +22,9 @@ const AdminPage = ({ showNavBar }) => {
     //this is to ensure navbar mounts when refreshing
     showNavBar()
     // Fetch events when the component mounts
-    axios.get(config.backendAPI+'/events')
+    axios.get(`${config.backendAPI}/events`, {
+      params: { universeId: selectedUniverse._id }  // Include universeId in the query params
+    })
       .then(response => setEvents(response.data))
       .catch(error => console.error('Error fetching events:', error));
   }, []);
@@ -28,10 +32,10 @@ const AdminPage = ({ showNavBar }) => {
   return (
     <div className="admin-page">
       <div className="admin-topbar">
-        <select onChange={(e) => setSelectedEvent(events.find(event => event.id === e.target.value))}>
+        <select onChange={(e) => setSelectedEvent(events.find(event => event._id === e.target.value))}>
           <option value="">Select Event</option>
           {events.map(event => (
-            <option key={event.id} value={event.id}>{event.title}</option>
+            <option key={event._id} value={event._id}>{event.title}</option>
           ))}
         </select>
       </div>

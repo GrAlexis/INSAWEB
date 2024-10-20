@@ -26,9 +26,9 @@ const EventAdmin = ({ event }) => {
       </div>
       <div className="admin-content">
         {view === 'challenges' ? (
-          <ManageChallenges eventId={event.id} />
+          <ManageChallenges eventId={event._id} />
         ) : (
-          <ManageTeams eventId={event.id} />
+          <ManageTeams eventId={event._id} />
         )}
       </div>
     </div>

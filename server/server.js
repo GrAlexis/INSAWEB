@@ -14,6 +14,7 @@ const Challenge = require('./models/challenge');
 const Event = require('./models/event');
 const User = require('./models/user');
 const Team = require('./models/team');
+const Universe = require('./models/universe')
 
 const userRoutes = require("./routes/user.routes")
 const teamRoutes = require('./routes/team.routes')
@@ -170,6 +171,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     } else if (/\.(mp4|mov|avi|wmv|flv|mkv)$/i.test(req.file.originalname)) {
         isVideo = true;
         try {
+            console.log("size video reçue "+req.file.size)
             fileName += '.mp4';
             const videoPath = path.join(__dirname, 'uploads', fileName);
             const compressedVideoPath = path.join(__dirname, 'uploads', `compressed_${fileName}`);
@@ -437,7 +439,16 @@ app.get('/file/:filename', async (req, res) => {
 // Event routes
 app.get('/events', async (req, res) => {
     try {
-        const events = await Event.find();
+        const { universeId } = req.query; // Get universe _id from the query parameters
+
+        // Fetch the universe by ID to get the list of event IDs
+        const universe = await Universe.findById(universeId);
+        if (!universe) {
+            return res.status(404).json({ message: 'Universe not found' });
+        }
+
+        // Fetch the full event objects using the event IDs stored in universe.events
+        const events = await Event.find({ _id: { $in: universe.events } });  // Fetch events with those IDs
         res.status(200).json(events);
     } catch (error) {
         res.status(500).send(error.message);
@@ -570,8 +581,6 @@ app.get('/userTeam/:eventId', async (req, res) => {
   
       // Get the teamId from the event
       const event = universe.events.get(eventId);
-      console.log("event "+event)
-      console.log("eventid "+eventId)
 
       if (!event || !event.teamId) {
         return res.status(404).json({ message: 'Team not found for the selected event' });
@@ -597,7 +606,7 @@ app.get('/userTeam/:eventId', async (req, res) => {
 //fetch an event by its name
 app.get('/events/:id', async (req, res) => {
     try {
-        const event = await Event.findOne({ id: req.params.id });
+        const event = await Event.findOne({ _id: req.params.id });
         if (!event) {
             return res.status(404).send('Event not found');
         }
@@ -657,7 +666,7 @@ app.post('/challenges', async (req, res) => {
         await newChallenge.save();
 
         // Update the event's challenges list
-        const event = await Event.findOne({ id: eventId });
+        const event = await Event.findOne({ _id: eventId });
         if (event) {
             event.challenges = event.challenges ? event.challenges + `,${id}` : `${id}`;
             await event.save();
@@ -1156,6 +1165,50 @@ app.post('/posts/:id/unlike', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+
+// Get universes route
+app.get('/universes', async (req, res) => {
+    try {
+        // Fetch all universes from the database
+        const universes = await Universe.find({});  // Fetch all universes
+        res.status(200).json(universes);  // Send the universes in the response
+    } catch (error) {
+        res.status(500).send(error.message);  // Send error message if something goes wrong
+    }
+});
+
+// Get a single universe by its ID
+app.get('/universes/:universeId', async (req, res) => {
+    try {
+        const universeId = req.params.universeId;  // Get universeId from URL params
+        const universe = await Universe.findById(universeId);  // Find the universe by ID
+
+        if (!universe) {
+            return res.status(404).send('Universe not found');
+        }
+
+        res.status(200).json(universe);  // Send the universe data in the response
+    } catch (error) {
+        res.status(500).send(error.message);  // Send error message if something goes wrong
+    }
+});
+
+// Join universe route
+app.post('/users/join-universe', async (req, res) => {
+    try {
+        const { userId, universeId } = req.body;  // Get userId and universeId from the request body
+
+        // Add the universeId to the user's joinedUniverses array if it's not already there
+        await User.findByIdAndUpdate(userId, {
+            $addToSet: { joinedUniverses: universeId }  // Use $addToSet to prevent duplicates
+        });
+
+        res.status(200).send('Successfully joined the universe');
+    } catch (error) {
+        res.status(500).send(error.message);  // Send error message if something goes wrong
+    }
+});
+
 
 
 app.get("/", (req,res) =>{
