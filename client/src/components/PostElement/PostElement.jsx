@@ -41,6 +41,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const [zoomScale, setZoomScale] = useState(1); 
   const [showOverlay, setShowOverlay] = useState(false);
   const [transitionOverlay, setTransitionOverlay] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false); // État pour gérer l'affichage
 
   const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
 
@@ -285,6 +286,17 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
       setShowOverlay(false); // Then hide the overlay after the transition
     }, 500); // Delay to match the transition duration (500ms)
   };
+
+   // Fonction pour basculer entre l'affichage tronqué et complet
+   const toggleDescription = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  // Tronquer la description à 40 caractères si non expansé
+  const truncatedDescription = post.description.length > 40 && !isExpanded
+    ? `${post.description.substring(0, 40)}...`
+    : post.description;
+    
   
 
   if (!challenge || !event || !postUser || !user) {
@@ -321,6 +333,14 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
             className="post-image"
             onClick={handleOverlayClick}
           />
+
+          <img 
+            src={zoom} 
+            alt="Zoom Logo" 
+            className="zoom-logo"
+            onClick={() => handleImageClick(`${config.backendAPI}/file/${post.picture}`)}
+            />
+
           {showOverlay && (
             <div className={`overlay ${transitionOverlay ? 'show' : ''}`} onClick={handleCloseOverlay}>
               <div className="overlay-content" onClick={e => e.stopPropagation()}>
@@ -350,13 +370,6 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
               </div>
             </div>
           )}
-            <img 
-            src={zoom} 
-            alt="Zoom Logo" 
-            className="zoom-logo"
-            onClick={() => handleImageClick(`${config.backendAPI}/file/${post.picture}`)}
-            />
-          
           </>
         )}
       </div>
@@ -425,13 +438,22 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
       </div>
       <div className="post-description">
-        <p>{post.description}</p>
+      <p onClick={toggleDescription} style={{ cursor: 'pointer' }}>
+          {truncatedDescription}
+          {post.description.length > 40 && !isExpanded && (
+            <span > Lire plus</span>
+          )}
+          
+          {isExpanded && (
+            <span > Réduire</span>
+          )}
+        </p>
       </div>
             {/* Comments Section */}
         <div className="post-comments">
           <h4>Commentaires</h4>
           {comments.slice(0, 3).map(comment => (
-          <div key={comment._id} className="comment">
+          <div key={comment._id} className="comment" onClick={openCommentModal}>
             <p><strong>{comment.userLabel}</strong> : {comment.text}</p>
           </div>
           ))}
@@ -482,7 +504,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     {/*  <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>*/}
         {user.isAdmin && (
           <button className="validate-button" onClick={handleValidateClick}>
-            {post.isValidated ? 'En attente': 'Validé ?'}
+            {post.isValidated ? 'Mettre en attente': 'Validé ?'}
           </button>
         )}
       </div>

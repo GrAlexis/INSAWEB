@@ -66,7 +66,7 @@
 
 .post-media {
     width: 100%;
-    max-height: 250px;
+    max-height: 350px;
     overflow: hidden;
   
 
@@ -87,7 +87,6 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 10px;
     padding-left: 10px;
     font-size: 1.3em;
 }
@@ -275,8 +274,13 @@ padding: 10px;
   max-width: 90%;
   text-align: left;
   padding-left: 10px;
- 
 }
+
+.post-description span {
+  font-weight: bold;
+  color: #72b1ab;
+}
+
 .delete-button {
     background-color: #d9534f; /* Red background */
     border: none;
@@ -522,7 +526,7 @@ color: white;
   transition: opacity 0.5s ease, transform 0.5s ease; /* Smooth fade and slide transition */
   z-index: 10; /* Ensure it appears above the image */
   width: 100%; /* Ensure the overlay matches the image's width */
-  max-height: 250px;
+  max-height: 350px;
 }
 
 .overlay.show {
@@ -534,17 +538,20 @@ color: white;
 /* Bouton pour zoomer */
 .zoom-logo {
   position: absolute;
-  top: 210px;
-  right: 10px;
+  top: 320px;
+  right: 20px;
   color: white;
   width: 20px;
   height: 20px;
   font-size: 18px;
   opacity: 0.7;
-  z-index: 500;
+  z-index: 800;
   transition: opacity 0.3s ease;
 }
 
 .zoom-button:focus {
   opacity: 1; /* Opacité complète au survol */
 }
+
+
+
