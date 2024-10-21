@@ -22,6 +22,7 @@ import ContactPage from './components/ContactPage/ContactPage'
 import UniverseSelectionPage from './components/UniverseSelectionPage/UniverseSelectionPage'
 
 
+
 function App() {
 
   const [path, setPath] = useState(window.location.pathname);
@@ -62,7 +63,6 @@ function App() {
                 <Route path="/contact" element={<ContactPage showNavBar={refreshPath} />} />
                 <Route path="/events" element={<UserProvider><EventPage/></UserProvider>} />
                 <Route path="/select-universe" element={<UniverseProvider><UserProvider><UniverseSelectionPage showNavBar={refreshPath}/></UserProvider></UniverseProvider>} />
-
                 <Route
                   path="/admin"
                   element={<UniverseProvider><UserProvider>
