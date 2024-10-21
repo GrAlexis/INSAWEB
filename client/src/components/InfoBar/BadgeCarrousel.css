@@ -1,81 +1,76 @@
-.carousel-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.selected-badge {
-  cursor: pointer;
-}
-
-.large-badge {
-  width: 80px;
-  height: 80px;
-  transition: transform 0.5s ease;
-  margin-bottom: 20px;
-}
-
-.carousel {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  padding: 20px;
-  animation: fadeIn 0.5s ease;
-}
-
-@keyframes fadeIn {
-  0% {
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    margin-bottom: 20px;
+  }
+  
+  .loading-logo {
+    width: 80px;
+    height: 80px;
+    animation: rotate 1s linear infinite; /* Ajout de l'animation de rotation */
+  }
+  
+  @keyframes rotate {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .carousel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 0.5s ease, transform 0.5s ease; /* Effet de transition global */
+  }
+  
+  .carousel-container.transitioning {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.9); /* Effet de rétrécissement pendant la transition de sortie */
   }
-  100% {
-    opacity: 1;
-    transform: scale(1);
+  
+  .selected-badge {
+    cursor: pointer;
   }
-}
-
-/* Animation de fermeture */
-.closing {
-  animation: fadeOut 0.5s ease forwards;
-}
-
-@keyframes fadeOut {
-  0% {
-    opacity: 1;
-    transform: scale(1);
+  
+  .large-badge {
+    width: 80px;
+    height: 80px;
+    transition: transform 0.5s ease;
+    margin-bottom: 20px;
   }
-  100% {
-    opacity: 0;
-    transform: scale(0.9);
+  
+  .carousel {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
   }
-}
-
-/* Conteneur pour le carrousel avec défilement horizontal */
-.badge-scroll-container {
-  display: flex;
-  overflow-x: scroll; /* Garde le scroll horizontal mais cache la barre */
-  max-width: 500px; /* Limite à 5 badges (80px * 5 + marges) */
-  padding: 10px;
-  scrollbar-width: none; /* Masque la scrollbar pour Firefox */
-}
-
-.badge-scroll-container::-webkit-scrollbar {
-  display: none; /* Masque la scrollbar pour Chrome, Safari, Edge */
-}
-
-.badge-item {
-  margin: 0 10px;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-  cursor: pointer;
-  flex-shrink: 0; /* Assure que les badges restent à leur taille */
-}
-
-.badge-item img {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-}
-
-.badge-item.active {
-  transform: scale(1.2); /* Badge sélectionné grandit */
-}
+  
+  .badge-scroll-container {
+    display: flex;
+    overflow-x: scroll;
+    max-width: 500px;
+    padding: 10px;
+  }
+  
+  .badge-item {
+    margin: 0 10px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  
+  .badge-item img {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .badge-item.active {
+    transform: scale(1.2); /* Badge sélectionné grandit */
+  }
+  
