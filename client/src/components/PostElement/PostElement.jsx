@@ -42,10 +42,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const [transitionOverlay, setTransitionOverlay] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false); // État pour gérer l'affichage
 
-  
-
   const universeId = config.universe
-
 
   const navigate = useNavigate();
 
