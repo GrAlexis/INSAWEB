@@ -14,7 +14,8 @@ import { useUser } from '../../hooks/commonHooks/UserContext';
 import CommentModal from '../CommentModal/CommentModal'; // Modal for viewing all comments
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import LazyLoad from 'react-lazyload';
-import zoom from '../../assets/buttons/zoom/zoomPhoto.png';
+import zoom from '../../assets/buttons/zoom/chercher.svg';
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 
 
 
@@ -42,7 +43,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const [transitionOverlay, setTransitionOverlay] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false); // État pour gérer l'affichage
 
-  const universeId = config.universe
+  const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
 
   const navigate = useNavigate();
 
@@ -184,8 +185,8 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
         const response = await axios.post(`${config.backendAPI}/admin/validatePost/${post._id}`, {
             isAdmin: user.isAdmin,
             rewardPoints : parseReward(challenge.reward),
-            eventId : event.id,
-            universeId : universeId
+            eventId : event._id,
+            universeId : selectedUniverse._id
         });
         if (response.status === 200) {
           fetchPosts(); // Refresh posts after validation

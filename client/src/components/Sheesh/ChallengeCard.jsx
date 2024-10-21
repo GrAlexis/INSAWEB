@@ -15,7 +15,7 @@ import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util'
 
-const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
+const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId,initializeAndFetchData }) => {
   const { user, setUser } = useUser();
   const { challengeId } = useParams();
   const [file, setFile] = useState(null);
@@ -49,6 +49,11 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
         // Check if event has teams and user is not in a team
         const eventResponse = await axios.get(config.backendAPI+`/events/${challenge.eventId}`);
         const event = eventResponse.data;
+        // If user.universes[selectedUniverse._id].events[challenge.eventId] does not exist, call the initialize method
+        if (!user.universes[selectedUniverse._id]?.events[challenge.eventId]) {
+          await initializeAndFetchData(challenge.eventId); // Call the method to initialize universe and event
+        }
+        
         setUserNeedsToJoinTeam(event?.teams.length > 0 && !user.universes[selectedUniverse._id].events[challenge.eventId].teamId);
 
         const response = await axios.get(config.backendAPI+`/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
@@ -75,7 +80,7 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
     };
 
     checkUserPost();
-  }, [user, challenge.id, challenge.isCollective]);
+  }, [user, challenge.id, challenge.isCollective,selectedUniverse]);
 
   const handlePinClick = async () => {
     if (!user) return; // Ensure user is not null before proceeding

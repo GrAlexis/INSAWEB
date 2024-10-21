@@ -449,7 +449,13 @@ app.get('/events', async (req, res) => {
         }
 
         // Fetch the full event objects using the event IDs stored in universe.events
-        const events = await Event.find({ _id: { $in: universe.events } });  // Fetch events with those IDs
+        // Use $or to query events by either _id or id
+        const events = await Event.find({
+            $or: [
+                { _id: { $in: universe.events } },  // Match by _id
+                { id: { $in: universe.events } }    // Match by id (in case of irregularities)
+            ]
+        });
         res.status(200).json(events);
     } catch (error) {
         res.status(500).send(error.message);
@@ -1022,7 +1028,9 @@ app.post('/admin/validatePost/:id', checkAdmin, async (req, res) => {
     try {
         const { rewardPoints, eventId, universeId } = req.body;  // Include universeId in the request body
         const post = await Post.findById(req.params.id);
-        
+        console.log("eventid "+eventId)
+        console.log("universeId "+universeId)
+
         if (!post) {
             return res.status(404).send('Post not found');
         }
@@ -1196,22 +1204,6 @@ app.get('/universes/:universeId', async (req, res) => {
 
 // Join universe route
 app.post('/users/join-universe', async (req, res) => {
-    try {
-        const { userId, universeId } = req.body;  // Get userId and universeId from the request body
-
-        // Add the universeId to the user's joinedUniverses array if it's not already there
-        await User.findByIdAndUpdate(userId, {
-            $addToSet: { joinedUniverses: universeId }  // Use $addToSet to prevent duplicates
-        });
-
-        res.status(200).send('Successfully joined the universe');
-    } catch (error) {
-        res.status(500).send(error.message);  // Send error message if something goes wrong
-    }
-});
-
-// Join universe route
-app.post('/users/join-universe', async (req, res) => {
     const { userId, universeId } = req.body;
 
     try {
@@ -1248,9 +1240,8 @@ app.post('/users/join-universe', async (req, res) => {
 app.post('/users/initialize-universe', async (req, res) => {
     const { userId, universeId, eventId } = req.body;
     console.log("userId "+userId)
-    console.log("userId "+universeId)
+    console.log("universeId "+universeId)
     console.log("eventId "+eventId)
-
     try {
         const user = await User.findById(userId);
 
@@ -1261,16 +1252,18 @@ app.post('/users/initialize-universe', async (req, res) => {
             // If universe doesn't exist, initialize it with the event
             universe = {
                 events: new Map([
-                    [eventId.toString(), {
+                    [eventId, {
+                        teamId : "",
                         points: 0,
                         pinnedChallenges: []
                     }]
                 ])
             };
             user.universes.set(universeId, universe);
-        } else if (!universe.events.get(eventId.toString())) {
+        } else if (!universe.events.get(eventId)) {
             // If the universe exists but the event doesn't, initialize the event
-            universe.events.set(eventId.toString(), {
+            universe.events.set(eventId, {
+                teamId : "",
                 points: 0,
                 pinnedChallenges: []
             });
@@ -1285,7 +1278,52 @@ app.post('/users/initialize-universe', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
-  
+
+// Event creation route
+app.post('/events/create', upload.single('file'), async (req, res) => {
+  try {
+    // Destructure fields from the form data
+    const { title, date, universeId } = req.body;
+
+    // Check if the required fields are provided
+    if (!title || !req.file || !universeId) {
+      return res.status(400).json({ message: 'Title, image, and universeId are required.' });
+    }
+
+    // Generate a unique ID for the event
+    const newEventId = new mongoose.Types.ObjectId();
+
+    // Save the event in the database
+    const newEvent = new Event({
+    _id: newEventId,
+      id: newEventId,
+      title: title,
+      image: req.file.filename,  // Save the uploaded image's filename
+      date: date || '',  // Optional date field
+      challenges: '',
+      teams: [],
+    });
+
+    await newEvent.save();  // Save the event to the events collection
+
+    // Update the universe to include the newly created event
+    const universe = await Universe.findById(universeId);
+    if (!universe) {
+      return res.status(404).json({ message: 'Universe not found.' });
+    }
+
+    universe.events.push(newEventId);  // Add the new event ID to the universe's events array
+    await universe.save();  // Save the updated universe
+
+    // Respond with the created event
+    res.status(201).json(newEvent);
+
+  } catch (error) {
+    console.error('Error creating event:', error);
+    res.status(500).json({ message: 'Error creating event.' });
+  }
+});
+
 
 app.get("/", (req,res) =>{
     res.send("Hello from Backend Server !");

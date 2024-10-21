@@ -3,6 +3,7 @@ import config from '../../config';
 import axios from 'axios';
 import './ManageTeams.css';
 import modifyButtonIcon from '../../assets/buttons/modify.png';
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 
 const ManageTeams = ({ eventId }) => {
   const [teams, setTeams] = useState([]);
@@ -16,7 +17,7 @@ const ManageTeams = ({ eventId }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [usersWithoutTeam, setUsersWithoutTeam] = useState([]);
 
-  const universeId = config.universe
+  const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
 
   useEffect(() => {
     const fetchTeamsAndUsers = async () => {
@@ -27,7 +28,7 @@ const ManageTeams = ({ eventId }) => {
 
         // Include universeId as a query parameter
         const membersResponse = await axios.get(`${config.backendAPI}/teams/${team.id}/members`, {
-          params: { universeId: universeId }  // Pass universeId as a query parameter
+          params: { universeId: selectedUniverse._id }  // Pass universeId as a query parameter
         });
 
           const points = membersResponse.data.reduce((acc, member) => acc + (member.points || 0), 0);
@@ -40,7 +41,7 @@ const ManageTeams = ({ eventId }) => {
       
       // Filter users without a valid team for this specific event and universe
       const usersWithoutTeam = usersResponse.data.filter(user => {
-        const universe = user.universes?.[universeId];
+        const universe = user.universes?.[selectedUniverse._id];
         const eventTeam = universe?.events?.[eventId]?.teamId;
 
         // Check if the user doesn't have a team for the current event
@@ -126,7 +127,7 @@ const ManageTeams = ({ eventId }) => {
         let previousTeamId = null; // Default to null if no previous team is found
         try {
           const teamResponse = await axios.get(`${config.backendAPI}/userTeam/${eventId}`, {
-            params: { userId: selectedUser._id, universeId: universeId }
+            params: { userId: selectedUser._id, universeId: selectedUniverse._id }
           });
 
           // Check if the team exists in the response
@@ -145,7 +146,7 @@ const ManageTeams = ({ eventId }) => {
         userId: selectedUser._id,
         teamId: newTeamId,
         eventId: eventId,
-        universeId: universeId,
+        universeId: selectedUniverse._id,
         previousTeamId: previousTeamId,
       });
       // Update team lists
