@@ -3,8 +3,9 @@ import config from '../../config';
 import axios from 'axios';
 import EventAdmin from '../EventAdmin/EventAdmin';
 import './AdminPage.css';
+import ManageUniverse from '../ManageUniverse/ManageUniverse';  
 import { Link, useNavigate } from 'react-router-dom';
-import { useUniverse } from '../../hooks/commonHooks/UniverseContext';  // Assuming UniverseContext is available
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext'; 
 
 const AdminPage = ({ showNavBar }) => {
   const [events, setEvents] = useState([]);
@@ -14,6 +15,8 @@ const AdminPage = ({ showNavBar }) => {
   const [newEventDate, setNewEventDate] = useState('');
   const [newEventImage, setNewEventImage] = useState(null);  // State to store image file
   const [isCreating, setIsCreating] = useState(false);  // Loading state for event creation
+  const [showManageUniverse, setShowManageUniverse] = useState(false);  // State to toggle ManageUniverse visibility
+
   const navigate = useNavigate();
 
   const { selectedUniverse } = useUniverse();  // Get selected universe from the context
@@ -35,6 +38,11 @@ const AdminPage = ({ showNavBar }) => {
   // Toggle modal visibility
   const toggleModal = () => {
     setModalVisible(prevVisible => !prevVisible);
+  };
+
+  // Toggle ManageUniverse component visibility
+  const toggleManageUniverse = () => {
+    setShowManageUniverse(prevState => !prevState);  // Toggle the state
   };
 
   // Handle form submission to create a new event
@@ -87,6 +95,10 @@ const AdminPage = ({ showNavBar }) => {
           ))}
         </select>
         <button onClick={toggleModal}>Create New Event</button> {/* Button to open modal */}
+        {/* Button to toggle ManageUniverse */}
+        <button onClick={toggleManageUniverse}>
+          {showManageUniverse ? 'Hide Manage Universe' : 'Manage Universe'}
+        </button>
       </div>
 
       <div className="admin-content">
@@ -141,6 +153,8 @@ const AdminPage = ({ showNavBar }) => {
           </div>
         </div>
       )}
+      {/* Conditionally render ManageUniverse */}
+      {showManageUniverse && <ManageUniverse />}  {/* Show ManageUniverse component based on state */}
     </div>
   );
 };
