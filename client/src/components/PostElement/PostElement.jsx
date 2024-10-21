@@ -431,7 +431,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
         <div className="post-comments">
           <h4>Commentaires</h4>
           {comments.slice(0, 3).map(comment => (
-          <div key={comment._id} className="comment">
+          <div key={comment._id} className="comment" onClick={openCommentModal}>
             <p><strong>{comment.userLabel}</strong> : {comment.text}</p>
           </div>
           ))}
@@ -482,7 +482,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     {/*  <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>*/}
         {user.isAdmin && (
           <button className="validate-button" onClick={handleValidateClick}>
-            {post.isValidated ? 'En attente': 'Validé ?'}
+            {post.isValidated ? 'Mettre en attente': 'Validé ?'}
           </button>
         )}
       </div>
