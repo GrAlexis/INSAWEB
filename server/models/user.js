@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
             events: {
                 type: Map,
                 of: new mongoose.Schema({
-                    teamId: { type: String },
+                    teamId: { type: String, default :"" },
                     points: { type: Number },
                     pinnedChallenges: [{ type: String, default: [] }]
                 }, { _id: false }) // Disable automatic ID generation for nested schema

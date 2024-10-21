@@ -4,6 +4,7 @@ import './EventCard.css';
 import axios from 'axios';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import Timer from '../Timer/Timer';
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 
 const EventCard = ({ event }) => {
   const { user, setUser } = useUser();
@@ -11,7 +12,8 @@ const EventCard = ({ event }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [currentTeamName, setCurrentTeamName] = useState('');
   const [timeLeftInHours, setTimeLeftInHours] = useState(null);
-  const universeId = config.universe
+
+  const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
 
   // Transform DD/MM/YYYY string into a Date object
   const parseDate = (dateStr) => {
@@ -20,6 +22,23 @@ const EventCard = ({ event }) => {
   };
 
   useEffect(() => {
+    // const initializeAndFetchData = async () => {
+    //   try {
+    //     // Check if user.universes[universeId].events[event._id] exists
+    //   const universe = user.universes[selectedUniverse._id];
+    //   if (!universe || !universe.events[event._id]) {
+    //     // If the universe or event doesn't exist, call the initialize-universe route
+    //     await axios.post(`${config.backendAPI}/users/initialize-universe`, {
+    //       userId: user._id,
+    //       universeId : selectedUniverse._id,
+    //       eventId: event._id,
+    //     });
+    //   }
+    //   }
+    //   catch (error) {
+    //     console.log(error)
+    //   }
+    // }
     console.log("event.image "+event.image)
     if (event.teams)
     {
@@ -30,7 +49,7 @@ const EventCard = ({ event }) => {
           const teamsWithMembersCount = await Promise.all(
             response.data.map(async (team) => {
               const membersResponse = await axios.get(`${config.backendAPI}/teams/${team.id}/members`, {
-                params: { universeId: universeId }
+                params: { universeId: selectedUniverse._id }
               });            
               return {
                 ...team,
@@ -41,7 +60,7 @@ const EventCard = ({ event }) => {
           setTeams(teamsWithMembersCount);
   
           // Access the current team from user.universes[universeId].events[eventId].teamId
-          const universe = user.universes[universeId];
+          const universe = user.universes[selectedUniverse._id];
           if (universe && universe.events[event._id] && universe.events[event._id].teamId) {
             const currentTeamId = universe.events[event._id].teamId;
             const currentTeam = teamsWithMembersCount.find((team) => team.id === currentTeamId);
@@ -65,12 +84,12 @@ const EventCard = ({ event }) => {
       const hoursLeft = Math.floor(timeDifference / (1000 * 60 * 60)); // Convert to hours
       setTimeLeftInHours(hoursLeft > 0 ? hoursLeft : 0); // Ensure the value is not negative
     };
-
+    // initializeAndFetchData(); //Call the function to initialize universe
     calculateTimeLeft();
-  }, [event._id, user, event.date, isPopupOpen]);
+  }, [event._id, user, event.date, isPopupOpen, selectedUniverse]);
 
   const handleJoinTeam = async (teamId) => {
-    const universe = user.universes[universeId];
+    const universe = user.universes[selectedUniverse._id];
     const previousTeamId = universe?.events[event._id]?.teamId || '';
 
     try {
@@ -78,13 +97,13 @@ const EventCard = ({ event }) => {
         userId: user._id,
         teamId: teamId,
         eventId: event._id,
-        universeId,
+        universeId : selectedUniverse._id,
         previousTeamId,
       });
 
       // Update the user's team in state
       const updatedUser = { ...user };
-      updatedUser.universes[universeId].events[event._id].teamId = teamId;
+      updatedUser.universes[selectedUniverse._id].events[event._id].teamId = teamId;
       setUser(updatedUser);
 
       // Refresh the teams and currentTeamName after joining the team
@@ -128,7 +147,7 @@ const EventCard = ({ event }) => {
 
         {canChangeTeam && (
           <button className="sheesh-button" onClick={() => setIsPopupOpen(true)}>
-            {user.universes[universeId].events[event._id].teamId ? 'Changer d\'equipe' : 'Rejoins une equipe!'}
+            {user.universes[selectedUniverse._id].events[event._id].teamId ? 'Changer d\'equipe' : 'Rejoins une equipe!'}
           </button>
         )}
       </div>

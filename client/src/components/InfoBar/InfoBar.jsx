@@ -92,7 +92,7 @@ const InfoBar = ({ selectedEvent }) => {
           const points = currentUser.totalPoints;
           const rank = users.findIndex(u => u._id === user._id) + 1;
           
-          if (selectedEvent) {
+          if (selectedEvent && user.universes[selectedUniverse._id].events[selectedEvent._id].teamId !== "") {
             const teamResponse = await axios.get(`${config.backendAPI}/userTeam/${selectedEvent._id}`, {
               params: { userId: user._id, universeId: selectedUniverse._id }
             });
