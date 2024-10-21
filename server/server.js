@@ -8,6 +8,8 @@ const crypto = require('crypto');
 const cors = require('cors');
 const { GridFSBucket } = require('mongodb');
 const dotenv = require('dotenv');
+const bcrypt = require('bcrypt')
+
 
 const Post = require('./models/post');
 const Challenge = require('./models/challenge');
@@ -1239,9 +1241,6 @@ app.post('/users/join-universe', async (req, res) => {
 // Initialize universe and event data for the user
 app.post('/users/initialize-universe', async (req, res) => {
     const { userId, universeId, eventId } = req.body;
-    console.log("userId "+userId)
-    console.log("universeId "+universeId)
-    console.log("eventId "+eventId)
     try {
         const user = await User.findById(userId);
 
@@ -1323,7 +1322,31 @@ app.post('/events/create', upload.single('file'), async (req, res) => {
     res.status(500).json({ message: 'Error creating event.' });
   }
 });
-
+// Route to update the universe password
+app.post('/universe/updatePassword', async (req, res) => {
+    const { universeId, password } = req.body;
+  console.log("dans la boucle")
+  console.log("universeId "+universeId)
+  console.log("password "+ password)
+    try {
+      // Hash the password (make sure to use a hashing library like bcrypt)
+      const hashedPassword = bcrypt.hashSync(password, 10); // Example with bcrypt
+        console.log("hashed "+hashedPassword)
+      // Update the universe with the new password
+      const universe = await Universe.findById(universeId);
+      if (!universe) {
+        return res.status(404).json({ message: 'Universe not found.' });
+      }
+      console.log("universe.name "+universe.name)
+      universe.hashedPassword = hashedPassword; // Assuming universe has a password field
+      console.log("universe.password "+universe.hashedPassword)
+      await universe.save();
+  
+      res.status(200).json({ message: 'Password updated successfully.' });
+    } catch (error) {
+      console.error
+    }
+})
 
 app.get("/", (req,res) =>{
     res.send("Hello from Backend Server !");
