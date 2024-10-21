@@ -5,6 +5,8 @@ import { useUniverse } from '../../hooks/commonHooks/UniverseContext'; // Import
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 import axios from 'axios';
 import './InfoBar.css';
+import BadgeCarrousel from './BadgeCarrousel';
+
 
 import logo from '../../assets/logos/astus.png';
 import rankOneIcon from '../../assets/icons/ranks/1_v1.png';
@@ -153,8 +155,8 @@ const InfoBar = ({ selectedEvent }) => {
         </div>
       </div>
 
-      <div className="section universe-logo-container" onClick={toggleModal}>
-        <img src={logo} alt="Association Logo" className="universe-logo" />
+      <div className="section universe-logo-container" >{/*onClick={toggleModal} */}
+      <BadgeCarrousel universes={universes} saveUniverse={saveUniverse} />
       </div>
 
       {/* Modal for universe selection */}
