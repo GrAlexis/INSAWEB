@@ -12,12 +12,16 @@ import ProtectedRoute from './utils/ProtectedRoute'
 import { BrowserRouter, Routes, Route} from "react-router-dom"
 import Navbar from './components/Common/Navbar/Navbar'
 import { UserProvider } from './hooks/commonHooks/UserContext';
+import { UniverseProvider } from './hooks/commonHooks/UniverseContext';
 import './App.css';
 import EventPage from './components/Events/EventPage'
 import ForgotPassword from './components/ForgotPassword/ForgotPassword';
 import ResetPassword from './components/ForgotPassword/ResetPassword';
 import HomePage from './components/HomePage/HomePage'
 import ContactPage from './components/ContactPage/ContactPage'
+import UniverseSelectionPage from './components/UniverseSelectionPage/UniverseSelectionPage'
+import BadgeCarrousel from './components/InfoBar/BadgeCarrousel'
+
 
 
 function App() {
@@ -50,29 +54,31 @@ function App() {
           <BrowserRouter>
               <Routes>
                 <Route index element={<Login showNavBar={refreshPath} />} />
-                <Route path="/home" element={<UserProvider><Home showNavBar={refreshPath}/></UserProvider>} />
-                <Route path="/sheesh" element={<UserProvider><Sheesh showNavBar={refreshPath}/></UserProvider>} />
-                <Route path="/ranking" element={<UserProvider><Ranking showNavBar={refreshPath}/></UserProvider>} />
-                <Route path="/sheesh/:challengeId" element={<UserProvider><Sheesh showNavBar={refreshPath}/></UserProvider>} />
-                <Route path="/register" element={<UserProvider><ProtectedRoute adminOnly={true}><Register showNavBar={refreshPath}/></ProtectedRoute></UserProvider>} />
+                <Route path="/home" element={<UniverseProvider><UserProvider><Home showNavBar={refreshPath}/></UserProvider></UniverseProvider>} />
+                <Route path="/sheesh" element={<UniverseProvider><UserProvider><Sheesh showNavBar={refreshPath}/></UserProvider></UniverseProvider>} />
+                <Route path="/ranking" element={<UniverseProvider><UserProvider><Ranking showNavBar={refreshPath}/></UserProvider></UniverseProvider>} />
+                <Route path="/sheesh/:challengeId" element={<UniverseProvider><UserProvider><Sheesh showNavBar={refreshPath}/></UserProvider></UniverseProvider>} />
+                <Route path="/register" element={<UniverseProvider><UserProvider><ProtectedRoute adminOnly={true}><Register showNavBar={refreshPath}/></ProtectedRoute></UserProvider></UniverseProvider>} />
                 <Route path="/login" element={<Login showNavBar={refreshPath} />} />
                 <Route path="/first" element={<HomePage showNavBar={refreshPath} />} />
                 <Route path="/contact" element={<ContactPage showNavBar={refreshPath} />} />
                 <Route path="/events" element={<UserProvider><EventPage/></UserProvider>} />
+                <Route path="/badges" element={<UserProvider><BadgeCarrousel/></UserProvider>} />
+                <Route path="/select-universe" element={<UniverseProvider><UserProvider><UniverseSelectionPage showNavBar={refreshPath}/></UserProvider></UniverseProvider>} />
 
                 <Route
                   path="/admin"
-                  element={<UserProvider>
+                  element={<UniverseProvider><UserProvider>
                     <ProtectedRoute adminOnly={true}>
                       <AdminPage showNavBar={refreshPath}/>
-                    </ProtectedRoute></UserProvider>
+                    </ProtectedRoute></UserProvider></UniverseProvider>
                   }
                 /><Route
                 path="/profil"
-                element={<UserProvider>
+                element={<UniverseProvider><UserProvider>
                   <ProtectedRoute  >
                     <Profil showNavBar={refreshPath}/>
-                  </ProtectedRoute></UserProvider>
+                  </ProtectedRoute></UserProvider></UniverseProvider>
                 }
               />
               <Route path="/forgot-password" element={<ForgotPassword showNavBar={refreshPath} />} />

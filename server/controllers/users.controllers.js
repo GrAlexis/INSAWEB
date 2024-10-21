@@ -124,7 +124,10 @@ const registerUserGlobal = async (req, res) => {
       classYear,
       email,
       balance: 0,
-      lastName
+      lastName,
+      universes: {
+        "64f3c9a9ef437ef982acb1e3": {}
+      }
     });
 
     res.status(201).json({ message: 'User created successfully' });
@@ -182,8 +185,15 @@ const loginUser = async (req, res) => {
     const passwordMatch = await bcrypt.compare(password, user.hashedPassword);
     if (passwordMatch) {
       const token = jwt.sign({ email:email }, secretKey);
-      
-      res.status(200).json({ token });
+
+       // Check if the user has joined any universes
+       const hasJoinedUniverses = user.joinedUniverses && user.joinedUniverses.length > 0;
+       console.log("hasjoineduniverse "+hasJoinedUniverses)
+
+      res.status(200).json({ 
+        token,
+        redirectToUniverseSelection: !hasJoinedUniverses // If no joined universes, frontend will redirect to selection page
+      });
     } else {
       return res.status(401).json({ message: 'Invalid username or password' });
     }

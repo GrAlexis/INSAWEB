@@ -178,12 +178,15 @@ const Login = ({ showNavBar }) => {
         // Stocker le token dans le localStorage
         localStorage.setItem('token', data.token);
         localStorage.setItem('email', email);
-  
-        // Call the function passed from App.js to trigger a state change
-        showNavBar();
-        
-        // Rediriger après l'authentification réussie
-        navigate('/home');
+    
+        // Redirect to universe selection if no universes have been joined
+        if (data.redirectToUniverseSelection) {
+          navigate('/select-universe');
+        } else {
+          // Call the function passed from App.js to trigger a state change
+          showNavBar();
+          navigate('/home');
+        }
   
       } catch (error) {
         console.error('Erreur lors de la connexion:', error);

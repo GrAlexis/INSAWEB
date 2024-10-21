@@ -14,7 +14,7 @@ import { useUser } from '../../hooks/commonHooks/UserContext';
 import CommentModal from '../CommentModal/CommentModal'; // Modal for viewing all comments
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import LazyLoad from 'react-lazyload';
-import zoom from '../../assets/buttons/zoom/chercher.svg';
+import zoom from '../../assets/buttons/zoom/zoomPhoto.png';
 
 
 
@@ -40,9 +40,11 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const [zoomScale, setZoomScale] = useState(1); 
   const [showOverlay, setShowOverlay] = useState(false);
   const [transitionOverlay, setTransitionOverlay] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false); // État pour gérer l'affichage
+
   
 
-
+  const universeId = config.universe
 
 
   const navigate = useNavigate();
@@ -185,7 +187,8 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
         const response = await axios.post(`${config.backendAPI}/admin/validatePost/${post._id}`, {
             isAdmin: user.isAdmin,
             rewardPoints : parseReward(challenge.reward),
-            eventId : event.id
+            eventId : event.id,
+            universeId : universeId
         });
         if (response.status === 200) {
           fetchPosts(); // Refresh posts after validation
@@ -285,6 +288,17 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
       setShowOverlay(false); // Then hide the overlay after the transition
     }, 500); // Delay to match the transition duration (500ms)
   };
+
+   // Fonction pour basculer entre l'affichage tronqué et complet
+   const toggleDescription = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  // Tronquer la description à 40 caractères si non expansé
+  const truncatedDescription = post.description.length > 40 && !isExpanded
+    ? `${post.description.substring(0, 40)}...`
+    : post.description;
+    
   
 
   if (!challenge || !event || !postUser || !user) {
@@ -321,6 +335,14 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
             className="post-image"
             onClick={handleOverlayClick}
           />
+
+          <img 
+            src={zoom} 
+            alt="Zoom Logo" 
+            className="zoom-logo"
+            onClick={() => handleImageClick(`${config.backendAPI}/file/${post.picture}`)}
+            />
+
           {showOverlay && (
             <div className={`overlay ${transitionOverlay ? 'show' : ''}`} onClick={handleCloseOverlay}>
               <div className="overlay-content" onClick={e => e.stopPropagation()}>
@@ -350,13 +372,6 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
               </div>
             </div>
           )}
-            <img 
-            src={zoom} 
-            alt="Zoom Logo" 
-            className="zoom-logo"
-            onClick={() => handleImageClick(`${config.backendAPI}/file/${post.picture}`)}
-            />
-          
           </>
         )}
       </div>
@@ -425,7 +440,16 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
 
       </div>
       <div className="post-description">
-        <p>{post.description}</p>
+      <p onClick={toggleDescription} style={{ cursor: 'pointer' }}>
+          {truncatedDescription}
+          {post.description.length > 40 && !isExpanded && (
+            <span > Lire plus</span>
+          )}
+          
+          {isExpanded && (
+            <span > Réduire</span>
+          )}
+        </p>
       </div>
             {/* Comments Section */}
         <div className="post-comments">

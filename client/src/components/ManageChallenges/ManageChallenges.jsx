@@ -195,7 +195,7 @@ const ManageChallenges = ({ eventId }) => {
       <div className="challenge-list">
         {filteredChallenges.map(challenge => (
           <div key={challenge.id} className="challenge-item">
-            <button className="delete-challenge-button" onClick={() => handleDeleteClick(challenge)}>x</button>
+            <button className="delete-button delete-cross" onClick={() => handleDeleteClick(challenge)}>x</button>
             <button className="edit-challenge-button" onClick={() => handleEditClick(challenge)}>
               <img src={modifyButtonIcon} alt="Modify" />
             </button>
