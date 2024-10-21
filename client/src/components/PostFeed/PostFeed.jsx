@@ -5,18 +5,25 @@ import axios from 'axios';
 import PostElement from '../PostElement/PostElement';
 import './PostFeed.css';
 import LazyLoad from 'react-lazyload';
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 
 const PostFeed = ({ selectedEvent, searchQuery }) => {
   const [posts, setPosts] = useState([]);
 
+  const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
+
   const fetchPosts = async () => {
     try {
-      const response = await axios.get(config.backendAPI + '/posts');
+      const response = await axios.get(`${config.backendAPI}/posts`, {
+        params: {
+          universeId: selectedUniverse._id  // Send universeId as a query parameter
+        }
+      });
       let filteredPosts = response.data;
 
       // Filter by selected event if event filter is applied
       if (selectedEvent) {
-        filteredPosts = filteredPosts.filter(post => post.challengeId && post.eventId === selectedEvent.id);
+        filteredPosts = filteredPosts.filter(post => post.challengeId && post.eventId === selectedEvent._id);
       }
 
       // Filter by search query
@@ -41,15 +48,18 @@ const PostFeed = ({ selectedEvent, searchQuery }) => {
     } catch (error) {
       console.error('Error fetching posts', error);
     }
-  };
+  };  
 
   useEffect(() => {
     fetchPosts();
-  }, [selectedEvent, searchQuery]); // Refetch posts when searchQuery or selectedEvent changes
+  }, [selectedEvent, searchQuery,selectedUniverse]); // Refetch posts when searchQuery or selectedEvent changes
 
   const handleDelete = (postId) => {
     setPosts(posts.filter(post => post._id !== postId));
   };
+  if (!selectedUniverse) {
+    return <p>No universe selected</p>
+  }
 
   return (
     <div className="postfeed">

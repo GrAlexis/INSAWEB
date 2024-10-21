@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const postSchema = new mongoose.Schema({
     challengeId: { type: String },
     eventId : {type: String},
+    universeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Universe', required: true },
     date: { type: Date, required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Updated to reference User model
     likes: { type: Number, default: 0 },

@@ -8,25 +8,33 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import SearchBar from '../SearchBar/SearchBar'; // Import the SearchBar component
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 
 const Feed = ({ showNavBar }) => {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [searchQuery, setSearchQuery] = useState(''); // State to store the search query
+    const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
+
 
     useEffect(() => {
-        const fetchEvents = async () => {
-          try {
-            const response = await axios.get(`${config.backendAPI}/events`); // Adjust the URL based on your API
-            setEvents(response.data);
-          } catch (error) {
-            console.error('Error fetching events', error);
+      const fetchEvents = async () => {
+        try {
+          if (selectedUniverse?._id) {  // Ensure universe is selected
+            // Fetch events for the current universe
+            const response = await axios.get(`${config.backendAPI}/events`, {
+              params: { universeId: selectedUniverse._id }
+            });
+            setEvents(response.data);  // Set events retrieved from the universe
           }
-        };
-      
-        fetchEvents();
-      }, []);
+        } catch (error) {
+          console.error('Error fetching events', error);
+        }
+      };
+
+      fetchEvents();
+    }, [selectedUniverse]);  // Fetch events when selectedUniverse changes
 
     useEffect(() => {
         showNavBar();
