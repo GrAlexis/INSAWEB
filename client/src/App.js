@@ -63,13 +63,9 @@ function App() {
                 <Route path="/first" element={<HomePage showNavBar={refreshPath} />} />
                 <Route path="/contact" element={<ContactPage showNavBar={refreshPath} />} />
                 <Route path="/events" element={<UserProvider><EventPage/></UserProvider>} />
-<<<<<<< HEAD
                 <Route path="/badges" element={<UserProvider><BadgeCarrousel/></UserProvider>} />
                 <Route path="/select-universe" element={<UniverseProvider><UserProvider><UniverseSelectionPage showNavBar={refreshPath}/></UserProvider></UniverseProvider>} />
 
-=======
-                <Route path="/select-universe" element={<UniverseProvider><UserProvider><UniverseSelectionPage showNavBar={refreshPath}/></UserProvider></UniverseProvider>} />
->>>>>>> 761c62051e6be4abf3b9c66556d51c5719e4ee89
                 <Route
                   path="/admin"
                   element={<UniverseProvider><UserProvider>
