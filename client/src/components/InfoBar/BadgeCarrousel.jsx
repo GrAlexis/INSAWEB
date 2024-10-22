@@ -1,29 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './BadgeCarrousel.css';
-import astus from '../../assets/logos/astus.png';
-import aceimi from '../../assets/buttons/chokbar.png';
+import config from '../../config';
+import axios from 'axios';
 import { useUniverse } from '../../hooks/commonHooks/UniverseContext'; // Importer le hook UniverseContext
+import { useUser } from '../../hooks/commonHooks/UserContext';
 
-// Associer chaque badge à un univers spécifique
-const badges = [
-  { id: 1, src: astus, alt: 'Badge astus', universeId: '64f3c9a9ef437ef982acb1e3' },
-  { id: 2, src: aceimi, alt: 'Badge aceimi', universeId: '6714ea4cf6adc8b7ef62084d' },
-];
 
-const BadgeCarouselComponent = ({ universes, saveUniverse }) => {
-  const [selectedBadge, setSelectedBadge] = useState(badges[0]);
+const BadgeCarouselComponent = ({ universes }) => {
+  const { user } = useUser();
+  const [joinedUniverses, setJoinedUniverses] = useState([]); // State for storing the badges dynamically
+  const [selectedUniverseLocal, setSelectedUniverseLocal] = useState(joinedUniverses[0]);
   const [showCarousel, setShowCarousel] = useState(false);
   const [closing, setClosing] = useState(false);
+  const { selectedUniverse, saveUniverse } = useUniverse();
+    
+  // Fetch the joined universes of the user and build the badges array
+  useEffect(() => {
+    const fetchJoinedUniverses = async () => {
+      try {
+        // Assuming the user object contains the joined universes
+        const joinedUniverseIds = user.joinedUniverses;
+        const fetchedJoinedUniverses = await Promise.all(
+          joinedUniverseIds.map(async (universeId) => {
+            const response = await axios.get(`${config.backendAPI}/universe/${universeId}`);
+            return response.data; // Assuming the API returns the full universe data
+          })
+        );
+        
+        setJoinedUniverses(fetchedJoinedUniverses);
 
-  const handleBadgeClick = (badge) => {
-    setSelectedBadge(badge);
+        // Set the first badge as the selected badge by default
+        if (fetchedJoinedUniverses.length > 0) {
+          setSelectedUniverseLocal(fetchedJoinedUniverses[0]);
+        }
+      } catch (error) {
+        console.error('Error fetching joined universes:', error);
+      }
+    };
+
+    if (user && user.joinedUniverses) {
+      fetchJoinedUniverses();
+    }
+  }, [user]); // Run the effect when the user is loaded
+
+  const handleBadgeClick = (universe) => {
+    setSelectedUniverseLocal(universe);
     setClosing(true);
 
     // Trouver l'univers correspondant au badge et changer d'univers
-    const selectedUniverse = universes.find(u => u._id === badge.universeId);
+    const selectedUniverse = universes.find(u => u._id === universe._id);
     if (selectedUniverse) {
-      console.log('Badge sélectionné :', badge.alt); // Debug pour vérifier la sélection du badge
-      console.log('Univers correspondant :', selectedUniverse); // Debug pour vérifier que l'univers est trouvé
       saveUniverse(selectedUniverse);
     } else {
       console.error('Univers non trouvé pour ce badge.');
@@ -38,19 +64,19 @@ const BadgeCarouselComponent = ({ universes, saveUniverse }) => {
   return (
     <div className="carousel-container">
       <div className="selected-badge" onClick={() => setShowCarousel(!showCarousel)}>
-        <img src={selectedBadge.src} alt={selectedBadge.alt} className="large-badge" />
+        <img src={selectedUniverse.logo} alt={`Badge ${selectedUniverse.name}`} className="large-badge" />
       </div>
 
       {showCarousel && (
         <div className={`carousel ${closing ? 'closing' : ''}`}>
           <div className="badge-scroll-container">
-            {badges.map((badge) => (
+            {joinedUniverses.map((joinedUniverse) => (
               <div
-                key={badge.id}
-                className={`badge-item ${selectedBadge.id === badge.id ? 'active' : ''}`}
-                onClick={() => handleBadgeClick(badge)}
+                key={joinedUniverse._id}
+                className={`badge-item ${selectedUniverseLocal._id === joinedUniverse._id ? 'active' : ''}`}
+                onClick={() => handleBadgeClick(joinedUniverse)}
               >
-                <img src={badge.src} alt={badge.alt} />
+                <img src={joinedUniverse.logo} alt={joinedUniverse.name} />
               </div>
             ))}
           </div>
