@@ -1,5 +1,8 @@
 .admin-page {
     padding: 20px;
+    width: 100vw; /* Full width of the viewport */
+    height: 100vh; /* Full height of the viewport */
+    position: absolute; /* Ensures it covers the entire viewport */
   }
   
   .admin-topbar {

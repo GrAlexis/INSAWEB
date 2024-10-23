@@ -16,4 +16,11 @@
   .modal button {
     margin-right: 10px;
   }
+
+  .select-universe-container {
+    background-color: #E8EACC;
+    width: 100vw; /* Full width of the viewport */
+    height: 100vh; /* Full height of the viewport */
+    position: absolute; /* Ensures it covers the entire viewport */
+  }
   

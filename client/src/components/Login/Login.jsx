@@ -5,6 +5,7 @@ import {mdiCloseCircle} from '@mdi/js'
 import './Login.css'; 
 import axios from "axios";
 import { Link, useNavigate } from 'react-router-dom';
+import GoogleLoginBouton from './LoginGoogle'
 
 const Login = ({ showNavBar }) => {
   const [isSignIn, setIsSignIn] = useState(true); 
@@ -381,9 +382,14 @@ const Login = ({ showNavBar }) => {
             </div>
             </>
           )}
+          
           <button type="submit" className="login-button">
             {isSignIn ? 'je veux je veux' : 'Prêt à sheeesh ??'}
           </button>
+          {isSignIn && <div className="google-login">
+            <h3>Ou connectez-vous avec Google :</h3>
+            <GoogleLoginBouton/>
+          </div>}
           {isSignIn &&( 
           <p className="forgot-password">
             <a className="linkPassword" href='/forgot-password'>Mot de passe oublié ?</a>

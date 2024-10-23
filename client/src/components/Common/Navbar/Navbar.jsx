@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import config from '../../../config';
 import { Link, useLocation } from 'react-router-dom';
 import { useUser } from '../../../hooks/commonHooks/UserContext';
@@ -9,17 +9,38 @@ import sheeshIcon from '../../../assets/buttons/navbar/sheesh/sheesh_v1.png';
 import eventsIcon from '../../../assets/buttons/navbar/events/events_v3.png'; 
 import rankingIcon from '../../../assets/buttons/navbar/ranking/ranking_v1.png';
 import adminIcon from '../../../assets/buttons/navbar/admin/admin_v1.png'; // Add an icon for admin
+import { useUniverse } from '../../../hooks/commonHooks/UniverseContext';
 
 const Navbar = () => {
     const location = useLocation();
     const { user } = useUser();
+    const { selectedUniverse, saveUniverse } = useUniverse();
+    const [backgroundColor, setBackgroundColor] = useState('#A4C0A5'); 
 
+
+    // Fetch style for navbar
+    useEffect(() => {
+        const fetchStyles = async () => {
+        var bgColor = '#A4C0A5';
+        if (selectedUniverse.styles && selectedUniverse.styles['navBarColor']) {
+            bgColor = selectedUniverse.styles['navBarColor'];
+        }
+
+        setBackgroundColor(bgColor);
+        }
+        if (selectedUniverse) {
+        fetchStyles()
+        }
+    }, [selectedUniverse]);
+    
     if (location.pathname === '/login') {
         return <nav />;
     }
 
+
+
     return (
-        <nav className="navbar">
+        <nav className="navbar" style={{ backgroundColor }}>
             <Link to="/profil" className={`nav-item ${location.pathname === '/profil' ? 'active' : ''}`}>
                 <img src={profilIcon} alt="Profil Icon" className="nav-icon" />
                 <span>Profil</span>

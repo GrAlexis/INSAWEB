@@ -16,9 +16,20 @@ const Feed = ({ showNavBar }) => {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [searchQuery, setSearchQuery] = useState(''); // State to store the search query
     const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
+    const [backgroundColor, setBackgroundColor] = useState('#E8EACC'); 
 
 
     useEffect(() => {
+      const fetchStyles = async () => {
+        var bgColor = '#E8EACC';
+        if (selectedUniverse.styles && selectedUniverse.styles['mainBackgroundColor']) {
+          bgColor = selectedUniverse.styles['mainBackgroundColor'];
+        }
+        console.log("bgColor "+bgColor)
+  
+        setBackgroundColor(bgColor);
+      }
+
       const fetchEvents = async () => {
         try {
           if (selectedUniverse?._id) {  // Ensure universe is selected
@@ -34,6 +45,9 @@ const Feed = ({ showNavBar }) => {
       };
 
       fetchEvents();
+      if (selectedUniverse) {
+        fetchStyles()
+      }
     }, [selectedUniverse]);  // Fetch events when selectedUniverse changes
 
     useEffect(() => {
@@ -60,6 +74,7 @@ const Feed = ({ showNavBar }) => {
     };
 
     return (
+      <div className='feed-page-container' style={{ backgroundColor }}>
         <Animation>
             <>
               <div className="infobar-container">
@@ -85,6 +100,7 @@ const Feed = ({ showNavBar }) => {
             </div>
             </>
         </Animation>
+        </div>
     );
 }
 

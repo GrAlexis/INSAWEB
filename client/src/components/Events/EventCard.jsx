@@ -39,7 +39,6 @@ const EventCard = ({ event }) => {
     //     console.log(error)
     //   }
     // }
-    console.log("event.image "+event.image)
     if (event.teams)
     {
       const fetchTeams = async () => {
@@ -134,7 +133,7 @@ const EventCard = ({ event }) => {
   return (
     <div className="event-card">
       <img 
-        src={`${config.backendAPI}/file/${event.image}`}  // Dynamically constructing the image URL
+        src={event.image}  // Dynamically constructing the image URL
         alt={event.title} 
         className="event-image" 
       />

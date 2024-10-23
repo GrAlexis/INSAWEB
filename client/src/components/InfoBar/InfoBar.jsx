@@ -20,11 +20,15 @@ const InfoBar = ({ selectedEvent }) => {
   const [loading, setLoading] = useState(true);
   const [teamName, setTeamName] = useState('');
   const [totalPoints, setTotalPoints] = useState(0);
-  const [isModalVisible, setModalVisible] = useState(false); // State to toggle modal visibility
-  const [universes, setUniverses] = useState([]); // State to store fetched universes
+  const [isModalVisible, setModalVisible] = useState(false); 
+  const [universes, setUniverses] = useState([]); 
+  const [backgroundColor, setBackgroundColor] = useState('rgba(255, 255, 255, 0.5)'); 
+
 
   const navigate = useNavigate(); // Initialize useNavigate hook
 
+  // Retrieve the background color from the universe's styles
+  
   // Fetch each universe by its ID from the backend
   const fetchJoinedUniverses = async () => {
     try {
@@ -45,6 +49,11 @@ const InfoBar = ({ selectedEvent }) => {
       fetchJoinedUniverses(); // Fetch the universes if user has joined some
     }
   }, [user?.joinedUniverses]);
+
+  // Fetch and apply styles when selectedUniverse is available
+  useEffect(() => {
+
+  }, [selectedUniverse]);
 
   const handleUniverseChange = (universeId) => {
     const chosenUniverse = universes.find(universe => universe._id === universeId);
@@ -73,6 +82,15 @@ const InfoBar = ({ selectedEvent }) => {
 
   // Fetch rankings
   useEffect(() => {
+    const fetchStyles = async () => {
+      var bgColor = ' rgba(255, 255, 255, 0.5)';
+      if (selectedUniverse.styles && selectedUniverse.styles['infoBarBackgroundColor']) {
+        bgColor = selectedUniverse.styles['infoBarBackgroundColor'];
+      }
+      console.log("bgColor "+bgColor)
+
+      setBackgroundColor(bgColor);
+    }
     const fetchRankings = async () => {
       try {
         setLoading(true);
@@ -118,6 +136,9 @@ const InfoBar = ({ selectedEvent }) => {
     if (user?._id) {
       fetchRankings();
     }
+    if (selectedUniverse) {
+      fetchStyles()
+    }
   }, [user?._id, setUser, selectedEvent, selectedUniverse]);
 
   if (loading) {
@@ -129,7 +150,7 @@ const InfoBar = ({ selectedEvent }) => {
   }
 
   return (
-    <div className="info-bar">
+    <div className="info-bar" style={{ backgroundColor }}>
       {/* Rank displayed at the top-left of the navbar */}
       <div className="rank-display">
         {userRank !== null ? (

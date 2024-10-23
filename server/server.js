@@ -1030,8 +1030,6 @@ app.post('/admin/validatePost/:id', checkAdmin, async (req, res) => {
     try {
         const { rewardPoints, eventId, universeId } = req.body;  // Include universeId in the request body
         const post = await Post.findById(req.params.id);
-        console.log("eventid "+eventId)
-        console.log("universeId "+universeId)
 
         if (!post) {
             return res.status(404).send('Post not found');
@@ -1188,6 +1186,19 @@ app.get('/universes', async (req, res) => {
     }
 });
 
+app.get('/universe/:id', async (req, res) => {
+    try {
+      const universe = await Universe.findById(req.params.id);
+      if (!universe) {
+        return res.status(404).json({ message: 'Universe not found' });
+      }
+      res.status(200).json(universe);
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching universe details', error });
+    }
+  });
+  
+
 // Get a single universe by its ID
 app.get('/universes/:universeId', async (req, res) => {
     try {
@@ -1289,15 +1300,18 @@ app.post('/events/create', upload.single('file'), async (req, res) => {
       return res.status(400).json({ message: 'Title, image, and universeId are required.' });
     }
 
+    // Read the file as a Base64 string
+    const base64Image = fs.readFileSync(req.file.path, { encoding: 'base64' });
+    const mimeType = req.file.mimetype;  // Capture the MIME type (e.g., image/jpeg, image/png)
+
     // Generate a unique ID for the event
     const newEventId = new mongoose.Types.ObjectId();
-
     // Save the event in the database
     const newEvent = new Event({
     _id: newEventId,
       id: newEventId,
       title: title,
-      image: req.file.filename,  // Save the uploaded image's filename
+      image: `data:${mimeType};base64,${base64Image}`,  // Store Base64 image string
       date: date || '',  // Optional date field
       challenges: '',
       teams: [],
@@ -1314,6 +1328,9 @@ app.post('/events/create', upload.single('file'), async (req, res) => {
     universe.events.push(newEventId);  // Add the new event ID to the universe's events array
     await universe.save();  // Save the updated universe
 
+    // Delete the temporary file (optional, since you're saving it as Base64)
+    fs.unlinkSync(req.file.path);
+
     // Respond with the created event
     res.status(201).json(newEvent);
 
@@ -1322,31 +1339,50 @@ app.post('/events/create', upload.single('file'), async (req, res) => {
     res.status(500).json({ message: 'Error creating event.' });
   }
 });
-// Route to update the universe password
-app.post('/universe/updatePassword', async (req, res) => {
-    const { universeId, password } = req.body;
-  console.log("dans la boucle")
-  console.log("universeId "+universeId)
-  console.log("password "+ password)
+
+// Universe update route (password and logo)
+app.post('/universe/update', upload.single('file'), async (req, res) => {
+    const { universeId, password, styles } = req.body;
+  console.log("styles "+styles)
     try {
-      // Hash the password (make sure to use a hashing library like bcrypt)
-      const hashedPassword = bcrypt.hashSync(password, 10); // Example with bcrypt
-        console.log("hashed "+hashedPassword)
-      // Update the universe with the new password
       const universe = await Universe.findById(universeId);
+  
       if (!universe) {
         return res.status(404).json({ message: 'Universe not found.' });
       }
-      console.log("universe.name "+universe.name)
-      universe.hashedPassword = hashedPassword; // Assuming universe has a password field
-      console.log("universe.password "+universe.hashedPassword)
-      await universe.save();
   
-      res.status(200).json({ message: 'Password updated successfully.' });
-    } catch (error) {
-      console.error
+      // Hash the password if it's provided
+      if (password) {
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        universe.hashedPassword = hashedPassword;  // Update the password
+      }
+  
+      // Convert the uploaded logo file to Base64 if provided
+      if (req.file) {
+        const logoPath = req.file.path;  // File path for the uploaded logo
+        const mimeType = req.file.mimetype;  // Capture the MIME type (e.g., image/jpeg, image/png)
+  
+        // Read the file as a Base64 string
+        const base64Logo = fs.readFileSync(logoPath, { encoding: 'base64' });
+        universe.logo = `data:${mimeType};base64,${base64Logo}`;  // Save the Base64 encoded logo
+  
+        // Remove the temporary file after reading it
+        fs.unlinkSync(logoPath);
+      }
+      // Update the custom styles
+    if (styles) {
+    universe.styles = JSON.parse(styles);
     }
-})
+  
+      await universe.save();  // Save the updated universe
+  
+      res.status(200).json({ message: 'Universe updated successfully.' });
+    } catch (error) {
+      console.error('Error updating universe:', error);
+      res.status(500).json({ message: 'Error updating universe.' });
+    }
+  });
+
 
 app.get("/", (req,res) =>{
     res.send("Hello from Backend Server !");

@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const User = require("../models/user");
 const { refreshAccessToken,  sendEmail} = require('../gmail')
 const secrets = require('../secrets_API.json')
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client('870362726807-4dcvr8vvcq0lkvnrkhh89sgr3plbtuib.apps.googleusercontent.com');
 
 
 
@@ -94,12 +96,9 @@ const registerUserGlobal = async (req, res) => {
     if (userAlreadyExist) {
       return res.status(401).json({ message: 'User already exists' });
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const token = jwt.sign({ email: email }, secretKey, { expiresIn: '15m' });
     const access_token = await refreshAccessToken(secrets['web']['client_id'], secrets['web']['client_secret'], secrets['web']['refresh_token'])
-    console.log(token);
-    console.log(email);
     if (access_token) {
       try {
         await sendEmail(
@@ -201,6 +200,36 @@ const loginUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+const loginUserGoogle = async (req, res) => {
+  try {
+    const tokenGoogle  = req.body.token
+    const ticket = await client.verifyIdToken({
+      idToken:tokenGoogle,
+      audience: "870362726807-4dcvr8vvcq0lkvnrkhh89sgr3plbtuib.apps.googleusercontent.com", // Make sure this matches your client ID
+    });
+    const payload = ticket.getPayload();
+
+    // Extract user information from the payload
+    const userId = payload['sub']; // The unique Google user ID
+    const email = payload['email'];
+    const name = payload['name'];
+    const picture = payload['picture'];
+
+    // Continue with your application logic
+    //console.log(email)
+    const userAlreadyExist = await User.findOne({ email });
+    if (!userAlreadyExist) {
+      return res.status(401).json({ message: 'User doesn\'t exists' });
+    }
+    const secretKey = process.env.DEV_SECRET
+    const token = jwt.sign({ email:email }, secretKey);
+    return res.status(200).json({ token, 'email':email});
+  } catch (error) {
+    console.error('Error verifying ID token:', error);
+    throw new Error('Invalid ID token');
+  }
+}
 
 const decodeToken = (req,res) => {
   try {
@@ -318,6 +347,7 @@ module.exports = {
   isAdmin,
   verifyAccount,
   updateMdp,
+  loginUserGoogle,
   createResetMdpLink,
   registerUserGlobal
 };
