@@ -3,7 +3,11 @@
     border-bottom: 1px solid #ddd;
     background-color: #d9dbbd;
   }
-  
+  .ranking-page {
+    width: 100vw; /* Full width of the viewport */
+    height: 100vh; /* Full height of the viewport */
+    position: absolute; /* Ensures it covers the entire viewport */
+  }
   .infobar select {
     font-family: 'montserrat', sans-serif;
     padding: 5px;

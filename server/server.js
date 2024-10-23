@@ -1342,8 +1342,8 @@ app.post('/events/create', upload.single('file'), async (req, res) => {
 
 // Universe update route (password and logo)
 app.post('/universe/update', upload.single('file'), async (req, res) => {
-    const { universeId, password } = req.body;
-  
+    const { universeId, password, styles } = req.body;
+  console.log("styles "+styles)
     try {
       const universe = await Universe.findById(universeId);
   
@@ -1369,6 +1369,10 @@ app.post('/universe/update', upload.single('file'), async (req, res) => {
         // Remove the temporary file after reading it
         fs.unlinkSync(logoPath);
       }
+      // Update the custom styles
+    if (styles) {
+    universe.styles = JSON.parse(styles);
+    }
   
       await universe.save();  // Save the updated universe
   

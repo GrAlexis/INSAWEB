@@ -18,15 +18,17 @@
   border-radius: 30px;
   padding: 10px;
   color: rgb(110, 108, 108);
-  background-color:  #A4C0A5 ;
+  background-color:  #ffffff ;
   font-family: 'Lemon', sans-serif; /* Lemon font */
-  border: none;
+  border-width: 2px;
+  border-color: #6a8a87;
   cursor: pointer;
 }
 
 .event-buttons button.selected {
-  background-color:  #6a8a87;
-  color: aliceblue;
-  border-color: aliceblue;
-  border-width: 20px;
+  color: rgb(110, 108, 108); 
+  border-color: rgb(31, 190, 68);
+  border-width: 3px;
+}
+.feed-page-container {
 }

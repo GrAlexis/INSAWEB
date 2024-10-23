@@ -29,10 +29,20 @@ const Sheesh = ({ showNavBar }) => {
     eventId: '',
     isCollective: false,
   });
+  const [backgroundColor, setBackgroundColor] = useState('#E8EACC'); 
 
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchStyles = async () => {
+      var bgColor = '#E8EACC';
+      if (selectedUniverse.styles && selectedUniverse.styles['mainBackgroundColor']) {
+        bgColor = selectedUniverse.styles['mainBackgroundColor'];
+      }
+      console.log("bgColor "+bgColor)
+
+      setBackgroundColor(bgColor);
+    }
     const token = localStorage.getItem('token');
 
     if (!token) {
@@ -80,6 +90,9 @@ const Sheesh = ({ showNavBar }) => {
         setPinnedChallenges(userPinnedChallenges);
       }
     };
+    if (selectedUniverse) {
+      fetchStyles()
+    }
 
     fetchEvents();
     fetchChallenges();
@@ -186,7 +199,7 @@ const Sheesh = ({ showNavBar }) => {
 
   return (
     <Animation>
-      <div className="home-page">
+      <div className="sheesh-page" style={{backgroundColor}}>
         <header>
           {/* Info banner */}
         </header>

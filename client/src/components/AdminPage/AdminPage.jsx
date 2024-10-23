@@ -16,12 +16,25 @@ const AdminPage = ({ showNavBar }) => {
   const [newEventImage, setNewEventImage] = useState(null);  // State to store image file
   const [isCreating, setIsCreating] = useState(false);  // Loading state for event creation
   const [showManageUniverse, setShowManageUniverse] = useState(false);  // State to toggle ManageUniverse visibility
+  const [backgroundColor, setBackgroundColor] = useState('#E8EACC'); 
 
   const navigate = useNavigate();
 
   const { selectedUniverse } = useUniverse();  // Get selected universe from the context
 
   useEffect(() => {
+    const fetchStyles = async () => {
+      var bgColor = '#E8EACC';
+      if (selectedUniverse.styles && selectedUniverse.styles['mainBackgroundColor']) {
+        bgColor = selectedUniverse.styles['mainBackgroundColor'];
+      }
+      console.log("bgColor "+bgColor)
+
+      setBackgroundColor(bgColor);
+    }
+    if (selectedUniverse) {
+      fetchStyles()
+    }
     const token = localStorage.getItem('token');
 
     // Ensure navbar mounts when refreshing
@@ -86,7 +99,7 @@ const AdminPage = ({ showNavBar }) => {
   };
 
   return (
-    <div className="admin-page">
+    <div className="admin-page" style={{backgroundColor}}>
       <div className="admin-topbar">
         <select onChange={(e) => setSelectedEvent(events.find(event => event._id === e.target.value))}>
           <option value="">Sélectionner un évènement</option>

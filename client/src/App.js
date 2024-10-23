@@ -84,7 +84,7 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPassword showNavBar={refreshPath} />} />
               <Route path="/reset-password/:token" element={<ResetPassword showNavBar={refreshPath} />} />
               </Routes>
-          {(isComponentWithNavbar || isLoggedIn) && <UserProvider><Navbar /></UserProvider>}
+          {(isComponentWithNavbar || isLoggedIn) && <UniverseProvider><UserProvider><Navbar /></UserProvider></UniverseProvider>}
           </BrowserRouter>
       </div>
   )

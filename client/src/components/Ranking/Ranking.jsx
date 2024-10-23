@@ -17,10 +17,33 @@ const Ranking = ({ showNavBar }) => {
   const [teamMembers, setTeamMembers] = useState([]);
   const [viewMode, setViewMode] = useState('teams'); // New state for switching between views
   const [playerRanking, setPlayerRanking] = useState([]); // State for player ranking
+  const [backgroundSuperiorColor, setBackgroundSuperiorColor] = useState('#A4C0A5'); 
+  const [backgroundColor, setBackgroundColor] = useState('#E8EACC'); 
+
   const navigate = useNavigate();
 
   const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
 
+  useEffect(() => {
+    const fetchStyles = async () => {
+      var bgColor = '#A4C0A5';
+      if (selectedUniverse.styles && selectedUniverse.styles['infoBarBackgroundColor']) {
+          bgColor = selectedUniverse.styles['infoBarBackgroundColor'];
+      }
+      console.log("bgcolor "+bgColor)
+      setBackgroundSuperiorColor(bgColor);
+
+      bgColor='#E8EACC'
+      if (selectedUniverse.styles && selectedUniverse.styles['mainBackgroundColor']) {
+        bgColor = selectedUniverse.styles['mainBackgroundColor'];
+      }
+      console.log("bgcolor "+bgColor)
+      setBackgroundColor(bgColor);
+    }
+    if (selectedUniverse) {
+    fetchStyles()
+    }
+}, [selectedUniverse]);
   useEffect(() => {
     const token = localStorage.getItem('token');
 
@@ -78,8 +101,8 @@ const Ranking = ({ showNavBar }) => {
 
   return (
     <Animation>
-      <div className="ranking-page">
-        <div className="infobar">
+      <div className="ranking-page" style={{backgroundColor}}>
+        <div className="infobar" style={{backgroundSuperiorColor }}>
           <select onChange={(e) => {
             setSelectedEvent(events.find(event => event.id === e.target.value));
             setSelectedTeam(null);

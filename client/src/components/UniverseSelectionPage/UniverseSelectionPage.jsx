@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 import bcrypt from 'bcryptjs';
+import './UniverseSelectionPage.css'
 
 const UniverseSelectionPage = ({ showNavBar }) => {
   const [universes, setUniverses] = useState([]);
@@ -80,7 +81,7 @@ const UniverseSelectionPage = ({ showNavBar }) => {
   };
 
   return (
-    <div>
+    <div className='select-universe-container'>
       <h2>Sélectionner un univers à rejoindre</h2>
       <ul>
         {universes.map(universe => (
