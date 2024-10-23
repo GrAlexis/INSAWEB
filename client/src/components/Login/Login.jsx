@@ -379,10 +379,10 @@ const Login = ({ showNavBar }) => {
           <button type="submit" className="login-button">
             {isSignIn ? 'je veux je veux' : 'Prêt à sheeesh ??'}
           </button>
-          <div className="google-login">
+          {isSignIn && <div className="google-login">
             <h3>Ou connectez-vous avec Google :</h3>
             <GoogleLoginBouton/>
-          </div>
+          </div>}
           {isSignIn &&( 
           <p className="forgot-password">
             <a className="linkPassword" href='/forgot-password'>Mot de passe oublié ?</a>
