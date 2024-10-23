@@ -172,7 +172,6 @@ const updateMdp = async (req,res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(req)
     const secretKey = process.env.DEV_SECRET
     
     const user = await User.findOne({ email });
@@ -205,10 +204,9 @@ const loginUser = async (req, res) => {
 const loginUserGoogle = async (req, res) => {
   try {
     const tokenGoogle  = req.body.token
-    //console.log(token)
     const ticket = await client.verifyIdToken({
       idToken:tokenGoogle,
-      audience: '870362726807-4dcvr8vvcq0lkvnrkhh89sgr3plbtuib.apps.googleusercontent.com', // Make sure this matches your client ID
+      audience: "870362726807-4dcvr8vvcq0lkvnrkhh89sgr3plbtuib.apps.googleusercontent.com", // Make sure this matches your client ID
     });
     const payload = ticket.getPayload();
 

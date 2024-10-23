@@ -1,54 +1,89 @@
-/* global google */
+// GoogleLoginButton.js
 import React, { useEffect } from 'react';
 import axios from 'axios';
-import config from '../../config';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import queryString from 'query-string';
+import { Link, useNavigate } from 'react-router-dom';
+import config from '../../config'
+import GoogleButton from 'react-google-button';
 
-const GoogleLoginBouton = ({ showNavBar }) => {
-  const navigate = useNavigate();
+// Your Google OAuth client details
+const clientId = '870362726807-4dcvr8vvcq0lkvnrkhh89sgr3plbtuib.apps.googleusercontent.com'; // Replace with your client ID
+const clientSecret = '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'; // Replace with your client secret (keep it secure)
+const redirectUri = "http://localhost:3000/login"; // Adjust based on your setup
+
+
+
+function GoogleLoginButton() {
+    const navigate = useNavigate(); 
+  const location = useLocation();
 
   useEffect(() => {
-    // Créez une balise <script> et ajoutez-la au document
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
+    //console.log(location.search)
+    const { code } = queryString.parse(location.search);
 
-    script.onload = () => {
-      if (window.google) {
-        google.accounts.id.initialize({
-          client_id: "870362726807-4dcvr8vvcq0lkvnrkhh89sgr3plbtuib.apps.googleusercontent.com", // Remplacez par votre client ID Google
-          callback: handleGoogleSignIn,
-        });
+    // If the 'code' is in the URL, exchange it for an id_token
+    if (code) {
+        //console.log(code)
+      exchangeCodeForToken(code);
+    }
+    else{
+        console.log('No code')
+    }
+  }, [location]);
 
-        google.accounts.id.renderButton(
-          document.getElementById('googleSignInButton'),
-          { theme: 'outline' } // Personnalisez la taille et le style du bouton ici
-        );
-      }
-    };
+  const initiateGoogleLogin = () => {
+    const scope = 'openid email profile';
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}`;
 
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
+    // Redirect user to Google's OAuth 2.0 authorization URL
+    window.location.href = googleAuthUrl;
+  };
 
-  const handleGoogleSignIn = async (response) => {
-    const token = response.credential;
+  const exchangeCodeForToken = async (authCode) => {
     try {
-      const verifyResponse = await axios.post(`${config.backendAPI}/api/user/loginGoogle`, { token });
-      const { token: userToken, email } = verifyResponse.data;
-      console.log(userToken)
-      localStorage.setItem('token', userToken);
-      localStorage.setItem('email', email);
-      navigate('/home');
+      // Exchange the authorization code for tokens
+      const response = await axios.post('https://oauth2.googleapis.com/token', {
+        client_id: clientId,
+        client_secret: clientSecret,
+        code: authCode,
+        grant_type: 'authorization_code',
+        redirect_uri: redirectUri,
+      });
+
+      // Extract 'id_token' from the response
+      const  id_token  = response.data['id_token'];
+      console.log(id_token)
+      // Send the 'id_token' to your backend for verification
+      const backendResponse = await axios.post(config.backendAPI+'/api/user/loginGoogle', {
+        token: id_token,
+      });
+
+      // Handle the response from the backend
+      const { token, email } = backendResponse.data;
+      /*console.log('JWT Token:', token);
+      console.log('User Email:', email);*/
+
+      // Store the token in local storage or cookies for future authenticated requests
+      localStorage.setItem('token', token);
+
+      // Redirect or update your app state as needed
+      if (token){
+        navigate('/home')
+      }
     } catch (error) {
-      console.error('Échec de la connexion via Google', error);
+      console.error('Error exchanging code for tokens:', error);
+      alert('Google login failed. Please try again.');
     }
   };
 
-  return <div id="googleSignInButton"></div>;
-};
+  return (
+    <div>
+      <GoogleButton onClick={initiateGoogleLogin}>
+        Login with Google
+      </GoogleButton>
+    </div>
+  );
+}
 
-export default GoogleLoginBouton;
+export default GoogleLoginButton;
