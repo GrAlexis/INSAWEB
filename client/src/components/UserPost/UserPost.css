@@ -1,0 +1,31 @@
+    .user-posts-container {
+    text-align: center;
+    margin: 20px;
+  }
+  
+  .toggle-posts-button {
+    padding: 12px 24px;
+    font-size: 16px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .toggle-posts-button:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+  }
+  
+  .toggle-posts-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.5);
+  }
+  
+  .user-posts {
+    margin-top: 20px;
+  }
+  
