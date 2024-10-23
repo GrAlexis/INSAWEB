@@ -27,6 +27,7 @@ function Profil() {
     // Clear the token from local storage
     localStorage.removeItem('token');
     localStorage.removeItem('email');
+  }
 
 
   useEffect(() => {
