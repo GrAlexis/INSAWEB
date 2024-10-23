@@ -4,6 +4,7 @@ import './EventCard.css';
 import axios from 'axios';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import Timer from '../Timer/Timer';
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 
 const EventCard = ({ event }) => {
   const { user, setUser } = useUser();
@@ -12,6 +13,8 @@ const EventCard = ({ event }) => {
   const [currentTeamName, setCurrentTeamName] = useState('');
   const [timeLeftInHours, setTimeLeftInHours] = useState(null);
 
+  const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
+
   // Transform DD/MM/YYYY string into a Date object
   const parseDate = (dateStr) => {
     const [day, month, year] = dateStr.split('/');
@@ -19,32 +22,58 @@ const EventCard = ({ event }) => {
   };
 
   useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        const response = await axios.get(config.backendAPI + `/events/${event.id}/teams`);
-        const teamsWithMembersCount = await Promise.all(
-          response.data.map(async (team) => {
-            const membersResponse = await axios.get(config.backendAPI + `/teams/${team.id}/members`);
-            return {
-              ...team,
-              membersCount: membersResponse.data.length,
-            };
-          })
-        );
-        setTeams(teamsWithMembersCount);
-
-        if (user.teamId) {
-          const currentTeam = teamsWithMembersCount.find((team) => team.id === user.teamId);
-          setCurrentTeamName(currentTeam ? currentTeam.name : 'No team');
-        } else {
-          setCurrentTeamName('No team');
+    // const initializeAndFetchData = async () => {
+    //   try {
+    //     // Check if user.universes[universeId].events[event._id] exists
+    //   const universe = user.universes[selectedUniverse._id];
+    //   if (!universe || !universe.events[event._id]) {
+    //     // If the universe or event doesn't exist, call the initialize-universe route
+    //     await axios.post(`${config.backendAPI}/users/initialize-universe`, {
+    //       userId: user._id,
+    //       universeId : selectedUniverse._id,
+    //       eventId: event._id,
+    //     });
+    //   }
+    //   }
+    //   catch (error) {
+    //     console.log(error)
+    //   }
+    // }
+    if (event.teams)
+    {
+      const fetchTeams = async () => {
+        try {
+          
+          const response = await axios.get(`${config.backendAPI}/events/${event._id}/teams`);
+          const teamsWithMembersCount = await Promise.all(
+            response.data.map(async (team) => {
+              const membersResponse = await axios.get(`${config.backendAPI}/teams/${team.id}/members`, {
+                params: { universeId: selectedUniverse._id }
+              });            
+              return {
+                ...team,
+                membersCount: membersResponse.data.length,
+              };
+            })
+          );
+          setTeams(teamsWithMembersCount);
+  
+          // Access the current team from user.universes[universeId].events[eventId].teamId
+          const universe = user.universes[selectedUniverse._id];
+          if (universe && universe.events[event._id] && universe.events[event._id].teamId) {
+            const currentTeamId = universe.events[event._id].teamId;
+            const currentTeam = teamsWithMembersCount.find((team) => team.id === currentTeamId);
+            setCurrentTeamName(currentTeam ? currentTeam.name : 'No team');
+          } else {
+            setCurrentTeamName('No team');
+          }
+        } catch (error) {
+          console.error('Error fetching teams', error);
         }
-      } catch (error) {
-        console.error('Error fetching teams', error);
-      }
-    };
+      };
+      fetchTeams();
+    }
 
-    fetchTeams();
 
     // Calculate the time left until the event date in hours
     const calculateTimeLeft = () => {
@@ -54,32 +83,40 @@ const EventCard = ({ event }) => {
       const hoursLeft = Math.floor(timeDifference / (1000 * 60 * 60)); // Convert to hours
       setTimeLeftInHours(hoursLeft > 0 ? hoursLeft : 0); // Ensure the value is not negative
     };
-
+    // initializeAndFetchData(); //Call the function to initialize universe
     calculateTimeLeft();
-  }, [event.id, user, event.date]);
+  }, [event._id, user, event.date, isPopupOpen, selectedUniverse]);
 
   const handleJoinTeam = async (teamId) => {
-    if (user.teamId === teamId) {
-      setIsPopupOpen(false);
-      return;
-    }
+    const universe = user.universes[selectedUniverse._id];
+    const previousTeamId = universe?.events[event._id]?.teamId || '';
+
     try {
-      var previousTeamId = '';
-      if (user.teamId) {
-        previousTeamId = user.teamId;
-      } else {
-        previousTeamId = '';
-      }
-      const response = await axios.post(config.backendAPI + '/assignTeam', {
+      const response = await axios.post(`${config.backendAPI}/assignTeam`, {
         userId: user._id,
         teamId: teamId,
-        eventId: event.id,
-        previousTeamId: previousTeamId,
+        eventId: event._id,
+        universeId : selectedUniverse._id,
+        previousTeamId,
       });
-      setUser({ ...user, teamId: teamId });
-      setCurrentTeamName(teams.find((team) => team.id === teamId).name);
+
+      // Update the user's team in state
+      const updatedUser = { ...user };
+      updatedUser.universes[selectedUniverse._id].events[event._id].teamId = teamId;
+      setUser(updatedUser);
+
+      // Refresh the teams and currentTeamName after joining the team
+      const updatedTeams = teams.map((team) =>
+        team.id === teamId
+          ? { ...team, membersCount: team.membersCount + 1 } // Increment the new team's member count
+          : team.id === previousTeamId
+          ? { ...team, membersCount: team.membersCount - 1 } // Decrement the previous team's member count
+          : team
+      );
+      setTeams(updatedTeams);
+      const newTeam = updatedTeams.find((team) => team.id === teamId);
+      setCurrentTeamName(newTeam ? newTeam.name : 'No team');
       setIsPopupOpen(false);
-      console.log('Joined team successfully', response.data);
     } catch (error) {
       console.error('Error joining team', error);
     }
@@ -91,11 +128,15 @@ const EventCard = ({ event }) => {
 
   const eventDate = parseDate(event.date);
   const currentDate = new Date();
-  const canChangeTeam = currentDate < eventDate;
+  const canChangeTeam = currentDate < eventDate && (event.teams && event.teams.length>0);
 
   return (
     <div className="event-card">
-      <img src={event.image} alt={event.title} className="event-image" />
+      <img 
+        src={event.image}  // Dynamically constructing the image URL
+        alt={event.title} 
+        className="event-image" 
+      />
       <div className="event-details">
         <h2>{event.title}</h2>
         <p>{event.date}</p>
@@ -105,7 +146,7 @@ const EventCard = ({ event }) => {
 
         {canChangeTeam && (
           <button className="sheesh-button" onClick={() => setIsPopupOpen(true)}>
-            {user.teamId ? 'Changer d\'equipe' : 'Rejoins une equipe!'}
+            {user.universes[selectedUniverse._id].events[event._id].teamId ? 'Changer d\'equipe' : 'Rejoins une equipe!'}
           </button>
         )}
       </div>

@@ -1,0 +1,13 @@
+.custom-styles {
+    margin-top: 20px;
+  }
+  
+  .custom-styles label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  .custom-styles input[type="color"] {
+    margin-left: 10px;
+  }
+  

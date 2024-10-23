@@ -3,6 +3,7 @@ import config from '../../config';
 import axios from 'axios';
 import './ManageTeams.css';
 import modifyButtonIcon from '../../assets/buttons/modify.png';
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 
 const ManageTeams = ({ eventId }) => {
   const [teams, setTeams] = useState([]);
@@ -16,21 +17,36 @@ const ManageTeams = ({ eventId }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [usersWithoutTeam, setUsersWithoutTeam] = useState([]);
 
+  const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
+
   useEffect(() => {
     const fetchTeamsAndUsers = async () => {
       try {
         // Fetch teams and their members
         const teamsResponse = await axios.get(config.backendAPI+`/events/${eventId}/teams`);
         const teamsWithPoints = await Promise.all(teamsResponse.data.map(async team => {
-          const membersResponse = await axios.get(config.backendAPI+`/teams/${team.id}/members`);
+
+        // Include universeId as a query parameter
+        const membersResponse = await axios.get(`${config.backendAPI}/teams/${team.id}/members`, {
+          params: { universeId: selectedUniverse._id }  // Pass universeId as a query parameter
+        });
+
           const points = membersResponse.data.reduce((acc, member) => acc + (member.points || 0), 0);
           return { ...team, members: membersResponse.data, points };
         }));
         setTeams(teamsWithPoints);
 
-        // Fetch users without a team
-        const usersResponse = await axios.get(config.backendAPI+`/users`);
-        const usersWithoutTeam = usersResponse.data.filter(user => !user.teamId || user.teamId === '');
+      // Fetch all users
+      const usersResponse = await axios.get(config.backendAPI + `/users`);
+      
+      // Filter users without a valid team for this specific event and universe
+      const usersWithoutTeam = usersResponse.data.filter(user => {
+        const universe = user.universes?.[selectedUniverse._id];
+        const eventTeam = universe?.events?.[eventId]?.teamId;
+
+        // Check if the user doesn't have a team for the current event
+        return !eventTeam || eventTeam === null || eventTeam === undefined;
+      });
         setUsersWithoutTeam(usersWithoutTeam);
 
         setIsLoading(false);
@@ -107,18 +123,35 @@ const ManageTeams = ({ eventId }) => {
 
   const handleUserTransfer = async (newTeamId) => {
     try {
-      const previousTeamId = selectedUser.teamId;
+        // Fetch the previous team using the /userTeam/:eventId route
+        let previousTeamId = null; // Default to null if no previous team is found
+        try {
+          const teamResponse = await axios.get(`${config.backendAPI}/userTeam/${eventId}`, {
+            params: { userId: selectedUser._id, universeId: selectedUniverse._id }
+          });
+
+          // Check if the team exists in the response
+          const previousTeam = teamResponse.data;
+          previousTeamId = previousTeam ? previousTeam.id : null;
+        } catch (teamError) {
+          console.warn("No previous team found or error fetching previous team:", teamError);
+          // Proceed without setting previousTeamId
+        }
+        if (newTeamId === previousTeamId)
+        {
+          return
+        }
 
       await axios.post(config.backendAPI+'/assignTeam', {
         userId: selectedUser._id,
         teamId: newTeamId,
         eventId: eventId,
+        universeId: selectedUniverse._id,
         previousTeamId: previousTeamId,
       });
-
       // Update team lists
       const updatedTeams = teams.map(team => {
-        if (team.id === previousTeamId) {
+        if (previousTeamId && team.id === previousTeamId) {
           return { ...team, members: team.members.filter(member => member._id !== selectedUser._id) };
         }
         if (team.id === newTeamId) {
@@ -127,8 +160,14 @@ const ManageTeams = ({ eventId }) => {
         return team;
       });
       setTeams(updatedTeams);
-
-      setUsersWithoutTeam(usersWithoutTeam.filter(user => user._id !== selectedUser._id));
+      if (newTeamId === null || newTeamId === undefined || newTeamId ==='')
+      {
+        setUsersWithoutTeam([...usersWithoutTeam, selectedUser]);
+      }
+      else
+      {
+        setUsersWithoutTeam(usersWithoutTeam.filter(user => user._id !== selectedUser._id));
+      }
       setShowUserTransferPanel(false);
     } catch (error) {
       console.error('Error transferring user:', error);
@@ -194,7 +233,6 @@ const ManageTeams = ({ eventId }) => {
           usersWithoutTeam.map(user => (
             <div key={user._id} className="user-card">
               <h3>{user.name}</h3>
-              <p>No Team</p>
               <button className='change-team-button' onClick={() => {
                 setSelectedUser(user);
                 setShowUserTransferPanel(true);

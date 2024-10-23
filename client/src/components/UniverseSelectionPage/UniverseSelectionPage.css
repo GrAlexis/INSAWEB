@@ -1,0 +1,26 @@
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+  }
+  
+  .modal input {
+    margin-bottom: 10px;
+  }
+  
+  .modal button {
+    margin-right: 10px;
+  }
+
+  .select-universe-container {
+    background-color: #E8EACC;
+    width: 100vw; /* Full width of the viewport */
+    height: 100vh; /* Full height of the viewport */
+    position: absolute; /* Ensures it covers the entire viewport */
+  }
+  

@@ -5,6 +5,7 @@
   height: 100vh;
   overflow-y: auto; /* Ajoute un défilement vertical lorsque nécessaire */
   padding: 20px;
+  background-color: #E8EACC  ;
   }
   
   .login-box {

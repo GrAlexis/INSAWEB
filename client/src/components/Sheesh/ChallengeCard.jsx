@@ -10,8 +10,12 @@ import waitingIcon from '../../assets/icons/sheesh/waiting.png';
 import collectiveIcon from '../../assets/icons/sheesh/together.png';
 import pinIcon from '../../assets/buttons/pin.png';
 import unpinIcon from '../../assets/buttons/unpin.webp';
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 
-const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile } from '@ffmpeg/util'
+
+const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId,initializeAndFetchData }) => {
   const { user, setUser } = useUser();
   const { challengeId } = useParams();
   const [file, setFile] = useState(null);
@@ -25,6 +29,11 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
   const [userNeedsToJoinTeam, setUserNeedsToJoinTeam] = useState(false);
   const navigate = useNavigate();
 
+  const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
+  const ffmpeg = new FFmpeg();
+
+
+
   useEffect(() => {
     if (challenge.id === challengeId) {
       setOpenChallengeId(challenge.id);
@@ -32,6 +41,7 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
   }, [challenge.id, challengeId, setOpenChallengeId]);
 
   useEffect(() => {
+
     const checkUserPost = async () => {
       if (!user) return; // Ensure user is not null before making requests
 
@@ -39,14 +49,20 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
         // Check if event has teams and user is not in a team
         const eventResponse = await axios.get(config.backendAPI+`/events/${challenge.eventId}`);
         const event = eventResponse.data;
-        setUserNeedsToJoinTeam(event?.teams.length > 0 && !user.teamId);
+        // If user.universes[selectedUniverse._id].events[challenge.eventId] does not exist, call the initialize method
+        if (!user.universes[selectedUniverse._id]?.events[challenge.eventId]) {
+          await initializeAndFetchData(challenge.eventId); // Call the method to initialize universe and event
+        }
+        
+        setUserNeedsToJoinTeam(event?.teams.length > 0 && !user.universes[selectedUniverse._id].events[challenge.eventId].teamId);
+
         const response = await axios.get(config.backendAPI+`/posts/byUserAndChallenge?userId=${user._id}&challengeId=${challenge.id}`);
         if (response.data.length > 0) {
           setPost(response.data[0]);
         }
 
-        if (challenge.isCollective && user.teamId) {
-          const teamPostsResponse = await axios.get(config.backendAPI+`/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+        if (challenge.isCollective && user.universes[selectedUniverse._id].events[challenge.eventId].teamId) {
+          const teamPostsResponse = await axios.get(config.backendAPI+`/posts/byTeamAndChallenge?teamId=${user.universes[selectedUniverse._id].events[challenge.eventId].teamId}&challengeId=${challenge.id}`);
           if (teamPostsResponse.data.length > 0) {
             const teamPost = teamPostsResponse.data[0];
             if (teamPost.user !== user._id) {
@@ -64,7 +80,7 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
     };
 
     checkUserPost();
-  }, [user, challenge.id, user?.teamId, challenge.isCollective]);
+  }, [user, challenge.id, challenge.isCollective,selectedUniverse]);
 
   const handlePinClick = async () => {
     if (!user) return; // Ensure user is not null before proceeding
@@ -93,10 +109,10 @@ const ChallengeCard = ({ challenge, isOpen, setOpenChallengeId }) => {
     setDescription('');
   };
 
-const handleFileChange = (e) => {
+  const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
-    
-    // Expanded list of allowed image file types, including HEIC
+  
+    // Expanded list of allowed image and video file types
     const allowedFileTypes = [
       'image/jpeg', 
       'image/png', 
@@ -105,37 +121,74 @@ const handleFileChange = (e) => {
       'image/webp', 
       'image/bmp', 
       'image/tiff',
-      'image/heic'  // Added HEIC support
+      'image/heic',  // Added HEIC support
+      // 'video/mp4',   // Video support
+      // 'video/quicktime',  // MOV
+      // 'video/x-msvideo',  // AVI
+      // 'video/x-ms-wmv',   // WMV
+      // 'video/x-flv',      // FLV
+      // 'video/x-matroska'  // MKV
     ];
   
     if (selectedFile && allowedFileTypes.includes(selectedFile.type)) {
-      setFile(selectedFile); // Set the file if it's an image
+      setFile(selectedFile); // Set the file if it's allowed
     } else {
-      alert('Only image files (JPEG, PNG, GIF, JPG, WEBP, BMP, TIFF, HEIC) are allowed');
-      setFile(null); // Reset the file if it's not an image
+      const allowedExtensions = allowedFileTypes.map(type => type.split('/')[1]).join(', '); // Extract extensions
+      alert(`Only the following file types are allowed: ${allowedExtensions}`);
+      setFile(null); // Reset the file if it's not allowed
     }
   };
+  
 
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
   };
 
+  const compressVideo = async (videoFile) => {
+    if (!ffmpeg.loaded) {
+      await ffmpeg.load();
+    }
+    console.log("Input video size: ", (videoFile.size / 1024 / 1024).toFixed(2), "MB");
+
+    const fileName = videoFile.name;
+    await ffmpeg.writeFile("input.mp4", await fetchFile(videoFile))
+
+    // Run FFmpeg compression commands
+    // await ffmpeg.run('-i', fileName, '-vcodec', 'libx264', '-b:v', '1000k', '-crf', '28', 'output.mp4');
+    await ffmpeg.exec(["-i", "input.mp4", "output.mp4",'-vcodec', 'libx264', '-b:v', '1000k', "-crf","28"])
+    const compressedData = ffmpeg.readFile("output.mp4")
+    // Convert the output to a Blob
+    const compressedBlob = new Blob([compressedData.buffer], { type: 'video/mp4' });
+//logging
+    const compressedFile = new File([compressedBlob], 'compressed_' + fileName, { type: 'video/mp4' });
+    console.log("Compressed video size: ", (compressedFile.size / 1024 / 1024).toFixed(2), "MB");
+
+    // Return the compressed video file
+    return new File([compressedBlob], 'compressed_' + fileName, { type: 'video/mp4' });
+  };
+  
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setIsProcessing(true)
-
     try {
+      // Initialize the universe and event if necessary
+    await axios.post(`${config.backendAPI}/users/initialize-universe`, {
+      userId: user._id,
+      universeId: selectedUniverse._id,
+      eventId: challenge.eventId,
+    });
+    
       const eventResponse = await axios.get(config.backendAPI+`/events/${challenge.eventId}`);
       const event = eventResponse.data;
 
-      if (event.teams.length > 0 && (!user.teamId || !event.teams.includes(user.teamId))) {
+      if (event.teams.length > 0 && (!user.universes[selectedUniverse._id].events[challenge.eventId].teamId)) {
         setShowTeamWarning(true);
         setTimeout(() => setShowTeamWarning(false), 3000);
         return;
       }
 
-      if (challenge.isCollective &&user.teamId) {
-        const teamPostsResponse = await axios.get(config.backendAPI+`/posts/byTeamAndChallenge?teamId=${user.teamId}&challengeId=${challenge.id}`);
+      if (challenge.isCollective &&user.universes[selectedUniverse._id].events[challenge.eventId].teamId) {
+        const teamPostsResponse = await axios.get(config.backendAPI+`/posts/byTeamAndChallenge?teamId=${user.universes[selectedUniverse._id].events[challenge.eventId].teamId}&challengeId=${challenge.id}`);
         if (teamPostsResponse.data.length > 0 && teamPostsResponse.data[0].user !== user._id) {
           setCollectivePost(teamPostsResponse.data[0]);
           const userResponse = await axios.get(`/users/${teamPostsResponse.data[0].user}`);
@@ -144,15 +197,22 @@ const handleFileChange = (e) => {
           return;
         }
       }
-
+      console.log("juste avant compression")
+      if (file && file.type.startsWith('video')) {
+        // Compress the video file before upload
+        const compressedFile = await compressVideo(file);
+        setFile(compressedFile);  // Replace the original file with the compressed file
+      }
+      console.log("juste avant de créer le formData")
       const formData = new FormData();
       formData.append('file', file);
       formData.append('challengeId', challenge.id);
       formData.append('eventId', challenge.eventId);
       formData.append('user', user._id);
       formData.append('description', description);
-      if (user.teamId) {
-        formData.append('teamId', user.teamId);
+      formData.append('universeId', selectedUniverse._id)
+      if (user.universes[selectedUniverse._id].events[challenge.eventId].teamId) {
+        formData.append('teamId', user.universes[selectedUniverse._id].events[challenge.eventId].teamId);
       }
       const response = await axios.post(config.backendAPI+'/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },

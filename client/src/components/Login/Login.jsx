@@ -179,12 +179,15 @@ const Login = ({ showNavBar }) => {
         // Stocker le token dans le localStorage
         localStorage.setItem('token', data.token);
         localStorage.setItem('email', email);
-  
-        // Call the function passed from App.js to trigger a state change
-        showNavBar();
-        
-        // Rediriger après l'authentification réussie
-        navigate('/home');
+    
+        // Redirect to universe selection if no universes have been joined
+        if (data.redirectToUniverseSelection) {
+          navigate('/select-universe');
+        } else {
+          // Call the function passed from App.js to trigger a state change
+          showNavBar();
+          navigate('/home');
+        }
   
       } catch (error) {
         console.error('Erreur lors de la connexion:', error);
@@ -280,7 +283,7 @@ const Login = ({ showNavBar }) => {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={isSignIn ? "Email" : "Entrer votre email insa :)"}
+              placeholder={isSignIn ? "Email" : "Entrer votre email"}
               required
             />
           </div>
@@ -332,8 +335,9 @@ const Login = ({ showNavBar }) => {
               
             />
             </div>
-
-            <div className="input-group select-group">
+              {
+                /*
+                <div className="input-group select-group">
             <label htmlFor="name">Année scolaire</label>
             <select
               value={classYear}
@@ -353,6 +357,9 @@ const Login = ({ showNavBar }) => {
               onChange={(e) => setIsApprentice(e.target.checked)}
             />
             </div>
+                */
+              }
+            
 
             <div className="input-group checkbox">
             <label className="terms" htmlFor="name" onClick={handleShowTerms} >Accepter les conditions d'utilisations *</label>

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { getImageByKey } from '../../utils/imageMapper';
 import { useUser } from '../../hooks/commonHooks/UserContext';
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 import config from '../../config';
 import EventCard from '../Events/EventCard';
 import ChallengeCard from './ChallengeCard';
@@ -12,6 +13,7 @@ import './Sheesh.css';
 
 const Sheesh = ({ showNavBar }) => {
   const { challengeId } = useParams();
+  const { selectedUniverse } = useUniverse();
   const { user, setUser } = useUser();
   const [events, setEvents] = useState([]);
   const [challenges, setChallenges] = useState([]);
@@ -20,16 +22,27 @@ const Sheesh = ({ showNavBar }) => {
   const [openChallengeId, setOpenChallengeId] = useState(null);
   const [searchQuery, setSearchQuery] = useState(''); 
   const challengeRefs = useRef({});
-  const [openEventId, setOpenEventId] = useState(null); // Track which event's form is open
+  const [openEventId, setOpenEventId] = useState(null);
   const [newChallenge, setNewChallenge] = useState({
     title: '',
     reward: '',
     eventId: '',
     isCollective: false,
   });
+  const [backgroundColor, setBackgroundColor] = useState('#E8EACC'); 
+
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchStyles = async () => {
+      var bgColor = '#E8EACC';
+      if (selectedUniverse.styles && selectedUniverse.styles['mainBackgroundColor']) {
+        bgColor = selectedUniverse.styles['mainBackgroundColor'];
+      }
+      console.log("bgColor "+bgColor)
+
+      setBackgroundColor(bgColor);
+    }
     const token = localStorage.getItem('token');
 
     if (!token) {
@@ -41,10 +54,12 @@ const Sheesh = ({ showNavBar }) => {
 
     const fetchEvents = async () => {
       try {
-        const eventResponse = await axios.get(config.backendAPI + '/events');
+        const eventResponse = await axios.get(`${config.backendAPI}/events`, {
+          params: { universeId: selectedUniverse._id }
+        });
         const eventsWithImages = eventResponse.data.map(event => ({
           ...event,
-          image: getImageByKey(event.image)
+          image: event.image
         }));
         setEvents(eventsWithImages);
       } catch (error) {
@@ -69,11 +84,15 @@ const Sheesh = ({ showNavBar }) => {
     const calculatePinnedChallenges = () => {
       if (user && challenges.length > 0) {
         const userPinnedChallenges = challenges.filter(challenge =>
-          user.pinnedChallenges.includes(challenge.id)
+          user.pinnedChallenges.includes(challenge.id) &&
+          selectedUniverse.events.includes(challenge.eventId)  // Ensure the challenge's eventId belongs to the selectedUniverse
         );
         setPinnedChallenges(userPinnedChallenges);
       }
     };
+    if (selectedUniverse) {
+      fetchStyles()
+    }
 
     fetchEvents();
     fetchChallenges();
@@ -85,6 +104,31 @@ const Sheesh = ({ showNavBar }) => {
       challengeRefs.current[challengeId].scrollIntoView({ behavior: 'smooth' });
     }
   }, [challengeId, challenges]);
+
+  const initializeAndFetchData = async (eventId) => {
+    try {
+      const universe = user.universes[selectedUniverse._id];
+      if (!universe || !universe.events[eventId]) {
+        // Initialize the universe and event if they don't exist
+        await axios.post(`${config.backendAPI}/users/initialize-universe`, {
+          userId: user._id,
+          universeId: selectedUniverse._id,
+          eventId: eventId,
+        });
+      }
+    } catch (error) {
+      console.error('Error initializing universe and event:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (events.length > 0) {
+      // Initialize each event in the selected universe
+      events.forEach(event => {
+        initializeAndFetchData(event._id);
+      });
+    }
+  }, [events, user, selectedUniverse]);
 
   const toggleForm = (eventId) => {
     if (openEventId === eventId) {
@@ -106,16 +150,15 @@ const Sheesh = ({ showNavBar }) => {
     e.preventDefault();
     try {
       // Fetch all challenges to generate a unique ID
-      const allChallengeIdsResponse = await axios.get(config.backendAPI+'/challenges/ids');
+      const allChallengeIdsResponse = await axios.get(config.backendAPI + '/challenges/ids');
       const allChallengeIds = allChallengeIdsResponse.data.map(challenge => parseInt(challenge.id, 10));
 
-      // Generate a unique ID for the new challenge
       const newId = (allChallengeIds.length > 0 ? Math.max(...allChallengeIds) + 1 : 10) || 10;
       const response = await axios.post(config.backendAPI + '/challenges', {
-        id : newId,
+        id: newId,
         ...newChallenge,
         reward: "X Sh",
-        isAccepted: false // Set isAccepted to false for suggested challenges
+        isAccepted: false
       });
       if (response.status === 201) {
         alert('Challenge suggested successfully!');
@@ -125,14 +168,12 @@ const Sheesh = ({ showNavBar }) => {
       console.error('Error suggesting challenge', error);
     }
   };
-  
-
 
   const normalizeString = (str) => {
     return str
       .toLowerCase()
-      .normalize('NFD') // Normalisation pour séparer les accents
-      .replace(/[\u0300-\u036f]/g, ''); // Supprimer les accents
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, ''); 
   };
 
   const handleSearch = (query) => {
@@ -147,23 +188,25 @@ const Sheesh = ({ showNavBar }) => {
   };
 
   const getEventChallenges = (eventChallenges) => {
-    const challengeIds = eventChallenges.split(',').map(id => id.trim());
-    return filteredChallenges.filter(challenge => challengeIds.includes(challenge.id) && challenge.isAccepted == true); 
-  };
+    if (!eventChallenges || typeof eventChallenges !== 'string') {
+      console.warn('No valid eventChallenges provided or challenges is undefined');
+      return [];
+    }
 
+    const challengeIds = eventChallenges.split(',').map(id => id.trim());
+    return filteredChallenges.filter(challenge => challengeIds.includes(challenge.id) && challenge.isAccepted === true); 
+  };
 
   return (
     <Animation>
-      <div className="home-page">
+      <div className="sheesh-page" style={{backgroundColor}}>
         <header>
-          {/*Banniere d'info ? */}
+          {/* Info banner */}
         </header>
         <div className="SearchBar">
-        <SearchBar onSearch={handleSearch} />
+          <SearchBar onSearch={handleSearch} />
         </div>
         
-        
-        {/* Display pinned challenges first */}
         {pinnedChallenges.length > 0 && (
           <div className="pinned-challenges">
             <h2>Sheesh épinglés</h2>
@@ -182,18 +225,15 @@ const Sheesh = ({ showNavBar }) => {
           </div>
         )}
 
-        {/* Display other challenges under their respective events */}
         {events.map(event => (
-          <div key={event.id} className="event-section">
-            <EventCard event={event} />
-
-            {/* Suggest Challenge Button */}
-            <button className='sheesh-button' onClick={() => toggleForm(event.id)}>
-              {openEventId === event.id ? 'Annuler' : 'Proposer un Sheesh'}
+          <div key={event._id} className="event-section">
+            {/* Re-render when forceRender changes */}
+            <EventCard event={event} key={`${event._id}`} />
+            <button className="sheesh-button" onClick={() => toggleForm(event._id)}>
+              {openEventId === event._id ? 'Annuler' : 'Proposer un Sheesh'}
             </button>
 
-            {/* Form for Suggesting a New Challenge (Inline Form) */}
-            {openEventId === event.id && (
+            {openEventId === event._id && (
               <form onSubmit={handleSubmit} className="suggest-challenge-form">
                 <label>Défi :</label>
                 <input
@@ -203,14 +243,6 @@ const Sheesh = ({ showNavBar }) => {
                   onChange={handleInputChange}
                   required
                 />
-                {/* <label>Récompense :</label>
-                <input
-                  type="text"
-                  name="reward"
-                  value={newChallenge.reward}
-                  onChange={handleInputChange}
-                  required
-                /> */}
                 <label>
                   Collectif :
                   <input
@@ -222,7 +254,7 @@ const Sheesh = ({ showNavBar }) => {
                     }
                   />
                 </label>
-                <button className='sheesh-button' type="submit">Envoyer propal</button>
+                <button className="sheesh-button" type="submit">Envoyer propal</button>
               </form>
             )}
 
@@ -231,10 +263,11 @@ const Sheesh = ({ showNavBar }) => {
                 key={challenge.id}
                 ref={el => (challengeRefs.current[challenge.id] = el)}
               >
-                <ChallengeCard 
+                <ChallengeCard
                   challenge={challenge}
                   isOpen={openChallengeId === challenge.id}
                   setOpenChallengeId={setOpenChallengeId}
+                  initializeAndFetchData={initializeAndFetchData}
                 />
               </div>
             ))}

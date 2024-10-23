@@ -8,12 +8,15 @@ const crypto = require('crypto');
 const cors = require('cors');
 const { GridFSBucket } = require('mongodb');
 const dotenv = require('dotenv');
+const bcrypt = require('bcrypt')
+
 
 const Post = require('./models/post');
 const Challenge = require('./models/challenge');
 const Event = require('./models/event');
 const User = require('./models/user');
 const Team = require('./models/team');
+const Universe = require('./models/universe')
 
 const userRoutes = require("./routes/user.routes")
 const teamRoutes = require('./routes/team.routes')
@@ -136,6 +139,8 @@ const ffmpeg = require('fluent-ffmpeg');
 const heicConvert = require('heic-convert');
 
 const { promisify } = require('util');
+const event = require("./models/event");
+const universe = require("./models/universe");
 const unlinkAsync = promisify(fs.unlink);
 
 // Set the ffmpeg and ffprobe paths (for video processing)
@@ -169,6 +174,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     } else if (/\.(mp4|mov|avi|wmv|flv|mkv)$/i.test(req.file.originalname)) {
         isVideo = true;
         try {
+            console.log("size video reçue "+req.file.size)
             fileName += '.mp4';
             const videoPath = path.join(__dirname, 'uploads', fileName);
             const compressedVideoPath = path.join(__dirname, 'uploads', `compressed_${fileName}`);
@@ -262,7 +268,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             thumbnail: isVideo ? thumbnailName : '',
             description: req.body.description,
             teamId: req.body.teamId,
-            isValidated: false
+            isValidated: false,
+            universeId: req.body.universeId
         });
 
         try {
@@ -284,16 +291,20 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 });
 
 
-//get posts/publications route
-
+// get posts/publications route
 app.get('/posts', async (req, res) => {
     try {
-        const posts = await Post.find().sort({ date: -1 });
+        const universeId = req.query.universeId;  // Get universeId from query parameters
+
+        // Fetch posts only from the specified universe
+        const posts = await Post.find({ universeId }).sort({ date: -1 });
+        
         res.status(200).json(posts);
     } catch (error) {
         res.status(500).send(error.message);
     }
 });
+
 
 // Route to get posts by userId and challengeId
 app.get('/posts/byUserAndChallenge', async (req, res) => {
@@ -431,7 +442,22 @@ app.get('/file/:filename', async (req, res) => {
 // Event routes
 app.get('/events', async (req, res) => {
     try {
-        const events = await Event.find();
+        const { universeId } = req.query; // Get universe _id from the query parameters
+
+        // Fetch the universe by ID to get the list of event IDs
+        const universe = await Universe.findById(universeId);
+        if (!universe) {
+            return res.status(404).json({ message: 'Universe not found' });
+        }
+
+        // Fetch the full event objects using the event IDs stored in universe.events
+        // Use $or to query events by either _id or id
+        const events = await Event.find({
+            $or: [
+                { _id: { $in: universe.events } },  // Match by _id
+                { id: { $in: universe.events } }    // Match by id (in case of irregularities)
+            ]
+        });
         res.status(200).json(events);
     } catch (error) {
         res.status(500).send(error.message);
@@ -440,80 +466,156 @@ app.get('/events', async (req, res) => {
 
 app.get('/getUsersTotalPoints', async (req, res) => {
     try {
-      // Fetch all users
-      const users = await User.find();
-  
-      // Calculate total points for each user
-      const usersWithPoints = users.map(user => {
-        const totalPoints = Array.from(user.eventPoints.values()).reduce((acc, points) => acc + points, 0);
-        return {
-          _id: user.id,
-          totalPoints,
-        };
-      });
-  
-      // Sort users by total points descending
-      usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
-  
-      res.json(usersWithPoints);
-      //res.json("ok1");
-    } catch (error) {
-      console.error('Error fetching user rankings:', error);
-      res.status(500).json({ error: 'Error fetching user rankings' });
-    }
-  });
+        const { universeId } = req.query;  // Universe must be specified
 
-  app.get('/getUsersTotalPoints/:eventId', async (req, res) => {
-    try {
-      const { eventId } = req.params;
-      
-      // Fetch all users
-      const users = await User.find();
-  
-      // Calculate points for each user for the specific event
-      const usersWithPoints = users.map(user => {
-        const eventPoints = user.eventPoints.get(eventId) || 0; // Get points for the selected event
-        return {
-          _id: user.id,
-          name: user.name,
-          lastName: user.lastName,
-          totalPoints: eventPoints,
-        };
-      });
-  
-      // Sort users by total points descending
-      usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
-  
-      res.json(usersWithPoints);
+        // Fetch users who are part of the specified universe
+        const users = await User.find({ [`universes.${universeId}`]: { $exists: true } });
+
+        // Calculate total points for each user across all events in the specified universe
+        const usersWithPoints = users.map(user => {
+            const universe = user.universes.get(universeId);  // Get the universe
+            if (!universe || !universe.events) {
+                return { _id: user._id, name: user.name, lastName: user.lastName, totalPoints: 0 };
+            }
+
+            // Sum the points of all events in the universe using Map methods
+            let totalPoints = 0;
+            universe.events.forEach(event => {
+                if (event && event.points) {
+                    totalPoints += event.points;
+                }
+            });
+
+            return {
+                _id: user._id,
+                name: user.name,
+                lastName: user.lastName,
+                totalPoints
+            };
+        });
+
+        // Sort users by total points in descending order
+        usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
+        res.json(usersWithPoints);
     } catch (error) {
-      console.error('Error fetching user rankings:', error);
-      res.status(500).json({ error: 'Error fetching user rankings' });
+        console.error('Error fetching user rankings:', error);
+        res.status(500).json({ error: 'Error fetching user rankings' });
     }
-  });
-  
+});
+
   
 
-// Fetch ranking for a specific event
-app.get('/ranking/:eventId', async (req, res) => {
+app.get('/getUsersTotalPoints/:eventId', async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const { universeId } = req.query;
+
+        // Fetch users who are part of the specified universe
+        const users = await User.find({ [`universes.${universeId}`]: { $exists: true } });
+
+        // Calculate points for each user for the specific event within the universe
+        const usersWithPoints = users.map(user => {
+            const universe = user.universes.get(universeId);  // Get the universe
+            if (!universe || !universe.events) {
+                return { _id: user._id, name: user.name, lastName: user.lastName, totalPoints: 0 };
+            }
+
+            const event = universe.events.get(eventId);  // Get the specific event
+            const eventPoints = event ? event.points : 0; // Get points for the selected event
+
+            return {
+                _id: user._id,
+                name: user.name,
+                lastName: user.lastName,
+                totalPoints: eventPoints
+            };
+        });
+
+        // Sort users by event points in descending order
+        usersWithPoints.sort((a, b) => b.totalPoints - a.totalPoints);
+        res.json(usersWithPoints);
+    } catch (error) {
+        console.error('Error fetching user rankings:', error);
+        res.status(500).json({ error: 'Error fetching user rankings' });
+    }
+});
+
+app.get('/teamRanking/:eventId', async (req, res) => {
     try {
       const { eventId } = req.params;
+      const { universeId } = req.query;
+  
+      // Fetch teams for the event within the specified universe
       const teams = await Team.find({ eventId }).populate('members');
       
       const teamRankings = teams.map(team => {
-        const totalPoints = team.members.reduce((acc, member) => acc + (member.eventPoints.get(eventId) || 0), 0);
-        return { id: team.id, name: team.name, points: totalPoints };
-      }).sort((a, b) => b.points - a.points);
-  
+        // Calculate total points for each team by summing the points of all its members
+        const totalPoints = team.members.reduce((acc, member) => {
+          const universe = member.universes.get(universeId);
+          const event = universe.events.get(eventId);
+          const memberPoints = event?.points || 0;  // Get the points for this member in the specific event and universe
+          
+          return acc + memberPoints;
+        }, 0);
+        
+        return { id: team._id, name: team.name, points: totalPoints };
+      }).sort((a, b) => b.points - a.points); // Sort teams by total points in descending order
+
       res.json(teamRankings);
     } catch (error) {
+      console.error('Error fetching ranking:', error);
       res.status(500).json({ message: 'Error fetching ranking' });
     }
 });
 
+
+//route to fetch the data of one user's team
+app.get('/userTeam/:eventId', async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const { userId, universeId } = req.query;
+
+  
+      // Fetch the user
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Get the universe and event data for the user
+      const universe = user.universes?.get(universeId);
+      if (!universe || !universe.events) {
+        return res.status(404).json({ message: 'Universe or events not found for user' });
+      }
+  
+      // Get the teamId from the event
+      const event = universe.events.get(eventId);
+
+      if (!event || !event.teamId) {
+        return res.status(404).json({ message: 'Team not found for the selected event' });
+      }
+  
+      const teamId = event.teamId; // Get the teamId
+  
+      // Fetch the team by teamId
+      const team = await Team.findOne({id : teamId});
+      if (!team) {
+        return res.status(404).json({ message: 'Team not found' });
+      }
+  
+      res.json(team); // Return the team object
+    } catch (error) {
+      console.error('Error fetching team:', error);
+      res.status(500).json({ message: 'Error fetching team' });
+    }
+  });
+  
+  
+
 //fetch an event by its name
 app.get('/events/:id', async (req, res) => {
     try {
-        const event = await Event.findOne({ id: req.params.id });
+        const event = await Event.findOne({ _id: req.params.id });
         if (!event) {
             return res.status(404).send('Event not found');
         }
@@ -573,7 +675,7 @@ app.post('/challenges', async (req, res) => {
         await newChallenge.save();
 
         // Update the event's challenges list
-        const event = await Event.findOne({ id: eventId });
+        const event = await Event.findOne({ _id: eventId });
         if (event) {
             event.challenges = event.challenges ? event.challenges + `,${id}` : `${id}`;
             await event.save();
@@ -779,21 +881,51 @@ app.get('/teams/ids', async (req, res) => {
 // Fetch team members for a specific team
 app.get('/teams/:id/members', async (req, res) => {
     try {
-      const team = await Team.findOne({ id: req.params.id }).populate('members');
+        const teamId = req.params.id;
+
+        // Check if teamId is a valid ObjectId
+        let query = {};
+        if (mongoose.isValidObjectId(teamId)) {
+            query._id = teamId;  // If it's a valid ObjectId, search by _id
+        } else {
+            query.id = teamId;   // Otherwise, search by regular id field
+        }
+
+        // Fetch the team and populate the members (users)
+        const team = await Team.findOne(query).populate('members');
   
-      const members = team.members.map(member => ({
-        _id: member._id,
-        teamId: member.teamId,
-        name: member.name,
-        lastName : member.lastName,
-        points: member.eventPoints.get(team.eventId) || 0,
-      })).sort((a, b) => b.points - a.points);
+      if (!team) {
+        console.log("erreur 404")
+        return res.status(404).json({ message: 'Team not found' });
+      }
+  
+      // Get the universeId from the team or from the event (assuming it's known)
+      const universeId = req.query.universeId;  // Make sure the universeId is passed in the query
+      const eventId = String(team.eventId);     // Ensure eventId is a string
+  
+      // Map members with relevant details, including points for the event from user.universes
+      const members = team.members.map(member => {
+        const universe = member.universes?.get(universeId);
+
+        // Ensure the universe and event exist before accessing points
+        const eventPoints = universe.events.get(eventId).points || 0;
+  
+        return {
+          _id: member._id,
+          teamId: member.teamId,
+          name: member.name,
+          lastName: member.lastName,
+          points: eventPoints,
+        };
+      }).sort((a, b) => b.points - a.points);  // Sort members by points in descending order
   
       res.json(members);
     } catch (error) {
+      console.error('Error fetching team members:', error);
       res.status(500).json({ message: 'Error fetching team members' });
     }
-});
+  });
+  
 
 // Route to fetch a team by ID
 app.get('/teams/:id', async (req, res) => {
@@ -808,10 +940,9 @@ app.get('/teams/:id', async (req, res) => {
     }
   });
 
-//route to assign a team to an user
-app.post('/assignTeam', async (req, res) => {
-    const { userId, teamId, eventId, previousTeamId } = req.body;
-
+  //route to assign an user to a team
+  app.post('/assignTeam', async (req, res) => {
+    const { userId, teamId, eventId, universeId, previousTeamId } = req.body;
     try {
         // Find user
         const user = await User.findById(userId);
@@ -827,10 +958,18 @@ app.post('/assignTeam', async (req, res) => {
                 await previousTeam.save();
             }
         }
+        // Get the universe map using `get()`
+        let universe = user.universes.get(universeId);
 
-        // If the new teamId is empty, simply remove the teamId from the user
+        // If the new teamId is empty, remove the team from the user
         if (!teamId) {
-            user.teamId = '';
+            if (universe && universe.events && universe.events.has(eventId)) {
+                const event = universe.events.get(eventId);
+                if (event) {
+                    event.teamId = undefined; // Or use null if preferred
+                    universe.events.set(eventId, event);
+                }
+            }
             await user.save();
             return res.status(200).send('User removed from team successfully');
         }
@@ -842,10 +981,24 @@ app.post('/assignTeam', async (req, res) => {
         }
 
         // Assign user to team
-        user.teamId = teamId;
-        if (!user.eventPoints.has(eventId)) {
-            user.eventPoints.set(eventId, 0); // Initialize points for the event
+        // If the universe does not exist, initialize it
+        if (!universe) {
+            universe = { events: new Map() };
+            user.universes.set(universeId, universe);
         }
+
+        // Get the events map for the universe
+        let event = universe.events.get(eventId);
+
+        // If the event does not exist, initialize it
+        if (!event) {
+            event = {};
+            universe.events.set(eventId, event);
+        }
+
+        // Assign the teamId to the event
+        event.teamId = teamId;
+
         await user.save();
 
         // Add user to team members if not already added
@@ -861,6 +1014,7 @@ app.post('/assignTeam', async (req, res) => {
 });
 
 
+
 // Middleware to check if the user is an admin
 const checkAdmin = (req, res, next) => {
     const isAdmin = req.body.isAdmin;
@@ -874,8 +1028,9 @@ const checkAdmin = (req, res, next) => {
 // Route to validate or unvalidate a pending post
 app.post('/admin/validatePost/:id', checkAdmin, async (req, res) => {
     try {
-        const { rewardPoints, eventId } = req.body;
+        const { rewardPoints, eventId, universeId } = req.body;  // Include universeId in the request body
         const post = await Post.findById(req.params.id);
+
         if (!post) {
             return res.status(404).send('Post not found');
         }
@@ -894,33 +1049,44 @@ app.post('/admin/validatePost/:id', checkAdmin, async (req, res) => {
             const pointsPerMember = rewardPoints / memberCount;
 
             for (const member of team.members) {
-                if (!member.eventPoints.has(eventId)) {
-                    member.eventPoints.set(eventId, 0);
+                const universe = member.universes.get(universeId);
+                if (universe) {
+                    const event = universe.events.get(eventId);
+                    if (!event) {
+                        universe.events.set(eventId, { teamId: post.teamId, points: 0, pinnedChallenges: [] });
+                    }
+
+                    // Add or subtract points based on the validation state
+                    const currentPoints = universe.events.get(eventId).points || 0;
+                    universe.events.get(eventId).points = post.isValidated ? currentPoints + pointsPerMember : currentPoints - pointsPerMember;
+                    await member.save();
                 }
-                // Add or subtract points based on the validation state
-                const currentPoints = member.eventPoints.get(eventId);
-                member.eventPoints.set(eventId, post.isValidated ? currentPoints + pointsPerMember : currentPoints - pointsPerMember);
-                await member.save();
             }
         } else {
             // For non-collective challenges
             const user = await User.findById(post.user);
             if (user) {
-                if (!user.eventPoints.has(eventId)) {
-                    user.eventPoints.set(eventId, 0);
+                const universe = user.universes.get(universeId);
+                if (universe) {
+                    const event = universe.events.get(eventId);
+                    if (!event) {
+                        universe.events.set(eventId, { points: 0, pinnedChallenges: [] });
+                    }
+
+                    // Add or subtract points based on the validation state
+                    const currentPoints = universe.events.get(eventId).points || 0;
+                    universe.events.get(eventId).points = post.isValidated ? currentPoints + rewardPoints : currentPoints - rewardPoints;
+                    await user.save();
                 }
-                // Add or subtract points based on the validation state
-                const currentPoints = user.eventPoints.get(eventId);
-                user.eventPoints.set(eventId, post.isValidated ? currentPoints + rewardPoints : currentPoints - rewardPoints);
-                await user.save();
             }
         }
-
         res.status(200).send('Post validation status updated successfully');
     } catch (error) {
+        console.error('Error validating post:', error);
         res.status(500).send(error.message);
     }
 });
+
 // Route to pin a challenge
 app.post('/pinChallenge', async (req, res) => {
     const { userId, challengeId } = req.body;
@@ -1008,6 +1174,214 @@ app.post('/posts/:id/unlike', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+
+// Get universes route
+app.get('/universes', async (req, res) => {
+    try {
+        // Fetch all universes from the database
+        const universes = await Universe.find({});  // Fetch all universes
+        res.status(200).json(universes);  // Send the universes in the response
+    } catch (error) {
+        res.status(500).send(error.message);  // Send error message if something goes wrong
+    }
+});
+
+app.get('/universe/:id', async (req, res) => {
+    try {
+      const universe = await Universe.findById(req.params.id);
+      if (!universe) {
+        return res.status(404).json({ message: 'Universe not found' });
+      }
+      res.status(200).json(universe);
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching universe details', error });
+    }
+  });
+  
+
+// Get a single universe by its ID
+app.get('/universes/:universeId', async (req, res) => {
+    try {
+        const universeId = req.params.universeId;  // Get universeId from URL params
+        const universe = await Universe.findById(universeId);  // Find the universe by ID
+
+        if (!universe) {
+            return res.status(404).send('Universe not found');
+        }
+
+        res.status(200).json(universe);  // Send the universe data in the response
+    } catch (error) {
+        res.status(500).send(error.message);  // Send error message if something goes wrong
+    }
+});
+
+// Join universe route
+app.post('/users/join-universe', async (req, res) => {
+    const { userId, universeId } = req.body;
+
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        // Check if the user has already joined the universe in `joinedUniverses`
+        if (!user.joinedUniverses.includes(universeId)) {
+            // Add universeId to `joinedUniverses` if not already present
+            user.joinedUniverses.push(universeId);
+        }
+
+        // Initialize `user.universes[universeId]` if it doesn't exist
+        let universe = user.universes.get(universeId);
+        if (!universe) {
+            universe = {
+                events: new Map()
+            };
+            user.universes.set(universeId, universe);
+        }
+
+        // Save the updated user document
+        await user.save();
+        res.status(200).send('Successfully joined the universe and initialized universe data');
+    } catch (error) {
+        res.status(500).send(error.message);  // Send error message if something goes wrong
+    }
+});
+
+// Initialize universe and event data for the user
+app.post('/users/initialize-universe', async (req, res) => {
+    const { userId, universeId, eventId } = req.body;
+    try {
+        const user = await User.findById(userId);
+
+        // Check if the universe exists in user.universes Map
+        let universe = user.universes.get(universeId);
+
+        if (!universe) {
+            // If universe doesn't exist, initialize it with the event
+            universe = {
+                events: new Map([
+                    [eventId, {
+                        teamId : "",
+                        points: 0,
+                        pinnedChallenges: []
+                    }]
+                ])
+            };
+            user.universes.set(universeId, universe);
+        } else if (!universe.events.get(eventId)) {
+            // If the universe exists but the event doesn't, initialize the event
+            universe.events.set(eventId, {
+                teamId : "",
+                points: 0,
+                pinnedChallenges: []
+            });
+            user.universes.set(universeId, universe); // Update the universe with the new event
+        }
+
+        // Save the updated user data
+        await user.save();
+        res.status(200).send('Universe and event initialized for the user.');
+    } catch (error) {
+        console.error('Error initializing universe or event:', error);
+        res.status(500).send(error.message);
+    }
+});
+
+// Event creation route
+app.post('/events/create', upload.single('file'), async (req, res) => {
+  try {
+    // Destructure fields from the form data
+    const { title, date, universeId } = req.body;
+
+    // Check if the required fields are provided
+    if (!title || !req.file || !universeId) {
+      return res.status(400).json({ message: 'Title, image, and universeId are required.' });
+    }
+
+    // Read the file as a Base64 string
+    const base64Image = fs.readFileSync(req.file.path, { encoding: 'base64' });
+    const mimeType = req.file.mimetype;  // Capture the MIME type (e.g., image/jpeg, image/png)
+
+    // Generate a unique ID for the event
+    const newEventId = new mongoose.Types.ObjectId();
+    // Save the event in the database
+    const newEvent = new Event({
+    _id: newEventId,
+      id: newEventId,
+      title: title,
+      image: `data:${mimeType};base64,${base64Image}`,  // Store Base64 image string
+      date: date || '',  // Optional date field
+      challenges: '',
+      teams: [],
+    });
+
+    await newEvent.save();  // Save the event to the events collection
+
+    // Update the universe to include the newly created event
+    const universe = await Universe.findById(universeId);
+    if (!universe) {
+      return res.status(404).json({ message: 'Universe not found.' });
+    }
+
+    universe.events.push(newEventId);  // Add the new event ID to the universe's events array
+    await universe.save();  // Save the updated universe
+
+    // Delete the temporary file (optional, since you're saving it as Base64)
+    fs.unlinkSync(req.file.path);
+
+    // Respond with the created event
+    res.status(201).json(newEvent);
+
+  } catch (error) {
+    console.error('Error creating event:', error);
+    res.status(500).json({ message: 'Error creating event.' });
+  }
+});
+
+// Universe update route (password and logo)
+app.post('/universe/update', upload.single('file'), async (req, res) => {
+    const { universeId, password, styles } = req.body;
+  console.log("styles "+styles)
+    try {
+      const universe = await Universe.findById(universeId);
+  
+      if (!universe) {
+        return res.status(404).json({ message: 'Universe not found.' });
+      }
+  
+      // Hash the password if it's provided
+      if (password) {
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        universe.hashedPassword = hashedPassword;  // Update the password
+      }
+  
+      // Convert the uploaded logo file to Base64 if provided
+      if (req.file) {
+        const logoPath = req.file.path;  // File path for the uploaded logo
+        const mimeType = req.file.mimetype;  // Capture the MIME type (e.g., image/jpeg, image/png)
+  
+        // Read the file as a Base64 string
+        const base64Logo = fs.readFileSync(logoPath, { encoding: 'base64' });
+        universe.logo = `data:${mimeType};base64,${base64Logo}`;  // Save the Base64 encoded logo
+  
+        // Remove the temporary file after reading it
+        fs.unlinkSync(logoPath);
+      }
+      // Update the custom styles
+    if (styles) {
+    universe.styles = JSON.parse(styles);
+    }
+  
+      await universe.save();  // Save the updated universe
+  
+      res.status(200).json({ message: 'Universe updated successfully.' });
+    } catch (error) {
+      console.error('Error updating universe:', error);
+      res.status(500).json({ message: 'Error updating universe.' });
+    }
+  });
 
 
 app.get("/", (req,res) =>{

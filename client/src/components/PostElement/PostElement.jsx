@@ -13,7 +13,11 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import CommentModal from '../CommentModal/CommentModal'; // Modal for viewing all comments
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import logo from '../../assets/logos/astus.png';
+import LazyLoad from 'react-lazyload';
+import zoom from '../../assets/buttons/zoom/chercher.svg';
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
+
+
 
 const PostElement = ({ post, onDelete, fetchPosts }) => {
   const { user } = useUser();
@@ -26,6 +30,7 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [comments, setComments] = useState([]); // New state for comments
   const [newComment, setNewComment] = useState(''); // New state for the input comment
+  const [isFocused, setIsFocused] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false); // State for modal visibility
   const [videoUrl, setVideoUrl] = useState(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -34,10 +39,11 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
   const [zoomScale, setZoomScale] = useState(1); 
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [transitionOverlay, setTransitionOverlay] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false); // État pour gérer l'affichage
 
-
-
-
+  const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
 
   const navigate = useNavigate();
 
@@ -54,9 +60,10 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     fetchComments();
   }, [post._id]);
 
+
   const handleAddComment = async () => {
     if (!newComment.trim()) return; // Avoid empty comments
-
+      
     try {
       const response = await axios.post(config.backendAPI + `/posts/${post._id}/comment`, {
         userId: user._id,
@@ -64,8 +71,24 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
       });
       setComments(response.data); // Update the comments state with the new comment
       setNewComment(''); // Clear the comment input
+      setIsFocused(false); // Reset focus state after publishing
     } catch (error) {
       console.error('Error adding comment', error);
+    }
+  };
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    if (!newComment.trim()) {
+      setIsFocused(false); // Hide "Publish" if input is empty on blur
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleAddComment(); // Trigger the comment submission on Enter key
     }
   };
 
@@ -162,7 +185,8 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
         const response = await axios.post(`${config.backendAPI}/admin/validatePost/${post._id}`, {
             isAdmin: user.isAdmin,
             rewardPoints : parseReward(challenge.reward),
-            eventId : event.id
+            eventId : event._id,
+            universeId : selectedUniverse._id
         });
         if (response.status === 200) {
           fetchPosts(); // Refresh posts after validation
@@ -204,6 +228,8 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const handleVideoEnd = () => {
     setIsVideoPlaying(false); // Go back to the thumbnail after the video finishes
   };
+  /*      Zoom Image      */
+  // to instance the function   onClick={() => handleImageClick(`${config.backendAPI}/file/${post.picture}`)} // Open image in modal on click
 
   const handleImageClick = (imageUrl) => {
     setSelectedImage(imageUrl);
@@ -244,6 +270,33 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
     };
   }, [isModalOpen]);
   
+          /*   Overlay transition  */ 
+
+  const handleOverlayClick = () => {
+    setShowOverlay(true);
+    setTimeout(() => {
+      setTransitionOverlay(true);
+    }, 10); // Small timeout to ensure CSS reflow
+  };
+
+  // Handle overlay close when "Je sheesh" is clicked or when clicking outside
+  const handleCloseOverlay = () => {
+    setTransitionOverlay(false); // First, remove the transition effect
+    setTimeout(() => {
+      setShowOverlay(false); // Then hide the overlay after the transition
+    }, 500); // Delay to match the transition duration (500ms)
+  };
+
+   // Fonction pour basculer entre l'affichage tronqué et complet
+   const toggleDescription = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  // Tronquer la description à 40 caractères si non expansé
+  const truncatedDescription = post.description.length > 40 && !isExpanded
+    ? `${post.description.substring(0, 40)}...`
+    : post.description;
+    
   
 
   if (!challenge || !event || !postUser || !user) {
@@ -253,22 +306,8 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
   const closeCommentModal = () => setShowCommentModal(false);
 
   return (
+    <div className="post-wrapper">
     <div className="post">
-      <div className="post-header">
-        <img src={logo} alt="Logo" className="logo" />
-        <div className="post-info">
-          <span className="date">{event.title} - {formatDate(post.date)}</span>
-          <span className="user">{postUser.name} {postUser.lastName}</span>
-          {team && <span className="team">Team: {team.name}</span>}
-        </div>
-        <div className="status">
-          <img 
-            src={post.isValidated ? validatedIcon : waitingIcon} 
-            alt={post.isValidated ? "Validated Icon" : "Waiting Icon"} 
-            className="status-icon" 
-          />
-        </div>
-      </div>
       <div className="post-media">
         {isVideo(post.picture) ? (
           !isVideoPlaying ? (
@@ -287,14 +326,73 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
             </video>
           )
         ) : (
+          <>
           <LazyLoadImage
             alt={challenge.title}
-            effect="blur"
             src={`${config.backendAPI}/file/${post.picture}`}
             className="post-image"
-            onClick={() => handleImageClick(`${config.backendAPI}/file/${post.picture}`)} // Open image in modal on click
+            onClick={handleOverlayClick}
           />
+
+          <img 
+            src={zoom} 
+            alt="Zoom Logo" 
+            className="zoom-logo"
+            onClick={() => handleImageClick(`${config.backendAPI}/file/${post.picture}`)}
+            />
+
+          {showOverlay && (
+            <div className={`overlay ${transitionOverlay ? 'show' : ''}`} onClick={handleCloseOverlay}>
+              <div className="overlay-content" onClick={e => e.stopPropagation()}>
+
+              {(user._id === postUser._id || (user.isAdmin && !post.isValidated)) && (
+                <div className="delete-wrapper">
+                  <button className="delete-button" onClick={handleDeleteClick}>
+                    <span className="delete-cross" >✕</span>
+                  </button>
+
+                  {showConfirmDelete && (
+                    <div className="confirm-delete-popup">
+                      <div className="confirm-delete-content">
+                        <p>Es tu sur de vouloir supprimer ce post ?</p>
+                        <button className="confirm-delete-button" onClick={confirmDelete}>Oui</button>
+                        <button className="cancel-delete-button" onClick={cancelDelete}>Non</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+                <div className="points">
+                <span className="points-text">{challenge.reward}</span>
+                <img src={getRewardIcon(challenge.reward)} alt="Points Icon" className="points-icon" />
+                </div>
+                <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheeesh !</button>
+              </div>
+            </div>
+          )}
+          </>
         )}
+      </div>
+
+      <div className="post-header">
+        <div className="post-info">
+          <span className="user">{postUser.name} {postUser.lastName}</span>
+          <span className="date">{event.title} - {formatDate(post.date)}</span>
+          {team && <span className="teams">Team: {team.name}</span>}
+        </div>
+        
+        <div className="reward">
+          <img src={getRewardIcon(challenge.reward)} alt="Reward Icon" className="reward-icon" />
+          <span className="reward-text">{challenge.reward}</span>
+        </div>
+
+        <div className="status">
+          <img 
+            src={post.isValidated ? validatedIcon : waitingIcon} 
+            alt={post.isValidated ? "Validated Icon" : "Waiting Icon"} 
+            className="status-icon" 
+          />
+        </div>
       </div>
       
       {isModalOpen && (
@@ -323,15 +421,12 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
       )}
 
       <div className="post-body">
-        <div className="reward">
-          <img src={getRewardIcon(challenge.reward)} alt="Reward Icon" className="reward-icon" />
-          <span className="reward-text">{challenge.reward}</span>
-        </div>
         <div className="post-title">
           <span>{challenge.title}</span>
         </div>
 
         <div className="post-likes">
+          {likes > 0 && <span>{likes}</span>} {/* Only show the number of likes if greater than 0 */}
           <button 
             className={`likes-button ${liked ? 'liked' : ''} ${isAnimating ? 'shake' : ''}`} 
             onClick={handleLikeClick}
@@ -339,38 +434,55 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           >
             <img src={chokbarButton} alt="Likes Icon" className="likes-icon" />
           </button>
-          {likes > 0 && <span>{likes}</span>} {/* Only show the number of likes if greater than 0 */}
         </div>
 
       </div>
       <div className="post-description">
-        <p>{post.description}</p>
+      <p onClick={toggleDescription} style={{ cursor: 'pointer' }}>
+          {truncatedDescription}
+          {post.description.length > 40 && !isExpanded && (
+            <span > Lire plus</span>
+          )}
+          
+          {isExpanded && (
+            <span > Réduire</span>
+          )}
+        </p>
       </div>
             {/* Comments Section */}
-            <div className="post-comments">
-        <h4>Commentaires</h4>
-        {comments.slice(0, 3).map(comment => (
-          <div key={comment._id} className="comment">
+        <div className="post-comments">
+          <h4>Commentaires</h4>
+          {comments.slice(0, 3).map(comment => (
+          <div key={comment._id} className="comment" onClick={openCommentModal}>
             <p><strong>{comment.userLabel}</strong> : {comment.text}</p>
           </div>
-        ))}
-        {comments.length > 0 && (
-          <button onClick={openCommentModal}>Voir plus</button>
-        )}
+          ))}
+         {comments.length > 3 && (
+          <button className="voir-plus" onClick={openCommentModal}>Voir plus...</button>
+         )}
 
         {/* Add new comment */}
         <div className="add-comment">
-          <input
-            type="text"
-            placeholder="À Méditérannée..."
-            value={newComment}
-            onChange={e => setNewComment(e.target.value)}
-          />
-          <button onClick={handleAddComment}>Commenter</button>
-        </div>
+        <input
+          type="text"
+          placeholder="A Méditérannée..."
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown} 
+        />
+        <button
+          className={`publish-button ${isFocused ? 'visible' : ''}`}
+          onClick={handleAddComment}
+        >
+          Commenter
+        </button>
+      </div>
       </div>
 
       {showCommentModal && (
+        <LazyLoad key={comments} height={200} offset={100} once> 
         <CommentModal 
           comments={comments} 
           onClose={closeCommentModal} 
@@ -385,33 +497,18 @@ const PostElement = ({ post, onDelete, fetchPosts }) => {
           currentUserId={user._id}
           isAdmin={user.isAdmin}
         />
+        </LazyLoad>
       )}
 
       <div className="post-footer">
-        <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>
-        {(user._id === postUser._id || (user.isAdmin && !post.isValidated)) && (
-          <div className="delete-wrapper">
-            <button className="delete-button" onClick={handleDeleteClick}>
-              <span className="delete-cross">✕</span>
-            </button>
-
-            {showConfirmDelete && (
-              <div className="confirm-delete-popup">
-                <div className="confirm-delete-content">
-                  <p>Are you sure you want to delete this post ?</p>
-                  <button className="confirm-delete-button" onClick={confirmDelete}>Yes</button>
-                  <button className="cancel-delete-button" onClick={cancelDelete}>No</button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+    {/*  <button className="sheesh-button" onClick={handleSheeshClick}>Je Sheesh!</button>*/}
         {user.isAdmin && (
           <button className="validate-button" onClick={handleValidateClick}>
-            {post.isValidated ? 'Invalider' : 'Valider'}
+            {post.isValidated ? 'Mettre en attente': 'Validé ?'}
           </button>
         )}
       </div>
+    </div>
     </div>
   );
 };

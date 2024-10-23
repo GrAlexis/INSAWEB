@@ -4,17 +4,31 @@ const userSchema = new mongoose.Schema({
     name: { type: String },
     lastName: { type: String },
     email: { type: String },
-    active: {type:Boolean, default:false},
+    active: { type: Boolean, default: false },
     hashedPassword: { type: String },
     classYear: { type: String, required: true },
     rank: { type: Number },
-    balance: { type: Number},
-    teamId: { type: String, default: null },
-    eventPoints: { type: Map, of: Number, default: {} }, // Points par event_id
+    balance: { type: Number },
+    teamIdByEvent: { type: Map, of: String, default: {} }, // Map eventId -> teamId
+    universes: { 
+        type: Map, 
+        of: new mongoose.Schema({
+            events: {
+                type: Map,
+                of: new mongoose.Schema({
+                    teamId: { type: String, default :"" },
+                    points: { type: Number },
+                    pinnedChallenges: [{ type: String, default: [] }]
+                }, { _id: false }) // Disable automatic ID generation for nested schema
+            }
+        }), 
+        default: {}
+    },
+    joinedUniverses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Universe' }],
     isAdmin: { type: Boolean, default: false },
     pinnedChallenges: [{ type: String, default: [] }],
-    secretQuestion: { type: String, default: '' }, // La question secrète sélectionnée
-    secretAnswer: { type: String, default: '' }    // La réponse à la question secrète, idéalement hashée pour la sécurité
+    secretQuestion: { type: String, default: '' },
+    secretAnswer: { type: String, default: '' }
 });
 
 module.exports = mongoose.model('User', userSchema);

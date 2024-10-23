@@ -6,10 +6,11 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import MiniGame from '../MiniGame/MiniGame';
-
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 
 function Profil() {
   const navigate = useNavigate();
+  const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
   const [firstName, setFirstName] = useState('');
   const [message, setMessage] = useState('');
   const [updatingMdp, setUpdatingMdp] = useState(false)
@@ -17,6 +18,7 @@ function Profil() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const email = localStorage.getItem('email');
   const token = localStorage.getItem('token');
+  const [backgroundColor, setBackgroundColor] = useState('#E8EACC'); 
   
 
   const handleLogout = () => {
@@ -36,6 +38,20 @@ function Profil() {
     }
   }
   useEffect(() => {
+    const fetchStyles = async () => {
+      var bgColor = '#E8EACC';
+      if (selectedUniverse.styles && selectedUniverse.styles['mainBackgroundColor']) {
+        bgColor = selectedUniverse.styles['mainBackgroundColor'];
+      }
+      console.log("bgColor "+bgColor)
+
+      setBackgroundColor(bgColor);
+    }
+    if (selectedUniverse)
+    {
+      fetchStyles()
+    }
+
     if (!token) {
       // If no token, redirect to login page
       navigate('/login');
@@ -49,7 +65,7 @@ function Profil() {
       // If there's no email, redirect to the login page
       navigate('/login');
     }
-  }, [navigate]);
+  }, [navigate,selectedUniverse]);
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Empêche le rechargement de la page par défaut
@@ -97,7 +113,7 @@ function Profil() {
   }
   return (
     <Animation>
-      <div className="profil">
+      <div className="profil" style={{backgroundColor}}>
         <header className="profil-header">
           <h1>Bonjour, {firstName} ton compte est activé !</h1>
           <button className="logout-button" onClick={handleLogout}>
