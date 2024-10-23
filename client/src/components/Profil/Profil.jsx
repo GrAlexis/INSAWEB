@@ -1,11 +1,13 @@
-import React from 'react';
-import config from '../../config';
+import React, { useEffect, useState } from 'react';
 import './Profil.css';
 import Animation from '../Animation';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import HeaderProfil from '../HeaderProfil/HeaderProfil';
 import MiniGame from '../MiniGame/MiniGame';
+
+import UserPost from '../UserPost/UserPost';
+import UserProfileInfo from '../UserProfilInfo/UserProfileInfo';
+
 import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 
 function Profil() {
@@ -26,18 +28,10 @@ function Profil() {
     localStorage.removeItem('token');
     localStorage.removeItem('email');
 
-    navigate("/login") 
-  };
 
-  const enableUpdateMdp = () => {
-    if (!updatingMdp){
-      setUpdatingMdp(true)
-    }
-    else{
-      setUpdatingMdp(false)
-    }
-  }
   useEffect(() => {
+
+    const token = localStorage.getItem('token');
     const fetchStyles = async () => {
       var bgColor = '#E8EACC';
       if (selectedUniverse.styles && selectedUniverse.styles['mainBackgroundColor']) {
@@ -55,62 +49,15 @@ function Profil() {
     if (!token) {
       // If no token, redirect to login page
       navigate('/login');
-      return; // Exit useEffect early to prevent further code execution
     }
+
+    const email = localStorage.getItem('email');
     if (email) {
-      // Extract the first name from the email
-      const firstNameFromEmail = email.split('@')[0].split('.')[0]; // Split email to get the first name
-      setFirstName(firstNameFromEmail.charAt(0).toUpperCase() + firstNameFromEmail.slice(1)); // Capitalize first name
-    } else {
-      // If there's no email, redirect to the login page
-      navigate('/login');
+      const firstNameFromEmail = email.split('@')[0].split('.')[0];
+      setFirstName(firstNameFromEmail.charAt(0).toUpperCase() + firstNameFromEmail.slice(1));
     }
   }, [navigate,selectedUniverse]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault(); // Empêche le rechargement de la page par défaut
-
-    // Vérifier que le nouveau mot de passe et la confirmation correspondent
-    if (newPassword !== confirmPassword) {
-      console.log("Les nouveaux mots de passe ne correspondent pas");
-      return;
-    }
-
-    // Créer le payload à envoyer à l'endpoint
-    const payload = {
-      token,
-      newMdp:newPassword,
-    };
-
-    try {
-      // Faire la requête POST à l'endpoint MY_ENDPOINT
-      const response = await fetch(config.backendAPI+'/api/user/updateMdp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (response.status===201) {
-        // Réponse réussie
-        setMessage('Mot de passe changé avec succès !');
-        setUpdatingMdp(false)
-        setNewPassword('');
-        setConfirmPassword('');
-        navigate("/login");
-        
-      } else {
-        // Gérer les erreurs renvoyées par le serveur
-        console.log(data || 'Erreur lors du changement de mot de passe');
-      }
-    } catch (error) {
-      console.error('Erreur:', error);
-      
-    }
-  }
   return (
     <Animation>
       <div className="profil" style={{backgroundColor}}>

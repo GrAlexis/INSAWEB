@@ -1,0 +1,109 @@
+.profil-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    width: 100%;
+  }
+  
+  .password-icon, .logout-icon {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .password-icon:focus, .logout-icon:focus {
+    transform: scale(1.1); /* Augmente la taille légèrement au survol */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Ajoute une légère ombre */
+  }
+  
+  /* Media queries pour rendre les icônes plus petites sur mobile */
+  @media (max-width: 600px) {
+    .password-icon, .logout-icon {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  /*  Modal  */
+  
+  .modal-overlay {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.4s ease; /* Transition pour l'effet de fondu */
+  }
+  
+  /* La modal commence hors écran */
+  .modal-content {
+    background-color: white;
+    width: 100%;
+    height: 66vh;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    bottom: 0px;
+    opacity: 1; /* Opacité à 100% */
+  }
+  
+  /* Animation d'ouverture */
+  .slide-up {
+    animation: slideUp 0.4s ease-out forwards;
+  }
+  
+  .slide-down {
+    animation: slideDown 0.4s ease forwards;
+  }
+  
+  /* Animation pour faire remonter la modal */
+  @keyframes slideUp {
+    0% {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  /* Animation pour faire redescendre la modal avec effet de fondu */
+  @keyframes slideDown {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(50%);
+      opacity: 0;
+    }
+  }
+
+  .changer{
+    font-weight: bold;
+  }
+  .indic{
+    text-align: left;
+  }
+  
+  .btn-submit{
+    padding: 12px 24px;
+    font-size: 16px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  }
+  

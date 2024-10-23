@@ -53,16 +53,45 @@ const BadgeCarouselComponent = ({ universes }) => {
       saveUniverse(selectedUniverse);
     } else {
       console.error('Univers non trouvé pour ce badge.');
+
     }
 
+    // Gérer la fermeture avec un délai pour permettre l'animation de fermeture
     setTimeout(() => {
       setShowCarousel(false);
       setClosing(false);
-    }, 500);
+    }, 500); // Durée de l'animation de fermeture correspond à celle définie dans le CSS
+  };
+
+  const handleMainBadgeClick = () => {
+    if (!showCarousel) {
+      setShowCarousel(true);
+    } else {
+      setClosing(true);
+      setTimeout(() => {
+        setShowCarousel(false);
+        setClosing(false);
+      }, 500); // Durée de l'animation de fermeture
+    }
   };
 
   return (
     <div className="carousel-container">
+
+      {/* Affiche un badge par défaut si aucun badge n'est sélectionné */}
+      {loading ? (
+        <div className="loading-spinner">Chargement...</div>
+      ) : !selectedBadge ? (
+        <div className="default-badge" onClick={() => setShowCarousel(true)}>
+          <img src={defaultBadge} alt="Badge par défaut" className="large-badge" />
+          <p>Rejoindre un univers</p>
+        </div>
+      ) : (
+        <div className="selected-badge" onClick={handleMainBadgeClick}>
+          <img src={selectedBadge.src} alt={selectedBadge.alt} className="large-badge" />
+        </div>
+      )}
+
       <div className="selected-badge" onClick={() => setShowCarousel(!showCarousel)}>
         <img src={selectedUniverse.logo} alt={`Badge ${selectedUniverse.name}`} className="large-badge" />
       </div>
