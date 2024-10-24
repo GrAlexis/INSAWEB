@@ -78,6 +78,32 @@ const ManageUniverse = () => {
     }
   };
 
+  // Function to reset password
+  const handleResetPassword = async () => {
+    setIsUpdating(true);
+    try {
+      const formData = new FormData();
+      formData.append('universeId', selectedUniverse._id);  // Append universeId
+      formData.append('password', "EMPTY_PASSWORD");  // Reset password to an empty value
+
+      // Send the request to update the universe with an empty password
+      const response = await axios.post(`${config.backendAPI}/universe/update`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (response.status === 200) {
+        const updatedUniverse = response.data.universe; // Get the updated universe from the response
+        saveUniverse(updatedUniverse);
+        setPassword('');  // Clear the password field in the form
+        alert('Password reset successfully!');
+      }
+    } catch (error) {
+      console.error('Error resetting password:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const handleResetEsthetics = async () => {
     setIsUpdating(true);
     try {
@@ -111,19 +137,28 @@ const ManageUniverse = () => {
 
   return (
     <div className="manage-universe">
-      <h2>Manage Universe</h2>
+      <h2>Paramètres de l'univers</h2>
       <form onSubmit={handleUpdate}>
         <label>
-          Set Universe Password:
+          Définir un mot de passe pour l'univers:
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
         </label>
+        <button
+          type="button"
+          className="reset-password-button"
+          onClick={handleResetPassword}
+          disabled={isUpdating}
+        >
+          {isUpdating ? 'Réinitialisation...' : 'Réinitialiser le mot de passe'}
+        </button>
+        <br />
         <br />
         <label>
-          Upload Universe Logo:
+          Définir un logo pour l'univers:
           <input
             type="file"
             accept="image/*"
@@ -141,7 +176,7 @@ const ManageUniverse = () => {
         />
         <br />
         <button className='update-universe-button' type="submit" disabled={isUpdating}>
-          {isUpdating ? 'Updating...' : 'Update Universe'}
+          {isUpdating ? 'Mise à jour...' : 'Mettre à jour univers'}
         </button>
         <br />
         <button
@@ -150,7 +185,7 @@ const ManageUniverse = () => {
           onClick={handleResetEsthetics}
           disabled={isUpdating}
         >
-          {isUpdating ? 'Resetting...' : 'Reset Esthetics'}
+          {isUpdating ? 'Réinitialisation...' : 'Réinitialiser esthétique'}
         </button>
       </form>
     </div>

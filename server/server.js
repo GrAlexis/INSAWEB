@@ -1351,7 +1351,6 @@ app.post('/events/create', upload.single('file'), async (req, res) => {
 // Universe update route (password and logo)
 app.post('/universe/update', upload.single('file'), async (req, res) => {
     const { universeId, password, styles } = req.body;
-  console.log("styles "+styles)
     try {
       const universe = await Universe.findById(universeId);
   
@@ -1361,8 +1360,12 @@ app.post('/universe/update', upload.single('file'), async (req, res) => {
   
       // Hash the password if it's provided
       if (password) {
-        const hashedPassword = bcrypt.hashSync(password, 10);
-        universe.hashedPassword = hashedPassword;  // Update the password
+        if (password == "EMPTY_PASSWORD") {
+            universe.hashedPassword = ""
+        } else {
+            const hashedPassword = bcrypt.hashSync(password, 10);
+            universe.hashedPassword = hashedPassword;  // Update the password
+        }
       }
   
       // Convert the uploaded logo file to Base64 if provided

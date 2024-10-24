@@ -4,7 +4,7 @@ import './CustomStyles.css';  // Optionally, create a CSS file for custom styles
 const CustomStyles = ({navBarColor, setNavBarColor, infoBarColor, setInfoBarColor,mainBackgroundColor,setMainBackgroundColor }) => {
   return (
     <div className="custom-styles">
-      <h3>Customize Universe Aesthetics</h3>
+      <h3>Customiser esthétique</h3>
       <label>
         Couleur de la barre supérieure :
         <input

@@ -107,20 +107,21 @@ const AdminPage = ({ showNavBar }) => {
             <option key={event._id} value={event._id}>{event.title}</option>
           ))}
         </select>
-        <button onClick={toggleModal}>Create New Event</button> {/* Button to open modal */}
-        {/* Button to toggle ManageUniverse */}
-        <button onClick={toggleManageUniverse}>
-          {showManageUniverse ? 'Hide Manage Universe' : 'Manage Universe'}
-        </button>
-      </div>
-
-      <div className="admin-content">
+        <div className="admin-content">
         {selectedEvent ? (
           <EventAdmin event={selectedEvent} />
         ) : (
-          <p>Please select an event to administrate.</p>
+          <p></p>
         )}
       </div>
+        <button onClick={toggleModal}>Créer un évènement</button> {/* Button to open modal */}
+        {/* Button to toggle ManageUniverse */}
+        <button onClick={toggleManageUniverse}>
+          {showManageUniverse ? 'Masquer paramètres univers' : 'Paramètres univers'}
+        </button>
+      </div>
+
+
 
       <Link to='/register'>Inscrire des admins</Link>
 
@@ -128,10 +129,10 @@ const AdminPage = ({ showNavBar }) => {
       {isModalVisible && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2>Create a New Event</h2>
+            <h2>Créer un nouvel évènement</h2>
             <form onSubmit={handleCreateEvent}>
               <label>
-                Event Title:
+                Titre: 
                 <input
                   type="text"
                   value={newEventTitle}
@@ -140,7 +141,7 @@ const AdminPage = ({ showNavBar }) => {
                 />
               </label>
               <label>
-                Event Date (optional):
+                Date (optionnel):
                 <input
                   type="date"
                   value={newEventDate}
@@ -148,7 +149,7 @@ const AdminPage = ({ showNavBar }) => {
                 />
               </label>
               <label>
-                Event Image:
+                Illustration:
                 <input
                   type="file"
                   accept="image/*"
@@ -158,9 +159,9 @@ const AdminPage = ({ showNavBar }) => {
               </label>
               <div className="modal-buttons">
                 <button type="submit" disabled={isCreating}>
-                  {isCreating ? 'Creating...' : 'Create Event'}
+                  {isCreating ? 'Création...' : 'Créer évènement'}
                 </button>
-                <button type="button" onClick={toggleModal}>Cancel</button>
+                <button type="button" onClick={toggleModal}>Retour</button>
               </div>
             </form>
           </div>
