@@ -290,20 +290,28 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     });
 });
 
-
-// get posts/publications route
+// Get posts/publications route
 app.get('/posts', async (req, res) => {
     try {
-        const universeId = req.query.universeId;  // Get universeId from query parameters
-
-        // Fetch posts only from the specified universe
-        const posts = await Post.find({ universeId }).sort({ date: -1 });
+        const { universeId, userId } = req.query;  // Get universeId and userId from query parameters
         
+        // Build the query object
+        const query = { universeId };
+
+        // If userId is provided, add it to the query
+        if (userId) {
+            query.user = userId;
+        }
+
+        // Fetch posts based on the constructed query
+        const posts = await Post.find(query).sort({ date: -1 });
+
         res.status(200).json(posts);
     } catch (error) {
         res.status(500).send(error.message);
     }
 });
+
 
 
 // Route to get posts by userId and challengeId

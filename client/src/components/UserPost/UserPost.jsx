@@ -4,11 +4,14 @@ import config from '../../config';
 import PostElement from '../PostElement/PostElement'; // Réutilisation du composant PostElement
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import './UserPost.css'; // Ajouter du CSS pour styliser la section des posts
+import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
 
 const UserPosts = () => {
   const [userPosts, setUserPosts] = useState([]);
   const [showPosts, setShowPosts] = useState(false); // État pour gérer l'affichage des posts
   const { user } = useUser(); // Récupérer l'utilisateur connecté
+  const { selectedUniverse } = useUniverse();
+
   
   const fetchUserPosts = async () => {
     if (!user) return; // Ne pas effectuer de requête si l'utilisateur n'est pas défini
@@ -17,6 +20,7 @@ const UserPosts = () => {
       const response = await axios.get(`${config.backendAPI}/posts`, {
         params: {
           userId: user._id, // Utiliser l'ID de l'utilisateur connecté
+          universeId: selectedUniverse._id  // Send universeId as a query parameter
         },
       });
       setUserPosts(response.data);
