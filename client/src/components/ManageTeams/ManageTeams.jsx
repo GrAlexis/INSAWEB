@@ -107,7 +107,12 @@ const ManageTeams = ({ eventId }) => {
   const confirmDelete = async () => {
     try {
       console.log("teamToDelete "+teamToDelete)
-      await axios.delete(config.backendAPI+`/teams/${teamToDelete}`);
+      console.log("selecteduniverseid "+selectedUniverse._id)
+      await axios.delete(config.backendAPI+`/teams/${teamToDelete}`, {
+        data: {
+          universeId: selectedUniverse._id
+        }      
+      });
       setTeams(teams.filter(team => team.id !== teamToDelete));
       setShowConfirmDelete(false);
       setTeamToDelete(null);

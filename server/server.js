@@ -838,7 +838,8 @@ app.put('/teams/:id', async (req, res) => {
 
 // Route to delete a team
 app.delete('/teams/:id', async (req, res) => {
-    const { id } = req.params;
+    const { id} = req.params;
+    const {universeId} = req.body
 
     try {
         // Find and delete the team
@@ -854,11 +855,24 @@ app.delete('/teams/:id', async (req, res) => {
             { $pull: { teams: id } }
         );
 
-        // Clear the teamId for all users who were in the deleted team
-        await User.updateMany(
-            { teamId: id },
-            { $unset: { teamId: "" } } // Clears the teamId field
-        );
+        // Update all users who were in the deleted team
+        const users = await User.find({ 
+            [`universes.${universeId}.events.${deletedTeam.eventId}.teamId`]: id 
+        });
+
+        // Loop through and unset the teamId for each user in the relevant event
+        for (const user of users) {
+            console.log("use.name "+user.name)
+            let universe = user.universes.get(universeId);
+            if (universe && universe.events && universe.events.has(deletedTeam.eventId)) {
+                const event = universe.events.get(deletedTeam.eventId);
+                if (event) {
+                    event.teamId = ""; // Clear the teamId
+                    universe.events.set(deletedTeam.eventId, event); // Update the event in the user's universe
+                }
+            }
+            await user.save(); // Save the changes to the user
+        }
 
         // Clear the teamId for all posts associated with the deleted team
         await Post.updateMany(
