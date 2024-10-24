@@ -15,14 +15,14 @@ const Ranking = ({ showNavBar }) => {
   const [ranking, setRanking] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
-  const [viewMode, setViewMode] = useState('teams'); // New state for switching between views
+  const [viewMode, setViewMode] = useState('players'); // Default to players
   const [playerRanking, setPlayerRanking] = useState([]); // State for player ranking
   const [backgroundSuperiorColor, setBackgroundSuperiorColor] = useState('#A4C0A5'); 
   const [backgroundColor, setBackgroundColor] = useState('#E8EACC'); 
 
   const navigate = useNavigate();
 
-  const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
+  const { selectedUniverse, fetchUniverseById, saveUniverse } = useUniverse();
 
   useEffect(() => {
     const fetchStyles = async () => {
@@ -30,20 +30,19 @@ const Ranking = ({ showNavBar }) => {
       if (selectedUniverse.styles && selectedUniverse.styles['infoBarBackgroundColor']) {
           bgColor = selectedUniverse.styles['infoBarBackgroundColor'];
       }
-      console.log("bgcolor "+bgColor)
       setBackgroundSuperiorColor(bgColor);
 
       bgColor='#E8EACC'
       if (selectedUniverse.styles && selectedUniverse.styles['mainBackgroundColor']) {
         bgColor = selectedUniverse.styles['mainBackgroundColor'];
       }
-      console.log("bgcolor "+bgColor)
       setBackgroundColor(bgColor);
     }
     if (selectedUniverse) {
-    fetchStyles()
+      fetchStyles();
     }
-}, [selectedUniverse]);
+  }, [selectedUniverse]);
+
   useEffect(() => {
     const token = localStorage.getItem('token');
 
@@ -67,8 +66,6 @@ const Ranking = ({ showNavBar }) => {
   useEffect(() => {
     if (selectedEvent && viewMode === 'teams') {
       // Fetch team ranking for the selected event
-      // Fetch team ranking for the selected event, passing universeId as a query parameter
-      console.log("selected event id "+selectedEvent._id)
       axios.get(`${config.backendAPI}/teamRanking/${selectedEvent._id}`, {
         params: { universeId: selectedUniverse._id }  // Passing universeId as a query parameter
       })
@@ -90,7 +87,6 @@ const Ranking = ({ showNavBar }) => {
       setTeamMembers([]);
     } else {
       setSelectedTeam(teamId);
-      console.log("requete "+config.backendAPI + `/teams/${teamId}/members`)
       axios.get(config.backendAPI + `/teams/${teamId}/members`, {
         params: { universeId: selectedUniverse._id }  // Pass universeId as a query parameter
       })
@@ -99,15 +95,23 @@ const Ranking = ({ showNavBar }) => {
     }
   };
 
+  const handleEventChange = (event) => {
+    setSelectedEvent(event);
+    setSelectedTeam(null);
+    setTeamMembers([]);
+    // Automatically set viewMode to 'players' if there are no teams
+    if (event.teams && event.teams.length === 0) {
+      setViewMode('players');
+    } else {
+      setViewMode('teams');  // Default to teams if there are teams
+    }
+  };
+
   return (
     <Animation>
       <div className="ranking-page" style={{backgroundColor}}>
-        <div className="infobar" style={{backgroundSuperiorColor }}>
-          <select onChange={(e) => {
-            setSelectedEvent(events.find(event => event.id === e.target.value));
-            setSelectedTeam(null);
-            setTeamMembers([]);
-          }}>
+        <div className="infobar" style={{ backgroundSuperiorColor }}>
+          <select onChange={(e) => handleEventChange(events.find(event => event.id === e.target.value))}>
             <option value="">Select Event</option>
             {events.map(event => (
               <option key={event.id} value={event.id}>{event.title}</option>
@@ -115,8 +119,8 @@ const Ranking = ({ showNavBar }) => {
           </select>
         </div>
 
-        {/* Button to switch between Equipes and Joueurs */}
-        {selectedEvent && (
+        {/* Only show the toggle if the event has teams */}
+        {selectedEvent && selectedEvent.teams && selectedEvent.teams.length > 0 && (
           <div className="toggle-view">
             <button 
               onClick={() => setViewMode('teams')} 

@@ -791,7 +791,7 @@ app.delete('/posts/:id', async (req, res) => {
 // Route to create a new team
 app.post('/teams', async (req, res) => {
     const { id, name, eventId, maxMembers } = req.body;
-  
+
     try {
       const newTeam = new Team({
         id,
@@ -802,10 +802,9 @@ app.post('/teams', async (req, res) => {
       });
   
       const savedTeam = await newTeam.save();
-  
       // Update the event with the new team ID
       await Event.updateOne(
-        { id: eventId },
+        { _id: eventId },
         { $push: { teams: id } }
       );
   
@@ -851,7 +850,7 @@ app.delete('/teams/:id', async (req, res) => {
 
         // Update the event to remove the deleted team ID
         await Event.updateOne(
-            { id: deletedTeam.eventId },
+            { _id: deletedTeam.eventId },
             { $pull: { teams: id } }
         );
 

@@ -74,7 +74,7 @@ const ManageTeams = ({ eventId }) => {
         const allTeamIdsResponse = await axios.get(config.backendAPI+'/teams/ids');
         const allTeamIds = allTeamIdsResponse.data.map(team => parseInt(team.id, 10));
         const newId = (allTeamIds.length > 0 ? Math.max(...allTeamIds) + 1 : 10) || 10;
-
+        console.log("eventId "+eventId)
         const response = await axios.post(config.backendAPI+'/teams', {
           id: newId,
           name: teamName,
@@ -102,11 +102,11 @@ const ManageTeams = ({ eventId }) => {
   const handleDeleteClick = (teamId) => {
     setTeamToDelete(teamId);
     setShowConfirmDelete(true);
-    console.log("showconfirmdelete "+showConfirmDelete)
   };
 
   const confirmDelete = async () => {
     try {
+      console.log("teamToDelete "+teamToDelete)
       await axios.delete(config.backendAPI+`/teams/${teamToDelete}`);
       setTeams(teams.filter(team => team.id !== teamToDelete));
       setShowConfirmDelete(false);

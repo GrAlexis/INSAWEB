@@ -39,7 +39,6 @@ const Sheesh = ({ showNavBar }) => {
       if (selectedUniverse.styles && selectedUniverse.styles['mainBackgroundColor']) {
         bgColor = selectedUniverse.styles['mainBackgroundColor'];
       }
-      console.log("bgColor "+bgColor)
 
       setBackgroundColor(bgColor);
     }

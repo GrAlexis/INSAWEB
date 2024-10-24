@@ -128,7 +128,8 @@ const EventCard = ({ event }) => {
 
   const eventDate = parseDate(event.date);
   const currentDate = new Date();
-  const canChangeTeam = currentDate < eventDate && (event.teams && event.teams.length>0);
+  const eventHasStarted = eventDate && currentDate > eventDate;
+  const eventHasTeam = (event.teams && event.teams.length>0)
 
   return (
     <div className="event-card">
@@ -144,7 +145,7 @@ const EventCard = ({ event }) => {
         {/* Timer component */}
         {timeLeftInHours !== null && <Timer hours={timeLeftInHours} />}
 
-        {canChangeTeam && (
+        {(eventHasTeam &&!eventHasStarted) && (
           <button className="sheesh-button" onClick={() => setIsPopupOpen(true)}>
             {user.universes[selectedUniverse._id].events[event._id].teamId ? 'Changer d\'equipe' : 'Rejoins une equipe!'}
           </button>
