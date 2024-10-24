@@ -78,7 +78,10 @@ background: none;
 border: none;
 font-size: 20px;
 }
-
+.modify-button {
+    width: 20px; /* Adjust the size as needed */
+    height: 20px; /* Adjust the size as needed */
+}
 .popup-content button {
 padding: 5px 10px;
 background-color: #B0B9A8;

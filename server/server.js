@@ -862,7 +862,6 @@ app.delete('/teams/:id', async (req, res) => {
 
         // Loop through and unset the teamId for each user in the relevant event
         for (const user of users) {
-            console.log("use.name "+user.name)
             let universe = user.universes.get(universeId);
             if (universe && universe.events && universe.events.has(deletedTeam.eventId)) {
                 const event = universe.events.get(deletedTeam.eventId);
@@ -1309,6 +1308,29 @@ app.post('/users/initialize-universe', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+
+// PUT /events/:id
+app.put('/events/:id', async (req, res) => {
+    const { title, date } = req.body;
+    const { id } = req.params;
+  
+    try {
+      const event = await Event.findOneAndUpdate(
+        { _id: id }, // Ensure the event belongs to the universe
+        { title, date },
+        { new: true }
+      );
+  
+      if (!event) {
+        return res.status(404).json({ message: 'Event not found' });
+      }
+  
+      res.status(200).json({ message: 'Event updated successfully', event });
+    } catch (error) {
+      res.status(500).json({ message: 'Error updating event', error });
+    }
+  });
+  
 
 // Event creation route
 app.post('/events/create', upload.single('file'), async (req, res) => {

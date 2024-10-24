@@ -5,13 +5,18 @@ import axios from 'axios';
 import { useUser } from '../../hooks/commonHooks/UserContext';
 import Timer from '../Timer/Timer';
 import { useUniverse } from '../../hooks/commonHooks/UniverseContext';
+import modifyButtonIcon from '../../assets/buttons/modify.png';
 
-const EventCard = ({ event }) => {
+const EventCard = ({ event: initialEvent }) => {
   const { user, setUser } = useUser();
+  const [event, setEvent] = useState(initialEvent);
   const [teams, setTeams] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [currentTeamName, setCurrentTeamName] = useState('');
   const [timeLeftInHours, setTimeLeftInHours] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [newTitle, setNewTitle] = useState(event.title);
+  const [newDate, setNewDate] = useState(event.date);
 
   const { selectedUniverse, fetchUniverseById,saveUniverse} = useUniverse();
 
@@ -22,23 +27,6 @@ const EventCard = ({ event }) => {
   };
 
   useEffect(() => {
-    // const initializeAndFetchData = async () => {
-    //   try {
-    //     // Check if user.universes[universeId].events[event._id] exists
-    //   const universe = user.universes[selectedUniverse._id];
-    //   if (!universe || !universe.events[event._id]) {
-    //     // If the universe or event doesn't exist, call the initialize-universe route
-    //     await axios.post(`${config.backendAPI}/users/initialize-universe`, {
-    //       userId: user._id,
-    //       universeId : selectedUniverse._id,
-    //       eventId: event._id,
-    //     });
-    //   }
-    //   }
-    //   catch (error) {
-    //     console.log(error)
-    //   }
-    // }
     if (event.teams)
     {
       const fetchTeams = async () => {
@@ -122,6 +110,32 @@ const EventCard = ({ event }) => {
     }
   };
 
+  // Handle form submission for event update
+  const handleUpdateEvent = async () => {
+    try {
+      await axios.put(`${config.backendAPI}/events/${event._id}`, {
+        title: newTitle,
+        date: newDate,
+      });
+      // Refetch the event's data after successful update
+      const response = await axios.get(`${config.backendAPI}/events/${event._id}`, {
+        params: { universeId: selectedUniverse._id },
+      });
+
+      // Update the local event state with the new data after successful update
+      setEvent(response.data); // Update the event with the latest data from the server
+
+      // Update the event state with the latest data
+      setEvent(response.data);
+
+
+      setIsEditMode(false); // Exit edit mode after saving
+    } catch (error) {
+      console.error('Error updating event:', error);
+    }
+  };
+
+
   if (!user) {
     return 'Loading...';
   }
@@ -139,16 +153,43 @@ const EventCard = ({ event }) => {
         className="event-image" 
       />
       <div className="event-details">
-        <h2>{event.title}</h2>
-        <p>{event.date}</p>
+{user.isAdmin && (
+          <img
+            src={modifyButtonIcon}
+            alt="Modify Event"
+            className="modify-button"
+            onClick={() => setIsEditMode(!isEditMode)}
+          />
+        )}
 
-        {/* Timer component */}
-        {timeLeftInHours !== null && <Timer hours={timeLeftInHours} />}
-
-        {(eventHasTeam &&!eventHasStarted) && (
-          <button className="sheesh-button" onClick={() => setIsPopupOpen(true)}>
-            {user.universes[selectedUniverse._id].events[event._id].teamId ? 'Changer d\'equipe' : 'Rejoins une equipe!'}
-          </button>
+        {isEditMode ? (
+          <div className="edit-event-form">
+            <input
+              type="text"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              placeholder="New Event Title"
+            />
+            <input
+              type="date"
+              value={newDate}
+              onChange={(e) => setNewDate(e.target.value)}
+              placeholder="New Event Date"
+            />
+            <button onClick={handleUpdateEvent}>Save</button>
+            <button onClick={() => setIsEditMode(false)}>Cancel</button>
+          </div>
+        ) : (
+          <>
+            <h2>{event.title}</h2>
+            <p>{event.date}</p>
+            {timeLeftInHours !== null && <Timer hours={timeLeftInHours} />}
+            {eventHasTeam && !eventHasStarted && (
+              <button className="sheesh-button" onClick={() => setIsPopupOpen(true)}>
+                {user.universes[selectedUniverse._id].events[event._id].teamId ? 'Changer d\'equipe' : 'Rejoins une equipe!'}
+              </button>
+            )}
+          </>
         )}
       </div>
       {isPopupOpen && (
