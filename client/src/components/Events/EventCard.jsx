@@ -168,16 +168,16 @@ const EventCard = ({ event: initialEvent }) => {
               type="text"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="New Event Title"
+              placeholder="Nouveau titre"
             />
             <input
               type="date"
               value={newDate}
               onChange={(e) => setNewDate(e.target.value)}
-              placeholder="New Event Date"
+              placeholder="Nouvelle date"
             />
-            <button onClick={handleUpdateEvent}>Save</button>
-            <button onClick={() => setIsEditMode(false)}>Cancel</button>
+            <button onClick={handleUpdateEvent}>Sauvegarder</button>
+            <button onClick={() => setIsEditMode(false)}>Annuler</button>
           </div>
         ) : (
           <>
