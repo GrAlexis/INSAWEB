@@ -38,7 +38,6 @@ function Profil() {
       if (selectedUniverse.styles && selectedUniverse.styles['mainBackgroundColor']) {
         bgColor = selectedUniverse.styles['mainBackgroundColor'];
       }
-      console.log("bgColor "+bgColor)
 
       setBackgroundColor(bgColor);
     }
@@ -62,41 +61,11 @@ function Profil() {
   return (
     <Animation>
       <div className="profil" style={{backgroundColor}}>
-        <header className="profil-header">
-          <h1>Bonjour, {firstName} ton compte est activé !</h1>
-          <button className="logout-button" onClick={handleLogout}>
-          Se déconnecter
-        </button>
-        </header>
-        <button onClick={enableUpdateMdp}>
-            Modifier votre mot de passe
-        </button>
-      {updatingMdp && <div className="password-change-form">
-      <h3>Changer le mot de passe</h3>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Nouveau mot de passe:</label>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Confirmer le nouveau mot de passe:</label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">Changer le mot de passe</button>
-      </form>
-      
-      </div> }<p>{message}</p>
-      <MiniGame></MiniGame>
+        <HeaderProfil />
+        <UserProfileInfo></UserProfileInfo>
+        <h1>Bonjour, {firstName} ton compte est activé !</h1>
+        <UserPost />
+        <MiniGame />
       </div>
     </Animation>
   );
