@@ -67,11 +67,43 @@ const ManageUniverse = () => {
       });
 
       if (response.status === 200) {
+        const updatedUniverse = response.data.universe; // Get the updated universe from the response
+        saveUniverse(updatedUniverse)
         alert('Universe updated successfully!');
       }
-      saveUniverse()
     } catch (error) {
       console.error('Error updating universe:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleResetEsthetics = async () => {
+    setIsUpdating(true);
+    try {
+      const formData = new FormData();
+      formData.append('universeId', selectedUniverse._id);  // Append universeId
+      formData.append('styles', JSON.stringify({
+        infoBarBackgroundColor: '',
+        mainBackgroundColor: '',
+        navBarColor: ''
+      }));  // Reset styles
+
+      // Send the request to update the universe with empty styles
+      const response = await axios.post(`${config.backendAPI}/universe/update`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },  // Ensure multipart data is sent
+      });
+
+      if (response.status === 200) {
+        const updatedUniverse = response.data.universe; // Get the updated universe from the response
+        saveUniverse(updatedUniverse);
+        setInfoBarColor('#FFFFFF');  // Reset the state to default values
+        setMainBackgroundColor('#E8EACC');
+        setNavBarColor('#A4C0A5');
+        alert('Esthetics reset successfully!');
+      }
+    } catch (error) {
+      console.error('Error resetting esthetics:', error);
     } finally {
       setIsUpdating(false);
     }
@@ -110,6 +142,15 @@ const ManageUniverse = () => {
         <br />
         <button className='update-universe-button' type="submit" disabled={isUpdating}>
           {isUpdating ? 'Updating...' : 'Update Universe'}
+        </button>
+        <br />
+        <button
+          type="button"
+          className="reset-esthetics-button"
+          onClick={handleResetEsthetics}
+          disabled={isUpdating}
+        >
+          {isUpdating ? 'Resetting...' : 'Reset Esthetics'}
         </button>
       </form>
     </div>

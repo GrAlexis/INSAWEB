@@ -1384,7 +1384,7 @@ app.post('/universe/update', upload.single('file'), async (req, res) => {
   
       await universe.save();  // Save the updated universe
   
-      res.status(200).json({ message: 'Universe updated successfully.' });
+      res.status(200).json({ message: 'Universe updated successfully.',universe });
     } catch (error) {
       console.error('Error updating universe:', error);
       res.status(500).json({ message: 'Error updating universe.' });
